@@ -9,6 +9,8 @@ import rateLimit from 'express-rate-limit';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import os from 'os';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { authRouter } from './routes/auth.routes.js';
 import { userRouter } from './routes/user.routes.js';
@@ -28,6 +30,7 @@ import { registerSocketHandlers } from './socket/index.js';
 
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
@@ -75,6 +78,8 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Logging
 if (process.env.NODE_ENV !== 'test') {

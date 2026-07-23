@@ -1,48 +1,73 @@
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma.js';
 import { signAccessToken, signRefreshToken, setCookies, clearCookies } from '../utils/jwt.js';
 import { AppError } from '../utils/AppError.js';
+import { normalizeContact, deliverOtp } from '../utils/otpDelivery.js';
 
-// POST /api/auth/register
-export const register = async (req, res) => {
-    const { name, email, password } = req.body;
+// POST /api/auth/request-otp
+export const requestOtp = async (req, res) => {
+    const { contact, name, isRegister } = req.body;
+    if (!contact) throw new AppError('Email or phone number is required.', 400);
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) throw new AppError('Email already in use.', 409);
+    const { isEmail, value } = normalizeContact(contact);
+    const query = isEmail ? { email: value } : { phoneNumber: value };
 
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-        data: { name, email, passwordHash },
+    let user = await prisma.user.findUnique({ where: query });
+
+    if (isRegister && user) {
+        throw new AppError('Account already exists. Please log in.', 409);
+    }
+    if (!isRegister && !user) {
+        throw new AppError('Account not found. Please register.', 404);
+    }
+    if (isRegister && !name?.trim()) {
+        throw new AppError('Name is required for registration.', 400);
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60000);
+
+    if (isRegister) {
+        const data = isEmail ? { email: value } : { phoneNumber: value };
+        user = await prisma.user.create({
+            data: { ...data, name: name.trim(), otpCode, otpExpiresAt },
+        });
+    } else {
+        user = await prisma.user.update({
+            where: { id: user.id },
+            data: { otpCode, otpExpiresAt },
+        });
+    }
+
+    const channel = await deliverOtp({ contact: value, otpCode, isEmail });
+
+    res.json({
+        success: true,
+        message: channel === 'console'
+            ? 'OTP generated. Check server logs (API keys not configured).'
+            : `OTP sent to your ${isEmail ? 'email' : 'phone'}.`,
     });
-
-    const accessToken = signAccessToken(user.id);
-    const refreshToken = signRefreshToken(user.id);
-
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
-    setCookies(res, accessToken, refreshToken);
-
-    const { passwordHash: _, refreshToken: __, ...safeUser } = user;
-    res.status(201).json({ success: true, user: safeUser, accessToken });
 };
 
-// POST /api/auth/login
-export const login = async (req, res) => {
-    const { email, password } = req.body;
-    const normalizedEmail = email?.trim().toLowerCase();
+// POST /api/auth/verify-otp
+export const verifyOtp = async (req, res) => {
+    const { contact, otpCode } = req.body;
+    if (!contact || !otpCode) throw new AppError('Contact and OTP are required.', 400);
 
-    const user = await prisma.user.findFirst({
-        where: {
-            email: {
-                equals: normalizedEmail,
-                mode: 'insensitive'
-            }
-        }
+    const { isEmail, value } = normalizeContact(contact);
+    const query = isEmail ? { email: value } : { phoneNumber: value };
+
+    const user = await prisma.user.findUnique({ where: query });
+    if (!user) throw new AppError('Invalid request.', 401);
+
+    if (user.otpCode !== otpCode || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+        throw new AppError('Invalid or expired OTP.', 401);
+    }
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { otpCode: null, otpExpiresAt: null },
     });
-    if (!user || !user.passwordHash) throw new AppError('Invalid credentials.', 401);
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) throw new AppError('Invalid credentials.', 401);
 
     const accessToken = signAccessToken(user.id);
     const refreshToken = signRefreshToken(user.id);
@@ -50,7 +75,7 @@ export const login = async (req, res) => {
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
     setCookies(res, accessToken, refreshToken);
 
-    const { passwordHash: _, refreshToken: __, ...safeUser } = user;
+    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, ...safeUser } = user;
     res.json({ success: true, user: safeUser, accessToken });
 };
 
@@ -90,6 +115,6 @@ export const refreshAccessToken = async (req, res) => {
 
 // GET /api/auth/me
 export const getMe = async (req, res) => {
-    const { passwordHash: _, refreshToken: __, ...safeUser } = req.user;
+    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, ...safeUser } = req.user;
     res.json({ success: true, user: safeUser });
 };

@@ -5,15 +5,32 @@ import toast from 'react-hot-toast';
 import './AuthPages.css';
 
 export default function LoginPage() {
-    const { login, isLoading } = useAuthStore();
+    const { requestOtp, verifyOtp, isLoading } = useAuthStore();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ email: '', password: '' });
+    const [step, setStep] = useState(1);
+    const [form, setForm] = useState({ contact: '', otpCode: '' });
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleRequestOtp = async (e) => {
         e.preventDefault();
         setError('');
-        const result = await login(form);
+        if (!form.contact) return setError('Email or Phone Number is required');
+        
+        const result = await requestOtp({ contact: form.contact, isRegister: false });
+        if (result.success) {
+            toast.success('OTP Sent! Check your email or phone.');
+            setStep(2);
+        } else {
+            setError(result.message);
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        setError('');
+        if (!form.otpCode || form.otpCode.length !== 6) return setError('Enter a valid 6-digit OTP');
+
+        const result = await verifyOtp({ contact: form.contact, otpCode: form.otpCode });
         if (result.success) {
             toast.success('Welcome back! 🎉');
             navigate('/trips');
@@ -34,41 +51,48 @@ export default function LoginPage() {
                     <p>Log in to your PackAndSync account</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="email">Email</label>
-                        <input id="email" name="email" type="email" className="form-input"
-                            placeholder="you@packandsync.com" value={form.email}
-                            onChange={handleChange} required autoComplete="email" />
-                    </div>
+                {step === 1 ? (
+                    <form onSubmit={handleRequestOtp} className="auth-form">
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="contact">Email or Mobile Number</label>
+                            <input id="contact" name="contact" type="text" className="form-input"
+                                placeholder="you@example.com or +919876543210" value={form.contact}
+                                onChange={handleChange} required autoComplete="username" />
+                        </div>
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="password">Password</label>
-                        <input id="password" name="password" type="password" className="form-input"
-                            placeholder="••••••••" value={form.password}
-                            onChange={handleChange} required autoComplete="current-password" />
-                    </div>
+                        {error && <p className="form-error">{error}</p>}
 
-                    {error && <p className="form-error">{error}</p>}
+                        <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
+                            {isLoading ? 'Sending OTP…' : 'Get OTP'}
+                        </button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerifyOtp} className="auth-form">
+                        <p style={{ textAlign: 'center', fontSize: '0.9rem', marginBottom: '1rem', color: '#6b7280' }}>
+                            We sent a 6-digit code to <strong>{form.contact}</strong>
+                        </p>
+                        
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="otpCode">6-Digit OTP</label>
+                            <input id="otpCode" name="otpCode" type="text" className="form-input"
+                                placeholder="123456" value={form.otpCode} maxLength="6"
+                                onChange={handleChange} required autoComplete="one-time-code" 
+                                style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.2rem' }} />
+                        </div>
 
-                    <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
-                        {isLoading ? 'Logging in…' : 'Log in'}
-                    </button>
-                </form>
+                        {error && <p className="form-error">{error}</p>}
 
-                <div className="auth-divider"><span>or continue with</span></div>
+                        <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
+                            {isLoading ? 'Verifying…' : 'Log In'}
+                        </button>
+                        
+                        <button type="button" className="btn btn-ghost w-full" onClick={() => setStep(1)} style={{ marginTop: '0.5rem' }}>
+                            Back
+                        </button>
+                    </form>
+                )}
 
-                <a href={`${import.meta.env.VITE_API_URL || '/api'}/auth/google`} className="btn btn-ghost w-full">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115z" />
-                        <path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.777L1.24 17.35C3.198 21.302 7.27 24 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987z" />
-                        <path fill="#4A90E2" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21z" />
-                        <path fill="#FBBC05" d="M5.277 14.314A7.18 7.18 0 0 1 4.909 12c0-.81.119-1.582.355-2.309L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.021z" />
-                    </svg>
-                    Sign in with Google
-                </a>
-
-                <p className="auth-footer">
+                <p className="auth-footer" style={{ marginTop: '1.5rem' }}>
                     Don't have an account? <Link to="/register">Sign up</Link>
                 </p>
             </div>

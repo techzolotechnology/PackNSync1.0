@@ -21,6 +21,12 @@ export const getTrips = async (req, res) => {
             where,
             include: {
                 organizer: { select: { id: true, name: true, avatarUrl: true } },
+                members: {
+                    where: { status: 'APPROVED' },
+                    take: 4,
+                    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+                    orderBy: { joinedAt: 'asc' },
+                },
                 _count: { select: { members: { where: { status: 'APPROVED' } } } },
             },
             orderBy: { createdAt: 'desc' },
@@ -44,8 +50,8 @@ export const getTripById = async (req, res) => {
         include: {
             organizer: { select: { id: true, name: true, avatarUrl: true, bio: true } },
             members: {
-                where: { status: 'APPROVED' },
                 include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+                orderBy: { joinedAt: 'asc' },
             },
             itineraryItems: { orderBy: [{ dayNumber: 'asc' }, { order: 'asc' }] },
             announcements: { orderBy: { createdAt: 'desc' }, take: 5 },
@@ -67,6 +73,7 @@ export const createTrip = async (req, res) => {
             endDate: new Date(endDate),
             maxParticipants: Number(maxParticipants) || 10,
             budgetEstimate: budgetEstimate ? Number(budgetEstimate) : null,
+            status: 'OPEN',
             organizerId: req.user.id,
         },
         include: { organizer: { select: { id: true, name: true, avatarUrl: true } } },
@@ -113,15 +120,29 @@ export const requestToJoin = async (req, res) => {
     const trip = await prisma.trip.findUnique({ where: { id: req.params.id } });
     if (!trip) throw new AppError('Trip not found.', 404);
     if (trip.organizerId === req.user.id) throw new AppError('Organizers cannot request to join.', 400);
+    if (!['OPEN', 'DRAFT'].includes(trip.status)) {
+        throw new AppError('This trip is not accepting new members.', 400);
+    }
+    if (trip.status === 'DRAFT') {
+        // Public draft trips can still be joined; promote to OPEN on first join interest
+        await prisma.trip.update({ where: { id: trip.id }, data: { status: 'OPEN' } });
+    }
 
     const existing = await prisma.tripMember.findUnique({
         where: { tripId_userId: { tripId: req.params.id, userId: req.user.id } },
     });
-    if (existing) throw new AppError(`You already have a ${existing.status.toLowerCase()} membership.`, 409);
+    if (existing && existing.status !== 'REJECTED') {
+        throw new AppError(`You already have a ${existing.status.toLowerCase()} membership.`, 409);
+    }
 
-    const member = await prisma.tripMember.create({
-        data: { tripId: req.params.id, userId: req.user.id, status: 'PENDING' },
-    });
+    const member = existing
+        ? await prisma.tripMember.update({
+            where: { tripId_userId: { tripId: req.params.id, userId: req.user.id } },
+            data: { status: 'PENDING' },
+        })
+        : await prisma.tripMember.create({
+            data: { tripId: req.params.id, userId: req.user.id, status: 'PENDING' },
+        });
 
     // Notify organizer via Socket.IO
     const io = req.app.get('io');

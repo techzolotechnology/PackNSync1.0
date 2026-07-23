@@ -5,18 +5,32 @@ import toast from 'react-hot-toast';
 import './AuthPages.css';
 
 export default function RegisterPage() {
-    const { register, isLoading } = useAuthStore();
+    const { requestOtp, verifyOtp, isLoading } = useAuthStore();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ name: '', email: '', password: '' });
+    const [step, setStep] = useState(1);
+    const [form, setForm] = useState({ name: '', contact: '', otpCode: '' });
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleRequestOtp = async (e) => {
         e.preventDefault();
         setError('');
-        if (form.password.length < 8) {
-            return setError('Password must be at least 8 characters.');
+        if (!form.name || !form.contact) return setError('Name and Contact are required');
+        
+        const result = await requestOtp({ name: form.name, contact: form.contact, isRegister: true });
+        if (result.success) {
+            toast.success('OTP Sent! Check your email or phone.');
+            setStep(2);
+        } else {
+            setError(result.message);
         }
-        const result = await register(form);
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        setError('');
+        if (!form.otpCode || form.otpCode.length !== 6) return setError('Enter a valid 6-digit OTP');
+
+        const result = await verifyOtp({ contact: form.contact, otpCode: form.otpCode });
         if (result.success) {
             toast.success('Account created! Let\'s explore 🌍');
             navigate('/trips');
@@ -37,36 +51,55 @@ export default function RegisterPage() {
                     <p>Join PackAndSync and start planning</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="name">Full Name</label>
-                        <input id="name" name="name" type="text" className="form-input"
-                            placeholder="Your name" value={form.name}
-                            onChange={handleChange} required autoComplete="name" />
-                    </div>
+                {step === 1 ? (
+                    <form onSubmit={handleRequestOtp} className="auth-form">
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="name">Full Name</label>
+                            <input id="name" name="name" type="text" className="form-input"
+                                placeholder="Your name" value={form.name}
+                                onChange={handleChange} required autoComplete="name" />
+                        </div>
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="email">Email</label>
-                        <input id="email" name="email" type="email" className="form-input"
-                            placeholder="you@packandsync.com" value={form.email}
-                            onChange={handleChange} required autoComplete="email" />
-                    </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="contact">Email or Mobile Number</label>
+                            <input id="contact" name="contact" type="text" className="form-input"
+                                placeholder="you@example.com or +919876543210" value={form.contact}
+                                onChange={handleChange} required autoComplete="username" />
+                        </div>
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="password">Password</label>
-                        <input id="password" name="password" type="password" className="form-input"
-                            placeholder="Min. 8 characters" value={form.password}
-                            onChange={handleChange} required autoComplete="new-password" />
-                    </div>
+                        {error && <p className="form-error">{error}</p>}
 
-                    {error && <p className="form-error">{error}</p>}
+                        <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
+                            {isLoading ? 'Sending OTP…' : 'Get OTP'}
+                        </button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerifyOtp} className="auth-form">
+                        <p style={{ textAlign: 'center', fontSize: '0.9rem', marginBottom: '1rem', color: '#6b7280' }}>
+                            We sent a 6-digit code to <strong>{form.contact}</strong>
+                        </p>
+                        
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="otpCode">6-Digit OTP</label>
+                            <input id="otpCode" name="otpCode" type="text" className="form-input"
+                                placeholder="123456" value={form.otpCode} maxLength="6"
+                                onChange={handleChange} required autoComplete="one-time-code" 
+                                style={{ textAlign: 'center', letterSpacing: '0.5rem', fontSize: '1.2rem' }} />
+                        </div>
 
-                    <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
-                        {isLoading ? 'Creating account…' : 'Create Account'}
-                    </button>
-                </form>
+                        {error && <p className="form-error">{error}</p>}
 
-                <p className="auth-footer">
+                        <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
+                            {isLoading ? 'Verifying…' : 'Create Account'}
+                        </button>
+                        
+                        <button type="button" className="btn btn-ghost w-full" onClick={() => setStep(1)} style={{ marginTop: '0.5rem' }}>
+                            Back
+                        </button>
+                    </form>
+                )}
+
+                <p className="auth-footer" style={{ marginTop: '1.5rem' }}>
                     Already have an account? <Link to="/login">Log in</Link>
                 </p>
             </div>

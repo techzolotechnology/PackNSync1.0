@@ -13,6 +13,8 @@ const SERVICE_META = {
 export default function ServiceLoginModal({ isOpen, onClose, onConnected, linkedProviders }) {
     const [providers, setProviders] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [uberRedirectUri, setUberRedirectUri] = useState('');
+    const [uberScopeHelp, setUberScopeHelp] = useState('');
 
     useEffect(() => {
         if (!isOpen) return;
@@ -20,8 +22,13 @@ export default function ServiceLoginModal({ isOpen, onClose, onConnected, linked
         const loadProviders = async () => {
             setIsLoading(true);
             try {
-                const res = await ridesApi.getProviders();
+                const [res, setupRes] = await Promise.all([
+                    ridesApi.getProviders(),
+                    ridesApi.getUberSetup().catch(() => null),
+                ]);
                 setProviders(res.data.data);
+                setUberRedirectUri(setupRes?.data?.data?.redirectUri || '');
+                setUberScopeHelp(setupRes?.data?.data?.invalidScopeHelp || '');
             } catch (err) {
                 toast.error(err.response?.data?.message || 'Unable to load provider status.');
             } finally {
@@ -40,7 +47,8 @@ export default function ServiceLoginModal({ isOpen, onClose, onConnected, linked
                 onClose();
             }
             if (event.data?.type === 'UBER_FAILED') {
-                toast.error('Uber connection failed.');
+                const reason = event.data.reason || 'Check Uber Dashboard redirect URI and try again.';
+                toast.error(`Uber failed: ${reason}`, { duration: 6000 });
             }
         };
 
@@ -79,6 +87,14 @@ export default function ServiceLoginModal({ isOpen, onClose, onConnected, linked
                     <p className="modal-subtitle">
                         Provider app-password and OTP login are not supported. Real comparison and booking require official provider credentials and approved API access.
                     </p>
+                    {uberRedirectUri && (
+                        <p className="uber-setup-hint">
+                            <strong>Uber setup</strong><br />
+                            1. Redirect URI: <code>{uberRedirectUri}</code><br />
+                            2. In Uber Dashboard → Setup → enable scopes for your app<br />
+                            {uberScopeHelp && <span>{uberScopeHelp}</span>}
+                        </p>
+                    )}
 
                     <div className="service-list">
                         {isLoading && providers.length === 0 ? (

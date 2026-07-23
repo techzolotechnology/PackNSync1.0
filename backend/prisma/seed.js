@@ -1,13 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('🌱 Seeding PackAndSync database...');
 
-    // Clean existing data (Optional but recommended to ensure a fresh start)
-    // Be careful with this in production, but here it seems requested
     console.log('🗑️ Clearing existing data...');
     await prisma.policyAcceptance.deleteMany();
     await prisma.verification.deleteMany();
@@ -28,20 +25,17 @@ async function main() {
     await prisma.payment.deleteMany();
     await prisma.user.deleteMany();
 
-    // Create primary admin user
-    const adminPassword = await bcrypt.hash('Kartik@@Gauttam2026', 12);
-    const admin = await prisma.user.create({
+    await prisma.user.create({
         data: {
             name: 'Kartik Gauttam',
             email: 'kartikguatttam@packandsync.com',
-            passwordHash: adminPassword,
             role: 'ADMIN',
             bio: 'Chief Executive Administrator of PackAndSync.',
         },
     });
 
     console.log('✅ PackAndSync setup complete!');
-    console.log(`   Admin: Kartikguatttam@packandsync.com / Kartik@@Gauttam2026`);
+    console.log('   Admin: kartikguatttam@packandsync.com — log in via OTP');
 }
 
 main()

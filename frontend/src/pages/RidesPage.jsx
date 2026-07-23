@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import './RidesPage.css';
-import { ridesApi } from '../api/index.js';
+import { ridesApi, verificationsApi } from '../api/index.js';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
 import ServiceLoginModal from '../components/ServiceLoginModal.jsx';
+import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import { useAuthStore } from '../store/authStore.js';
+import { reverseGeocode } from '../utils/geocode.js';
+import { PROVIDER_DEEP_LINKS, openProviderApp } from '../utils/providerLinks.js';
 
 export default function RidesPage() {
     const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [pickup, setPickup] = useState('');
     const [dropoff, setDropoff] = useState('');
     const [pickupCoords, setPickupCoords] = useState(null);
@@ -16,22 +21,45 @@ export default function RidesPage() {
     const [type, setType] = useState('LOCAL');
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [gpsLoading, setGpsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [linkedProviders, setLinkedProviders] = useState([]);
     const [providerMessage, setProviderMessage] = useState('');
+    const [providers, setProviders] = useState([]);
+    const [termsOpen, setTermsOpen] = useState(false);
+    const [termsLoading, setTermsLoading] = useState(false);
+    const [pendingBook, setPendingBook] = useState(null);
+    const [showProviderFallback, setShowProviderFallback] = useState(false);
+    const uberErrorShown = useRef(false);
+
+    const refreshLinkedAccounts = async () => {
+        try {
+            const res = await ridesApi.getLinkedAccounts();
+            setLinkedProviders(res.data.data.filter((a) => a.isConnected).map((a) => a.provider));
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     useEffect(() => {
-        const fetchLinkedAccounts = async () => {
-            try {
-                const res = await ridesApi.getLinkedAccounts();
-                setLinkedProviders(res.data.data.filter((a) => a.isConnected).map((a) => a.provider));
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        if (user) fetchLinkedAccounts();
+        if (user) refreshLinkedAccounts();
     }, [user]);
+
+    useEffect(() => {
+        ridesApi.getProviders()
+            .then((res) => setProviders(res.data.data || []))
+            .catch(() => {});
+    }, []);
+
+    useEffect(() => {
+        const err = searchParams.get('error');
+        const reason = searchParams.get('reason');
+        if (err === 'uber_auth_failed' && !uberErrorShown.current) {
+            uberErrorShown.current = true;
+            toast.error(reason ? `Uber failed: ${decodeURIComponent(reason)}` : 'Uber connection failed. Check redirect URI in Uber Dashboard.');
+            navigate('/rides', { replace: true });
+        }
+    }, [searchParams, navigate]);
 
     const handleSearch = async (e) => {
         if (e) e.preventDefault();
@@ -42,22 +70,22 @@ export default function RidesPage() {
         }
 
         if (!pickup || !dropoff) {
-            alert('Please enter pickup and dropoff locations.');
+            toast.error('Please enter pickup and dropoff locations.');
             return;
         }
 
         if (!pickupCoords || !dropoffCoords) {
-            alert('Real comparison requires map coordinates. Select locations from a configured Places autocomplete before comparing.');
+            toast.error('Select both locations from the dropdown suggestions (or use Current for pickup).');
             return;
         }
 
-        if (linkedProviders.length === 0) {
-            setIsModalOpen(true);
-            return;
+        if (!linkedProviders.includes('UBER') && providers.find((p) => p.provider === 'UBER')?.isConfigured) {
+            toast('Connect Uber for live Uber fares. Ola/Rapido/Zoomcar need API keys when you add them.', { icon: 'ℹ️' });
         }
 
         setLoading(true);
         setProviderMessage('');
+        setShowProviderFallback(false);
         try {
             const res = await ridesApi.compare({
                 pickup,
@@ -68,16 +96,27 @@ export default function RidesPage() {
                 dropoffLng: dropoffCoords.lng,
                 type,
             });
-            setOptions(res.data.data);
+            const sorted = [...res.data.data].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+            setOptions(sorted);
+            if (sorted.length === 0) {
+                setProviderMessage('No fares returned from live APIs. Open a provider app below to book directly.');
+                setShowProviderFallback(true);
+            }
         } catch (err) {
             setOptions([]);
-            setProviderMessage(err.response?.data?.message || 'Real provider comparison failed.');
+            setProviderMessage(err.response?.data?.message || 'Ride comparison failed. Use provider apps as a fallback.');
+            setShowProviderFallback(true);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleBook = async (option) => {
+    const handleOpenProvider = (providerId) => {
+        const opened = openProviderApp(providerId, pickup, dropoff);
+        if (!opened) toast.error('Could not open provider link.');
+    };
+
+    const completeBook = async (option) => {
         try {
             await ridesApi.book({
                 provider: option.provider,
@@ -87,26 +126,73 @@ export default function RidesPage() {
                 dropoffLocation: dropoff,
                 fare: option.price,
                 currency: option.currency,
-                type: option.type,
+                type,
             });
-            alert(`Booking requested for ${option.provider} ${option.vehicleType}.`);
+            toast.success(`Booking requested for ${option.provider} ${option.vehicleType}.`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Real booking failed.');
+            toast.error(err.response?.data?.message || 'Booking failed.');
+        }
+    };
+
+    const handleBook = async (option) => {
+        try {
+            const policyRes = await verificationsApi.getPolicyStatus();
+            if (!policyRes.data.data?.status?.RIDE_TERMS) {
+                setPendingBook(option);
+                setTermsOpen(true);
+                return;
+            }
+            await completeBook(option);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Unable to start booking.');
+        }
+    };
+
+    const handleTermsAccept = async () => {
+        setTermsLoading(true);
+        try {
+            await verificationsApi.acceptPolicy('RIDE_TERMS');
+            setTermsOpen(false);
+            if (pendingBook) {
+                await completeBook(pendingBook);
+                setPendingBook(null);
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not save acceptance.');
+        } finally {
+            setTermsLoading(false);
         }
     };
 
     const handleGPS = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                setPickup('Current Location');
-                setPickupCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            });
+        if (!navigator.geolocation) {
+            toast.error('Geolocation is not supported in this browser.');
+            return;
         }
+
+        setGpsLoading(true);
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setPickupCoords(coords);
+                const address = await reverseGeocode(coords.lat, coords.lng);
+                setPickup(address || `Current location (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`);
+                setGpsLoading(false);
+                if (!address) toast('GPS set. Add Google Maps key for address name.', { icon: '📍' });
+            },
+            () => {
+                setGpsLoading(false);
+                toast.error('Could not get your location. Allow location permission and try again.');
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+        );
     };
 
     const handleConnected = (provider) => {
-        setLinkedProviders((prev) => prev.includes(provider) ? prev : [...prev, provider]);
+        setLinkedProviders((prev) => (prev.includes(provider) ? prev : [...prev, provider]));
     };
+
+    const coordsReady = pickupCoords && dropoffCoords;
 
     return (
         <div className="rides-container">
@@ -114,10 +200,10 @@ export default function RidesPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div>
                         <h1>Find Your Next Ride</h1>
-                        <p>Real provider comparison for Uber, Ola, Rapido, and Zoomcar after official API setup.</p>
+                        <p>Compare fares from Uber, Ola, Rapido, and Zoomcar as you connect each provider.</p>
                     </div>
-                    <button className="btn btn-ghost btn-sm" onClick={() => user ? setIsModalOpen(true) : navigate('/login')}>
-                        {linkedProviders.length > 0 ? 'Manage Providers' : 'Connect Providers'}
+                    <button className="btn btn-ghost btn-sm" onClick={() => (user ? setIsModalOpen(true) : navigate('/login'))}>
+                        Connect Providers
                     </button>
                 </div>
             </div>
@@ -126,7 +212,14 @@ export default function RidesPage() {
                 <div className="input-group">
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <label>Pickup Location</label>
-                        <button type="button" onClick={handleGPS} style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.8rem', cursor: 'pointer' }}>📍 Current</button>
+                        <button
+                            type="button"
+                            onClick={handleGPS}
+                            disabled={gpsLoading}
+                            style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.8rem', cursor: 'pointer' }}
+                        >
+                            {gpsLoading ? 'Locating…' : '📍 Current'}
+                        </button>
                     </div>
                     <LocationAutocomplete
                         placeholder="e.g. Airport, Bangalore"
@@ -155,9 +248,19 @@ export default function RidesPage() {
                     <select value={type} onChange={(e) => setType(e.target.value)}>
                         <option value="LOCAL">Local</option>
                         <option value="INTERCITY">Inter-City</option>
-                        <option value="OUTERCITY">Outer-City / Self-Drive</option>
+                        <option value="OUTERCITY">Outer-City</option>
                     </select>
                 </div>
+                {providers.some((p) => !p.isConfigured) && (
+                    <p style={{ fontSize: '0.85rem', color: '#b45309', marginBottom: '0.5rem' }}>
+                        Some providers need API keys in backend/.env (Uber, Ola, Rapido, Zoomcar).
+                    </p>
+                )}
+                {coordsReady && !linkedProviders.includes('UBER') && providers.find((p) => p.provider === 'UBER')?.isConfigured && (
+                    <p style={{ fontSize: '0.85rem', color: '#6366f1', marginBottom: '0.5rem' }}>
+                        Locations ready — connect Uber for live Uber fares.
+                    </p>
+                )}
                 <button type="submit" className="search-btn" disabled={loading}>
                     {loading ? 'Searching...' : 'Compare Prices'}
                 </button>
@@ -166,6 +269,26 @@ export default function RidesPage() {
             {providerMessage && (
                 <div className="provider-message">
                     {providerMessage}
+                </div>
+            )}
+
+            {showProviderFallback && pickup && dropoff && (
+                <div className="provider-fallback">
+                    <h3>Book in provider app</h3>
+                    <p>Live fare APIs may be unavailable. Open Uber, Ola, Rapido, or Zoomcar with your route pre-filled.</p>
+                    <div className="provider-fallback-grid">
+                        {PROVIDER_DEEP_LINKS.map((p) => (
+                            <button
+                                key={p.id}
+                                type="button"
+                                className="provider-fallback-btn"
+                                style={{ background: p.color, color: p.textDark ? '#111' : '#fff' }}
+                                onClick={() => handleOpenProvider(p.id)}
+                            >
+                                Open {p.name}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -184,11 +307,19 @@ export default function RidesPage() {
                                     </div>
                                 </div>
                                 <div className="price-info">
-                                    <div className="amount">{opt.price ? `₹${opt.price}` : 'Provider fare'}</div>
-                                    <label style={{ fontSize: '0.75rem', display: 'block', marginBottom: '0.5rem' }}>
-                                        <input type="checkbox" required /> I accept the <a href="#">Terms & Conditions</a>
-                                    </label>
-                                    <button className="book-btn" onClick={() => handleBook(opt)}>Book</button>
+                                    <div className="amount">
+                                        {opt.price != null ? `${opt.currency === 'INR' ? '₹' : opt.currency + ' '}${opt.price}` : 'Fare on request'}
+                                    </div>
+                                    <div className="ride-card-actions">
+                                        <button className="book-btn" onClick={() => handleBook(opt)}>Book</button>
+                                        <button
+                                            type="button"
+                                            className="open-app-btn"
+                                            onClick={() => handleOpenProvider(opt.provider.toLowerCase())}
+                                        >
+                                            Open app
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -196,7 +327,9 @@ export default function RidesPage() {
                 ) : !loading && (
                     <div className="empty-state">
                         <img src="https://cdni.iconscout.com/illustration/premium/thumb/car-searching-illustration-download-in-svg-png-gif-file-formats--vehicle-magnifying-glass-tax-security-finance-pack-business-illustrations-4796328.png" alt="Search" />
-                        <p>{linkedProviders.length === 0 ? 'Connect a real provider account after official API setup.' : 'Enter mapped pickup and dropoff locations to see real provider options.'}</p>
+                        <p>
+                            Connect providers, pick locations from suggestions, then compare prices across Uber, Ola, Rapido, and Zoomcar.
+                        </p>
                     </div>
                 )}
             </div>
@@ -206,6 +339,14 @@ export default function RidesPage() {
                 onClose={() => setIsModalOpen(false)}
                 onConnected={handleConnected}
                 linkedProviders={linkedProviders}
+            />
+
+            <TermsAcceptanceModal
+                isOpen={termsOpen}
+                policyType="RIDE_TERMS"
+                onAccept={handleTermsAccept}
+                onClose={() => { setTermsOpen(false); setPendingBook(null); }}
+                loading={termsLoading}
             />
         </div>
     );

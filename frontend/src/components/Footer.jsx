@@ -9,15 +9,15 @@ const Footer = () => {
                 <div className="footer-grid">
                     <div className="footer-brand">
                         <Link to="/" className="brand-link font-display">PackAndSync</Link>
-                        <p>The all-in-one platform for planning, splitting expenses, and enjoying group travel.</p>
+                        <p>Travel together with shared trips and split costs — or rent a self-drive car from local hosts.</p>
                     </div>
 
                     <div className="footer-links-group">
                         <h4>Platform</h4>
                         <ul>
-                            <li><Link to="/trips">All Trips</Link></li>
-                            <li><Link to="/rides">Rides</Link></li>
-                            <li><Link to="/rentals">Rentals</Link></li>
+                            <li><Link to="/trips">Travel Together</Link></li>
+                            <li><Link to="/rentals">Car on Rent</Link></li>
+                            <li><Link to="/trips/create">Post a Trip</Link></li>
                         </ul>
                     </div>
 

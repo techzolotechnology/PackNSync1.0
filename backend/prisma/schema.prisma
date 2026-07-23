@@ -63,17 +63,24 @@ enum NotificationType {
 // ─────────────────────────────────────────
 
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  name           String
-  passwordHash   String?
-  googleId       String?   @unique
-  avatarUrl      String?
-  bio            String?
-  role           Role      @default(USER)
-  refreshToken   String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                String    @id @default(uuid())
+  email             String?   @unique
+  phoneNumber       String?   @unique
+  name              String
+  otpCode           String?
+  otpExpiresAt      DateTime?
+  avatarUrl         String?
+  bio               String?
+  city              String?
+  languages         String[]  @default([])
+  interests         String[]  @default([])
+  emergencyContact  String?
+  drivingYears      Int?
+  travelStyle       String?
+  role              Role      @default(USER)
+  refreshToken      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
   organizedTrips   Trip[]         @relation("Organizer")

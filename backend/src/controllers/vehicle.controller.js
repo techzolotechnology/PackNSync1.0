@@ -1,8 +1,17 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
+import {
+    assertFullyVerified,
+    assertPolicyAccepted,
+    assertVehicleVerified,
+} from '../utils/verificationHelpers.js';
+import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
 
 // POST /api/vehicles
 export const registerVehicle = async (req, res) => {
+    await assertFullyVerified(req.user.id);
+    await assertPolicyAccepted(req.user.id, 'LISTING_TERMS');
+
     const { make, model, year, type, licensePlate, seats, fuelType, transmission, images, rcUrl } = req.body;
 
     const existing = await prisma.vehicle.findUnique({ where: { licensePlate } });
@@ -31,7 +40,29 @@ export const registerVehicle = async (req, res) => {
 export const getMyVehicles = async (req, res) => {
     const vehicles = await prisma.vehicle.findMany({
         where: { ownerId: req.user.id },
-        include: { _count: { select: { listings: true } } },
+        include: {
+            _count: { select: { listings: true } },
+            listings: {
+                where: { isActive: true },
+                select: {
+                    id: true,
+                    pricePerDay: true,
+                    location: true,
+                    isActive: true,
+                    bookings: {
+                        where: {
+                            status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
+                            endDate: { gte: new Date() },
+                        },
+                        select: { id: true, status: true },
+                        take: 1,
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+            },
+        },
+        orderBy: { createdAt: 'desc' },
     });
     res.json({ success: true, data: vehicles });
 };
@@ -59,6 +90,26 @@ export const updateVehicle = async (req, res) => {
         data: req.body,
     });
     res.json({ success: true, data: updated });
+};
+
+// POST /api/vehicles/upload-image
+export const uploadVehicleImage = async (req, res) => {
+    if (!req.file) throw new AppError('Image file is required.', 400);
+
+    let url = `/uploads/vehicles/${req.file.filename}`;
+    if (isCloudinaryConfigured()) {
+        try {
+            const uploaded = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'packandsync/vehicles',
+                resource_type: 'image',
+            });
+            url = uploaded.secure_url;
+        } catch (err) {
+            console.warn('[Vehicle upload] Cloudinary failed, using local file:', err.message);
+        }
+    }
+
+    res.json({ success: true, data: { url } });
 };
 
 // DELETE /api/vehicles/:id

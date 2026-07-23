@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import {
+    listVerifications,
+    approveVerification,
+    rejectVerification,
+    listVehiclesForReview,
+    verifyVehicle,
+} from '../controllers/adminVerification.controller.js';
 
 export const adminRouter = Router();
 
@@ -9,10 +16,13 @@ adminRouter.use(authenticate, authorize('ADMIN'));
 
 // GET /api/admin/stats
 adminRouter.get('/stats', async (_req, res) => {
-    const [userCount, tripCount, paymentTotal] = await Promise.all([
+    const [userCount, tripCount, paymentTotal, pendingVerifications, rideCount, rentalCount] = await Promise.all([
         prisma.user.count(),
         prisma.trip.count(),
         prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'succeeded' } }),
+        prisma.verification.count({ where: { status: 'PENDING' } }),
+        prisma.rideBooking.count(),
+        prisma.rentalBooking.count(),
     ]);
 
     res.json({
@@ -21,6 +31,9 @@ adminRouter.get('/stats', async (_req, res) => {
             users: userCount,
             trips: tripCount,
             revenue: paymentTotal._sum.amount || 0,
+            pendingVerifications,
+            rides: rideCount,
+            rentals: rentalCount,
         },
     });
 });
@@ -84,3 +97,10 @@ adminRouter.delete('/trips/:id', async (req, res) => {
     await prisma.trip.delete({ where: { id: req.params.id } });
     res.json({ success: true, message: 'Trip deleted.' });
 });
+
+// KYC review
+adminRouter.get('/verifications', listVerifications);
+adminRouter.put('/verifications/:id/approve', approveVerification);
+adminRouter.put('/verifications/:id/reject', rejectVerification);
+adminRouter.get('/vehicles', listVehiclesForReview);
+adminRouter.put('/vehicles/:id/verify', verifyVehicle);

@@ -1,73 +1,180 @@
 import React, { useEffect, useRef, useState } from 'react';
+import './LocationAutocomplete.css';
 
-const LocationAutocomplete = ({ placeholder, onSelect, value, onChange }) => {
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
+
+let mapsLoaderPromise = null;
+
+function loadGoogleMaps() {
+    if (!API_KEY) return Promise.resolve(null);
+    if (window.google?.maps?.importLibrary) return Promise.resolve(window.google.maps);
+    if (mapsLoaderPromise) return mapsLoaderPromise;
+
+    mapsLoaderPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&loading=async`;
+        script.async = true;
+        script.onload = () => resolve(window.google?.maps || null);
+        script.onerror = () => reject(new Error('Failed to load Google Maps'));
+        document.head.appendChild(script);
+    });
+
+    return mapsLoaderPromise;
+}
+
+export default function LocationAutocomplete({ placeholder, onSelect, value, onChange }) {
     const [suggestions, setSuggestions] = useState([]);
     const [show, setShow] = useState(false);
+    const [ready, setReady] = useState(false);
+    const legacyServiceRef = useRef(null);
+    const legacyPlacesRef = useRef(null);
+    const useNewApiRef = useRef(true);
 
-    // For a production app, these should be fetched from Google Places API or a database
-    const cities = [];
+    useEffect(() => {
+        if (!API_KEY) return;
 
-    const handleInput = (e) => {
+        loadGoogleMaps()
+            .then(async (maps) => {
+                if (!maps) return;
+                try {
+                    await maps.importLibrary('places');
+                    useNewApiRef.current = true;
+                } catch {
+                    useNewApiRef.current = false;
+                    if (maps.places) {
+                        legacyServiceRef.current = new maps.places.AutocompleteService();
+                        legacyPlacesRef.current = new maps.places.PlacesService(document.createElement('div'));
+                    }
+                }
+                setReady(true);
+            })
+            .catch((err) => console.warn('[LocationAutocomplete]', err.message));
+    }, []);
+
+    const fetchNewSuggestions = async (input) => {
+        const { AutocompleteSuggestion } = await window.google.maps.importLibrary('places');
+        const { suggestions: results } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input,
+            includedRegionCodes: ['in'],
+        });
+        return (results || []).map((item) => ({
+            place_id: item.placePrediction?.placeId,
+            description: item.placePrediction?.text?.text || item.placePrediction?.structuredFormat?.mainText?.text || '',
+        })).filter((s) => s.place_id && s.description);
+    };
+
+    const fetchLegacySuggestions = (input) => new Promise((resolve) => {
+        if (!legacyServiceRef.current) return resolve([]);
+        legacyServiceRef.current.getPlacePredictions({ input }, (predictions, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions?.length) {
+                resolve(predictions);
+            } else {
+                resolve([]);
+            }
+        });
+    });
+
+    const resolvePlaceCoords = async (prediction) => {
+        const label = prediction.description;
+
+        if (useNewApiRef.current) {
+            try {
+                const { Place } = await window.google.maps.importLibrary('places');
+                const place = new Place({ id: prediction.place_id });
+                await place.fetchFields({ fields: ['formattedAddress', 'location'] });
+                if (place.location) {
+                    return {
+                        label: place.formattedAddress || label,
+                        lat: place.location.lat(),
+                        lng: place.location.lng(),
+                    };
+                }
+            } catch (err) {
+                console.warn('[LocationAutocomplete] Place details failed:', err.message);
+            }
+        } else if (legacyPlacesRef.current) {
+            return new Promise((resolve) => {
+                legacyPlacesRef.current.getDetails(
+                    { placeId: prediction.place_id, fields: ['geometry', 'formatted_address'] },
+                    (place, status) => {
+                        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+                            resolve({
+                                label: place.formatted_address || label,
+                                lat: place.geometry.location.lat(),
+                                lng: place.geometry.location.lng(),
+                            });
+                        } else {
+                            resolve({ label, lat: null, lng: null });
+                        }
+                    }
+                );
+            });
+        }
+
+        return { label, lat: null, lng: null };
+    };
+
+    const handleInput = async (e) => {
         const val = e.target.value;
         onChange(val);
-        if (val.length > 2) {
-            const filtered = cities.filter(c => c.toLowerCase().includes(val.toLowerCase()));
-            setSuggestions(filtered);
-            setShow(true);
-        } else {
+
+        if (val.length <= 2 || !ready) {
+            setSuggestions([]);
+            setShow(false);
+            return;
+        }
+
+        try {
+            let results = [];
+            if (useNewApiRef.current) {
+                results = await fetchNewSuggestions(val);
+            } else {
+                results = await fetchLegacySuggestions(val);
+            }
+            setSuggestions(results);
+            setShow(results.length > 0);
+        } catch (err) {
+            console.warn('[LocationAutocomplete] suggestions failed:', err.message);
+            setSuggestions([]);
             setShow(false);
         }
     };
 
-    const handleSelect = (city) => {
-        onSelect(city);
+    const handleSelect = async (prediction) => {
+        onChange(prediction.description);
         setShow(false);
+        const location = await resolvePlaceCoords(prediction);
+        onSelect(location);
     };
 
     return (
-        <div style={{ position: 'relative', width: '100%' }}>
+        <div className="location-autocomplete">
             <input
                 type="text"
+                className="location-autocomplete-input"
                 placeholder={placeholder}
                 value={value}
                 onChange={handleInput}
                 onBlur={() => setTimeout(() => setShow(false), 200)}
-                style={{ width: '100%' }}
             />
+            {!API_KEY && value.length > 2 && (
+                <p className="location-autocomplete-hint">
+                    Add VITE_GOOGLE_MAPS_API_KEY in frontend/.env for address suggestions
+                </p>
+            )}
             {show && suggestions.length > 0 && (
-                <ul style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    background: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    listStyle: 'none',
-                    padding: '0.5rem 0',
-                    margin: '0.5rem 0 0',
-                    zIndex: 1000,
-                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
-                }}>
-                    {suggestions.map((s, i) => (
+                <ul className="location-suggestions">
+                    {suggestions.map((s) => (
                         <li
-                            key={i}
-                            onClick={() => handleSelect(s)}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                cursor: 'pointer',
-                                transition: 'background 0.2s'
-                            }}
-                            onMouseOver={(e) => e.target.style.background = '#f3f4f6'}
-                            onMouseOut={(e) => e.target.style.background = 'transparent'}
+                            key={s.place_id}
+                            className="location-suggestion-item"
+                            onMouseDown={() => handleSelect(s)}
                         >
-                            {s}
+                            {s.description}
                         </li>
                     ))}
                 </ul>
             )}
         </div>
     );
-};
-
-export default LocationAutocomplete;
+}

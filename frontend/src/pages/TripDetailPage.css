@@ -242,6 +242,109 @@
     line-height: 1.7;
 }
 
+.pending-member-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.pending-member-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.pending-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.expense-form {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr 0.8fr auto;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.expense-form input,
+.expense-form select {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    background: var(--clr-bg-800);
+    color: var(--clr-text-primary);
+}
+
+.expense-hint {
+    margin-bottom: 1.25rem;
+}
+
+.balances-card {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.balances-card h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+}
+
+.balances-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.balances-list li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.92rem;
+}
+
+.bal-pos { color: #16a34a; }
+.bal-neg { color: #dc2626; }
+
+.expense-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    align-items: center;
+}
+
+.expense-item-side {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: flex-end;
+}
+
+.join-banner {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.join-banner .join-trip-btn {
+    width: auto;
+    min-width: 160px;
+    flex-shrink: 0;
+}
+
 @media (max-width: 900px) {
     .trip-detail-body {
         grid-template-columns: 1fr;
@@ -256,5 +359,18 @@
     .trip-detail-main {
         grid-column: 1;
         grid-row: 1;
+    }
+
+    .expense-form {
+        grid-template-columns: 1fr;
+    }
+
+    .join-banner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .join-banner .join-trip-btn {
+        width: 100%;
     }
 }

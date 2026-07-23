@@ -16,3 +16,4 @@ desktop/release/
 .DS_Store
 coverage/
 .nyc_output/
+backend/uploads/

@@ -1,8 +1,20 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
+import {
+    assertFullyVerified,
+    assertPolicyAccepted,
+    assertVehicleVerified,
+} from '../utils/verificationHelpers.js';
+import {
+    sendBookingConfirmationEmail,
+    rentalBookingEmailHtml,
+} from '../utils/bookingEmail.js';
 
 // POST /api/rentals/listings
 export const createListing = async (req, res) => {
+    await assertFullyVerified(req.user.id);
+    await assertPolicyAccepted(req.user.id, 'LISTING_TERMS');
+
     const { vehicleId, pricePerDay, location, description, availableFrom, availableTo } = req.body;
     const start = new Date(availableFrom);
     const end = new Date(availableTo);
@@ -17,6 +29,7 @@ export const createListing = async (req, res) => {
     const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
     if (!vehicle) throw new AppError('Vehicle not found.', 404);
     if (vehicle.ownerId !== req.user.id) throw new AppError('Only the vehicle owner can create a listing.', 403);
+    await assertVehicleVerified(vehicle);
 
     const listing = await prisma.rentalListing.create({
         data: {
@@ -82,6 +95,9 @@ export const getListingById = async (req, res) => {
 
 // POST /api/rentals/bookings
 export const bookRental = async (req, res) => {
+    await assertFullyVerified(req.user.id);
+    await assertPolicyAccepted(req.user.id, 'RENTAL_TERMS');
+
     const { listingId, startDate, endDate } = req.body;
 
     const listing = await prisma.rentalListing.findUnique({
@@ -132,6 +148,48 @@ export const bookRental = async (req, res) => {
         listingTitle: `${listing.vehicle.make} ${listing.vehicle.model}`,
         renterName: req.user.name,
     });
+
+    const vehicleLabel = `${listing.vehicle.make} ${listing.vehicle.model}`;
+    const dateFmt = (d) => new Date(d).toLocaleDateString('en-IN');
+    const emailFields = {
+        vehicleLabel,
+        location: listing.location,
+        startDate: dateFmt(start),
+        endDate: dateFmt(end),
+        totalPrice,
+    };
+
+    try {
+        const [renter, host] = await Promise.all([
+            prisma.user.findUnique({ where: { id: req.user.id }, select: { email: true, name: true } }),
+            prisma.user.findUnique({ where: { id: listing.hostId }, select: { email: true, name: true } }),
+        ]);
+
+        await Promise.all([
+            sendBookingConfirmationEmail({
+                to: renter?.email,
+                subject: `Rental request sent — ${vehicleLabel}`,
+                html: rentalBookingEmailHtml({
+                    ...emailFields,
+                    renterName: renter?.name || req.user.name,
+                    hostName: host?.name || 'Host',
+                    isHost: false,
+                }),
+            }),
+            sendBookingConfirmationEmail({
+                to: host?.email,
+                subject: `New rental request — ${vehicleLabel}`,
+                html: rentalBookingEmailHtml({
+                    ...emailFields,
+                    renterName: renter?.name || req.user.name,
+                    hostName: host?.name || 'Host',
+                    isHost: true,
+                }),
+            }),
+        ]);
+    } catch (err) {
+        console.error('[Rental booking email]', err.message);
+    }
 
     res.status(201).json({ success: true, data: booking });
 };

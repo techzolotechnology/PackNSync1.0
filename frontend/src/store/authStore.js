@@ -14,31 +14,29 @@ export const useAuthStore = create(
                 set({ user, accessToken });
             },
 
-            login: async (credentials) => {
+            requestOtp: async (data) => {
                 set({ isLoading: true });
                 try {
-                    const res = await authApi.login(credentials);
-                    const { user, accessToken } = res.data;
-                    localStorage.setItem('access_token', accessToken);
-                    set({ user, accessToken, isLoading: false });
+                    await authApi.requestOtp(data);
+                    set({ isLoading: false });
                     return { success: true };
                 } catch (err) {
                     set({ isLoading: false });
-                    return { success: false, message: err.response?.data?.message || 'Login failed.' };
+                    return { success: false, message: err.response?.data?.message || 'Failed to request OTP.' };
                 }
             },
 
-            register: async (data) => {
+            verifyOtp: async (data) => {
                 set({ isLoading: true });
                 try {
-                    const res = await authApi.register(data);
+                    const res = await authApi.verifyOtp(data);
                     const { user, accessToken } = res.data;
                     localStorage.setItem('access_token', accessToken);
                     set({ user, accessToken, isLoading: false });
                     return { success: true };
                 } catch (err) {
                     set({ isLoading: false });
-                    return { success: false, message: err.response?.data?.message || 'Registration failed.' };
+                    return { success: false, message: err.response?.data?.message || 'Invalid OTP.' };
                 }
             },
 
@@ -50,10 +48,13 @@ export const useAuthStore = create(
 
             fetchMe: async () => {
                 const token = localStorage.getItem('access_token');
-                if (!token) return;
+                if (!token) {
+                    set({ user: null, accessToken: null });
+                    return;
+                }
                 try {
                     const res = await authApi.me();
-                    set({ user: res.data.user });
+                    set({ user: res.data.user, accessToken: token });
                 } catch {
                     localStorage.removeItem('access_token');
                     set({ user: null, accessToken: null });

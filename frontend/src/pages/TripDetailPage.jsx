@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { tripsApi } from '../api/index.js';
+import { tripsApi, expensesApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -16,28 +16,143 @@ export default function TripDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isJoining, setIsJoining] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
+    const [expenses, setExpenses] = useState([]);
+    const [balances, setBalances] = useState({});
+    const [expenseForm, setExpenseForm] = useState({ title: '', amount: '', category: 'OTHER' });
+    const [savingExpense, setSavingExpense] = useState(false);
+
+    const refreshTrip = async () => {
+        const res = await tripsApi.getById(id);
+        setTrip(res.data.data);
+        return res.data.data;
+    };
+
+    const refreshExpenses = async () => {
+        if (!user) return;
+        try {
+            const [expRes, balRes] = await Promise.all([
+                expensesApi.getAll(id),
+                expensesApi.getBalances(id),
+            ]);
+            setExpenses(expRes.data.data);
+            setBalances(balRes.data.data || {});
+        } catch {
+            setExpenses([]);
+            setBalances({});
+        }
+    };
 
     useEffect(() => {
         (async () => {
             try {
-                const res = await tripsApi.getById(id);
-                setTrip(res.data.data);
-            } catch { navigate('/trips'); }
-            finally { setIsLoading(false); }
+                await refreshTrip();
+            } catch {
+                navigate('/trips');
+            } finally {
+                setIsLoading(false);
+            }
         })();
     }, [id, navigate]);
+
+    useEffect(() => {
+        if (activeTab === 'expenses' && user) refreshExpenses();
+    }, [activeTab, user, id]);
+
+    const approvedMembers = useMemo(
+        () => trip?.members?.filter((m) => m.status === 'APPROVED') || [],
+        [trip]
+    );
+    const pendingMembers = useMemo(
+        () => trip?.members?.filter((m) => m.status === 'PENDING') || [],
+        [trip]
+    );
+    const myMembership = useMemo(
+        () => trip?.members?.find((m) => m.userId === user?.id),
+        [trip, user]
+    );
+
+    const nameById = useMemo(() => {
+        const map = {};
+        trip?.members?.forEach((m) => {
+            if (m.user) map[m.userId] = m.user.name;
+        });
+        if (trip?.organizer) map[trip.organizer.id] = trip.organizer.name;
+        return map;
+    }, [trip]);
 
     const handleJoin = async () => {
         if (!user) return navigate('/login');
         setIsJoining(true);
         try {
             await tripsApi.join(id);
-            toast.success('Join request sent! Waiting for organizer approval 🎉');
-            const res = await tripsApi.getById(id);
-            setTrip(res.data.data);
+            toast.success('Join request sent! Waiting for organizer approval.');
+            await refreshTrip();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to join trip.');
-        } finally { setIsJoining(false); }
+        } finally {
+            setIsJoining(false);
+        }
+    };
+
+    const handleMemberStatus = async (userId, status) => {
+        try {
+            await tripsApi.updateMember(id, userId, { status });
+            toast.success(status === 'APPROVED' ? 'Member approved.' : 'Request declined.');
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not update member.');
+        }
+    };
+
+    const handleAddExpense = async (e) => {
+        e.preventDefault();
+        if (!approvedMembers.length) {
+            toast.error('Need at least one approved member to split costs.');
+            return;
+        }
+        const amount = Number(expenseForm.amount);
+        if (!expenseForm.title.trim() || !(amount > 0)) {
+            toast.error('Enter a title and amount.');
+            return;
+        }
+
+        const share = Math.round((amount / approvedMembers.length) * 100) / 100;
+        let allocated = 0;
+        const splitWith = approvedMembers.map((m, idx) => {
+            if (idx === approvedMembers.length - 1) {
+                return { userId: m.userId, amount: Math.round((amount - allocated) * 100) / 100 };
+            }
+            allocated += share;
+            return { userId: m.userId, amount: share };
+        });
+
+        setSavingExpense(true);
+        try {
+            await expensesApi.create(id, {
+                title: expenseForm.title.trim(),
+                amount,
+                currency: 'INR',
+                category: expenseForm.category,
+                splitWith,
+            });
+            toast.success('Expense added and split across members.');
+            setExpenseForm({ title: '', amount: '', category: 'OTHER' });
+            await refreshExpenses();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to add expense.');
+        } finally {
+            setSavingExpense(false);
+        }
+    };
+
+    const handleDeleteExpense = async (expenseId) => {
+        try {
+            await expensesApi.delete(id, expenseId);
+            toast.success('Expense removed.');
+            await refreshExpenses();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to delete expense.');
+        }
     };
 
     if (isLoading) return (
@@ -53,7 +168,11 @@ export default function TripDetailPage() {
     if (!trip) return null;
 
     const isOrganizer = user?.id === trip.organizerId;
-    const isMember = trip.members?.some((m) => m.userId === user?.id);
+    const isApprovedMember = myMembership?.status === 'APPROVED' || isOrganizer;
+    const canManageExpenses = isApprovedMember;
+    const canJoin = !isOrganizer
+        && (!myMembership || myMembership.status === 'REJECTED')
+        && ['OPEN', 'DRAFT'].includes(trip.status);
     const dayGroups = trip.itineraryItems?.reduce((acc, item) => {
         const day = `Day ${item.dayNumber}`;
         if (!acc[day]) acc[day] = [];
@@ -61,9 +180,26 @@ export default function TripDetailPage() {
         return acc;
     }, {});
 
+    const tabs = ['overview', 'itinerary', 'expenses', 'announcements'];
+
+    const handlePublish = async () => {
+        try {
+            await tripsApi.update(id, { status: 'OPEN' });
+            toast.success('Trip is now open for others to join.');
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not publish trip.');
+        }
+    };
+
+    const joinButton = canJoin && (
+        <button className="btn btn-primary w-full join-trip-btn" onClick={handleJoin} disabled={isJoining}>
+            {isJoining ? 'Sending request…' : (user ? 'Join this trip' : 'Log in to join')}
+        </button>
+    );
+
     return (
         <div className="trip-detail page-enter">
-            {/* Hero */}
             <div className="trip-detail-hero">
                 {trip.coverImageUrl
                     ? <img src={trip.coverImageUrl} alt={trip.title} className="trip-detail-cover" />
@@ -76,15 +212,13 @@ export default function TripDetailPage() {
                     <div className="trip-hero-meta">
                         <span>📍 {trip.destination}</span>
                         {trip.startDate && <span>📅 {format(new Date(trip.startDate), 'MMM d')} – {format(new Date(trip.endDate), 'MMM d, yyyy')}</span>}
-                        <span>👥 {trip.members?.length || 0} / {trip.maxParticipants} members</span>
-                        {trip.budgetEstimate && <span>💰 ~${trip.budgetEstimate.toLocaleString()} / person</span>}
+                        <span>👥 {approvedMembers.length} / {trip.maxParticipants} members</span>
+                        {trip.budgetEstimate && <span>💰 ~₹{trip.budgetEstimate.toLocaleString()} / person</span>}
                     </div>
                 </div>
             </div>
 
-            {/* Body */}
             <div className="container trip-detail-body">
-                {/* Sidebar (organizer + join) */}
                 <aside className="trip-detail-sidebar">
                     <div className="card sidebar-card">
                         <h3>Organized by</h3>
@@ -99,20 +233,58 @@ export default function TripDetailPage() {
                             </div>
                         </Link>
 
-                        {!isOrganizer && !isMember && trip.status === 'OPEN' && (
-                            <button className="btn btn-primary w-full" onClick={handleJoin} disabled={isJoining}>
-                                {isJoining ? 'Sending request…' : '🚗 Request to Join'}
+                        {joinButton}
+                        {!user && canJoin && (
+                            <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                                Create an account or log in, then request to join this trip.
+                            </p>
+                        )}
+                        {isOrganizer && trip.status === 'DRAFT' && (
+                            <button type="button" className="btn btn-primary w-full" onClick={handlePublish}>
+                                Open trip for joining
                             </button>
                         )}
-                        {isOrganizer && <Link to={`/trips/${id}/edit`} className="btn btn-ghost w-full">✏️ Edit Trip</Link>}
-                        {isMember && <span className="badge badge-success">✓ You're a member</span>}
+                        {myMembership?.status === 'PENDING' && (
+                            <span className="badge badge-warning">Join request pending</span>
+                        )}
+                        {myMembership?.status === 'APPROVED' && !isOrganizer && (
+                            <span className="badge badge-success">You're in this trip</span>
+                        )}
+                        {isOrganizer && <span className="badge badge-success">You're the organizer</span>}
+                        {isOrganizer && (
+                            <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                                Others will see a Join button on this trip. Log in with a different account to test joining.
+                            </p>
+                        )}
                     </div>
 
-                    {/* Members */}
+                    {isOrganizer && pendingMembers.length > 0 && (
+                        <div className="card sidebar-card">
+                            <h3>Join requests ({pendingMembers.length})</h3>
+                            <div className="members-list">
+                                {pendingMembers.map((m) => (
+                                    <div key={m.userId} className="pending-member-row">
+                                        <div className="member-chip">
+                                            {m.user?.avatarUrl
+                                                ? <img src={m.user.avatarUrl} alt={m.user.name} className="avatar avatar-sm" />
+                                                : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{m.user?.name?.[0]}</div>
+                                            }
+                                            <span>{m.user?.name}</span>
+                                        </div>
+                                        <div className="pending-actions">
+                                            <button type="button" className="btn btn-primary btn-sm" onClick={() => handleMemberStatus(m.userId, 'APPROVED')}>Approve</button>
+                                            <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleMemberStatus(m.userId, 'REJECTED')}>Decline</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="card sidebar-card">
-                        <h3>Members ({trip.members?.length || 0})</h3>
+                        <h3>Members ({approvedMembers.length})</h3>
                         <div className="members-list">
-                            {trip.members?.slice(0, 8).map((m) => (
+                            {approvedMembers.slice(0, 8).map((m) => (
                                 <Link key={m.userId} to={`/profile/${m.userId}`} className="member-chip">
                                     {m.user?.avatarUrl
                                         ? <img src={m.user.avatarUrl} alt={m.user.name} className="avatar avatar-sm" />
@@ -121,16 +293,14 @@ export default function TripDetailPage() {
                                     <span>{m.user?.name}</span>
                                 </Link>
                             ))}
-                            {(trip.members?.length || 0) > 8 && <span className="text-muted">+{trip.members.length - 8} more</span>}
+                            {approvedMembers.length > 8 && <span className="text-muted">+{approvedMembers.length - 8} more</span>}
                         </div>
                     </div>
                 </aside>
 
-                {/* Main content */}
                 <div className="trip-detail-main">
-                    {/* Tabs */}
                     <div className="trip-tabs">
-                        {['overview', 'itinerary', 'announcements'].map((tab) => (
+                        {tabs.map((tab) => (
                             <button key={tab} className={`trip-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
@@ -141,6 +311,22 @@ export default function TripDetailPage() {
                         <div className="tab-content">
                             <h2>About this trip</h2>
                             <p className="trip-description">{trip.description || 'No description provided.'}</p>
+                            {canJoin && (
+                                <div className="join-banner card">
+                                    <div>
+                                        <strong>Want to travel together?</strong>
+                                        <p className="text-muted" style={{ margin: '0.35rem 0 0' }}>
+                                            Request to join — the organizer will approve you, then you can split shared costs.
+                                        </p>
+                                    </div>
+                                    <button className="btn btn-primary join-trip-btn" onClick={handleJoin} disabled={isJoining}>
+                                        {isJoining ? 'Sending request…' : (user ? 'Join this trip' : 'Log in to join')}
+                                    </button>
+                                </div>
+                            )}
+                            <p className="text-muted" style={{ marginTop: '1rem' }}>
+                                Travel together: one person posts the trip, others join, and shared costs are split on the Expenses tab.
+                            </p>
                         </div>
                     )}
 
@@ -167,6 +353,97 @@ export default function TripDetailPage() {
                                     </div>
                                 ))
                             }
+                        </div>
+                    )}
+
+                    {activeTab === 'expenses' && (
+                        <div className="tab-content">
+                            <h2>Split the money</h2>
+                            {!user ? (
+                                <p className="text-muted">Log in to view and add shared expenses.</p>
+                            ) : !canManageExpenses ? (
+                                <p className="text-muted">Join this trip (and get approved) to split expenses with the group.</p>
+                            ) : (
+                                <>
+                                    <form className="expense-form" onSubmit={handleAddExpense}>
+                                        <input
+                                            type="text"
+                                            placeholder="What was paid? e.g. Fuel, Hotel"
+                                            value={expenseForm.title}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
+                                            required
+                                        />
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            step="0.01"
+                                            placeholder="Amount (₹)"
+                                            value={expenseForm.amount}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                                            required
+                                        />
+                                        <select
+                                            value={expenseForm.category}
+                                            onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                                        >
+                                            <option value="TRANSPORT">Transport</option>
+                                            <option value="ACCOMMODATION">Stay</option>
+                                            <option value="FOOD">Food</option>
+                                            <option value="ACTIVITY">Activity</option>
+                                            <option value="OTHER">Other</option>
+                                        </select>
+                                        <button type="submit" className="btn btn-primary" disabled={savingExpense}>
+                                            {savingExpense ? 'Saving…' : 'Add & split equally'}
+                                        </button>
+                                    </form>
+                                    <p className="text-muted expense-hint">
+                                        Split equally across {approvedMembers.length} approved member{approvedMembers.length === 1 ? '' : 's'}. You are marked as the payer.
+                                    </p>
+
+                                    {Object.keys(balances).length > 0 && (
+                                        <div className="balances-card card">
+                                            <h3>Balances</h3>
+                                            <ul className="balances-list">
+                                                {Object.entries(balances).map(([uid, net]) => (
+                                                    <li key={uid}>
+                                                        <span>{nameById[uid] || 'Member'}</span>
+                                                        <strong className={net >= 0 ? 'bal-pos' : 'bal-neg'}>
+                                                            {net >= 0 ? `+₹${net.toFixed(0)}` : `−₹${Math.abs(net).toFixed(0)}`}
+                                                        </strong>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <p className="text-muted" style={{ fontSize: '0.8rem', margin: '0.5rem 0 0' }}>
+                                                Positive = others owe them. Negative = they owe the group.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="expense-list">
+                                        {expenses.length === 0 ? (
+                                            <p className="text-muted">No shared expenses yet. Add fuel, food, or stay costs to split.</p>
+                                        ) : expenses.map((exp) => (
+                                            <div key={exp.id} className="expense-item card">
+                                                <div>
+                                                    <strong>{exp.title}</strong>
+                                                    <p className="text-muted">
+                                                        Paid by {exp.payer?.name || 'Someone'} · {format(new Date(exp.date || exp.createdAt), 'MMM d, yyyy')}
+                                                        {exp.category ? ` · ${exp.category}` : ''}
+                                                    </p>
+                                                </div>
+                                                <div className="expense-item-side">
+                                                    <strong>₹{Number(exp.amount).toLocaleString()}</strong>
+                                                    {(exp.payerId === user.id || isOrganizer) && (
+                                                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleDeleteExpense(exp.id)}>
+                                                            Delete
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
 

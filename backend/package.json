@@ -19,7 +19,6 @@
     },
     "dependencies": {
         "@prisma/client": "5.22.0",
-        "prisma": "5.22.0",
         "axios": "^1.13.5",
         "bcryptjs": "^2.4.3",
         "cloudinary": "^2.2.0",
@@ -37,10 +36,12 @@
         "passport": "^0.7.0",
         "passport-google-oauth20": "^2.0.0",
         "passport-jwt": "^4.0.1",
+        "prisma": "5.22.0",
         "redis": "^4.6.13",
         "resend": "^3.1.0",
         "socket.io": "^4.7.4",
         "stripe": "^14.21.0",
+        "tesseract.js": "^7.0.0",
         "uuid": "^9.0.1"
     },
     "devDependencies": {

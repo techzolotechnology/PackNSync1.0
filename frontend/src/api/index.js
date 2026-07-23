@@ -26,8 +26,17 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        if (!originalRequest) return Promise.reject(error);
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        const url = originalRequest.url || '';
+        const isAuthRefresh = url.includes('/auth/refresh');
+        const isAuthPublic = isAuthRefresh
+            || url.includes('/auth/request-otp')
+            || url.includes('/auth/verify-otp');
+
+        // Never retry refresh/login endpoints — that causes an infinite 401 loop
+        // and leaves pages stuck on "Loading…"
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthPublic) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -50,7 +59,12 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 localStorage.removeItem('access_token');
-                window.location.href = '/login';
+                try {
+                    localStorage.removeItem('auth-storage');
+                } catch { /* ignore */ }
+                if (!window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
@@ -66,8 +80,8 @@ export default api;
 // ── Helper functions ──────────────────────────────────────────────
 
 export const authApi = {
-    register: (data) => api.post('/auth/register', data),
-    login: (data) => api.post('/auth/login', data),
+    requestOtp: (data) => api.post('/auth/request-otp', data),
+    verifyOtp: (data) => api.post('/auth/verify-otp', data),
     logout: () => api.post('/auth/logout'),
     refresh: () => api.post('/auth/refresh'),
     me: () => api.get('/auth/me'),
@@ -102,6 +116,13 @@ export const usersApi = {
     update: (id, data) => api.put(`/users/${id}`, data),
     delete: (id) => api.delete(`/users/${id}`),
     getTrips: (id) => api.get(`/users/${id}/trips`),
+    uploadAvatar: (file) => {
+        const form = new FormData();
+        form.append('image', file);
+        return api.post('/users/avatar', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };
 
 export const notificationsApi = {
@@ -112,6 +133,7 @@ export const notificationsApi = {
 
 export const ridesApi = {
     getProviders: () => api.get('/rides/providers'),
+    getUberSetup: () => api.get('/rides/uber/setup'),
     compare: (params) => api.get('/rides/compare', { params }),
     getLinkedAccounts: () => api.get('/rides/linked-accounts'),
     linkAccount: (data) => api.post('/rides/link-account', data),
@@ -136,4 +158,36 @@ export const vehiclesApi = {
     getById: (id) => api.get(`/vehicles/${id}`),
     update: (id, data) => api.put(`/vehicles/${id}`, data),
     delete: (id) => api.delete(`/vehicles/${id}`),
+    uploadImage: (file) => {
+        const form = new FormData();
+        form.append('image', file);
+        return api.post('/vehicles/upload-image', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+};
+
+export const verificationsApi = {
+    getStatus: () => api.get('/verifications/status'),
+    getPolicyStatus: () => api.get('/verifications/policies/status'),
+    submit: (data) => api.post('/verifications/submit', data),
+    connectDigiLocker: () => api.post('/verifications/digilocker/connect'),
+    submitRc: (licensePlate) => api.post('/verifications/digilocker/rc', { licensePlate }),
+    uploadRcOcr: (licensePlate, file) => {
+        const form = new FormData();
+        form.append('licensePlate', licensePlate);
+        form.append('rcImage', file);
+        return api.post('/verifications/rc/upload', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+    acceptPolicy: (policyType) => api.post('/verifications/policies/accept', { policyType }),
+};
+
+export const adminApi = {
+    getVerifications: (params) => api.get('/admin/verifications', { params }),
+    approveVerification: (id) => api.put(`/admin/verifications/${id}/approve`),
+    rejectVerification: (id, reason) => api.put(`/admin/verifications/${id}/reject`, { reason }),
+    getVehicles: () => api.get('/admin/vehicles'),
+    verifyVehicle: (id) => api.put(`/admin/vehicles/${id}/verify`),
 };

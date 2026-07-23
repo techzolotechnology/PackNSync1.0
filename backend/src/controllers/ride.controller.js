@@ -2,8 +2,13 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
+import { assertPolicyAccepted } from '../utils/verificationHelpers.js';
+import {
+    sendBookingConfirmationEmail,
+    rideBookingEmailHtml,
+} from '../utils/bookingEmail.js';
 
-const UBER_AUTH_URL = 'https://auth.uber.com/oauth/v2/authorize';
+const UBER_AUTH_URL = 'https://login.uber.com/oauth/v2/authorize';
 const UBER_TOKEN_URL = 'https://auth.uber.com/oauth/v2/token';
 const UBER_API_BASE_URL = 'https://api.uber.com/v1.2';
 const OLA_API_BASE_URL = 'https://devapi.olacabs.com/v1';
@@ -45,15 +50,51 @@ const getProviderStatusList = () => SUPPORTED_PROVIDERS.map((provider) => ({
     setup: isConfigured[provider]() ? null : providerSetup[provider],
 }));
 
+const refreshUberToken = async (account) => {
+    if (!account?.refreshToken) return account;
+    if (account.expiresAt && new Date(account.expiresAt) > new Date(Date.now() + 60_000)) {
+        return account;
+    }
+
+    try {
+        const params = new URLSearchParams({
+            client_id: process.env.UBER_CLIENT_ID,
+            client_secret: process.env.UBER_CLIENT_SECRET,
+            grant_type: 'refresh_token',
+            redirect_uri: process.env.UBER_REDIRECT_URI?.trim(),
+            refresh_token: account.refreshToken,
+        });
+        const tokenRes = await axios.post(UBER_TOKEN_URL, params.toString(), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+        const { access_token, refresh_token, expires_in } = tokenRes.data;
+
+        return prisma.linkedAccount.update({
+            where: { id: account.id },
+            data: {
+                accessToken: access_token,
+                refreshToken: refresh_token || account.refreshToken,
+                expiresAt: new Date(Date.now() + expires_in * 1000),
+                isConnected: true,
+            },
+        });
+    } catch (err) {
+        console.error('Uber token refresh failed:', err.response?.data || err.message);
+        return account;
+    }
+};
+
 const getUberOptions = async ({ account, coordinates }) => {
     if (!account?.accessToken) return [];
+
+    const freshAccount = await refreshUberToken(account);
 
     const productsRes = await axios.get(`${UBER_API_BASE_URL}/products`, {
         params: {
             latitude: coordinates.startLatitude,
             longitude: coordinates.startLongitude,
         },
-        headers: { Authorization: `Bearer ${account.accessToken}` },
+        headers: { Authorization: `Bearer ${freshAccount.accessToken}` },
     });
 
     const products = productsRes.data?.products || [];
@@ -66,7 +107,7 @@ const getUberOptions = async ({ account, coordinates }) => {
                 end_latitude: coordinates.endLatitude,
                 end_longitude: coordinates.endLongitude,
             }, {
-                headers: { Authorization: `Bearer ${account.accessToken}` },
+                headers: { Authorization: `Bearer ${freshAccount.accessToken}` },
             });
 
             return {
@@ -150,7 +191,7 @@ export const getRideOptions = async (req, res) => {
     }
 
     if (options.length === 0) {
-        throw new AppError('No real provider results are available. Configure provider credentials and connect a supported provider account first.', 503);
+        throw new AppError('No provider results available. Connect Uber and/or configure Ola, Rapido, or Zoomcar credentials in backend/.env.', 503);
     }
 
     res.json({ success: true, data: options });
@@ -165,6 +206,27 @@ export const getLinkedAccounts = async (req, res) => {
     res.json({ success: true, data: accounts });
 };
 
+// GET /api/rides/uber/setup
+export const getUberSetup = async (_req, res) => {
+    const redirectUri = process.env.UBER_REDIRECT_URI?.trim();
+    res.json({
+        success: true,
+        data: {
+            isConfigured: isConfigured.UBER(),
+            redirectUri,
+            registerSteps: [
+                'Open https://developer.uber.com/dashboard',
+                'Setup tab → add Redirect URI: http://localhost:3001/api/rides/auth/uber/callback',
+                'Setup tab → Privacy Policy URL (any valid https or http://localhost URL)',
+                'Auth / Scopes tab → enable scopes for your app (or Request Scopes if using Others suite)',
+                'Do NOT send scopes in code — we use whatever you enable in the dashboard',
+                'Save, then try Connect Uber again',
+            ],
+            invalidScopeHelp: 'If you see invalid_scope: open Uber Dashboard → your app → Setup/Auth → enable scopes there. Apps on "Others" suite may need Uber to grant scopes first.',
+        },
+    });
+};
+
 // POST /api/rides/link-account
 export const linkAccount = async (req, res) => {
     const provider = normalizeProvider(req.body.provider);
@@ -175,38 +237,61 @@ export const linkAccount = async (req, res) => {
         throw new AppError(`${provider} account linking requires official partner onboarding. Do not collect consumer app passwords in this app.`, 501);
     }
 
+    const redirectUri = process.env.UBER_REDIRECT_URI?.trim();
+    if (!redirectUri) {
+        throw new AppError('UBER_REDIRECT_URI is missing in backend/.env', 500);
+    }
+
     const stateNonce = crypto.randomBytes(16).toString('hex');
     const state = Buffer.from(JSON.stringify({ userId: req.user.id, stateNonce })).toString('base64url');
     const query = new URLSearchParams({
         client_id: process.env.UBER_CLIENT_ID,
         response_type: 'code',
-        redirect_uri: process.env.UBER_REDIRECT_URI,
-        scope: 'profile rides.request',
+        redirect_uri: redirectUri,
         state,
     }).toString();
 
-    res.json({ success: true, redirectUrl: `${UBER_AUTH_URL}?${query}` });
+    res.json({
+        success: true,
+        redirectUrl: `${UBER_AUTH_URL}?${query}`,
+        redirectUri,
+        hint: 'Add redirect URI in Uber Dashboard if login fails.',
+    });
 };
+
+const uberFailPage = (reason) => `<html><body><script>
+window.opener?.postMessage({ type: 'UBER_FAILED', reason: ${JSON.stringify(reason)} }, '*');
+window.close();
+</script><p>Uber connection failed: ${reason}</p></body></html>`;
 
 // GET /api/rides/auth/uber/callback
 export const handleUberCallback = async (req, res) => {
-    const { code, state, error } = req.query;
+    const { code, state, error, error_description: errorDescription } = req.query;
 
     if (error) {
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/rides?error=uber_auth_failed`);
+        const reason = errorDescription || error;
+        console.error('Uber OAuth error:', reason);
+        return res.send(uberFailPage(reason));
+    }
+
+    if (!code || !state) {
+        return res.send(uberFailPage('Missing authorization code from Uber.'));
     }
 
     try {
         const parsedState = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
+        const redirectUri = process.env.UBER_REDIRECT_URI?.trim();
         const params = new URLSearchParams({
             client_id: process.env.UBER_CLIENT_ID,
             client_secret: process.env.UBER_CLIENT_SECRET,
             grant_type: 'authorization_code',
-            redirect_uri: process.env.UBER_REDIRECT_URI,
+            redirect_uri: redirectUri,
             code,
         });
 
-        const tokenRes = await axios.post(UBER_TOKEN_URL, params);
+        const tokenRes = await axios.post(UBER_TOKEN_URL, params.toString(), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
         const { access_token, refresh_token, expires_in } = tokenRes.data;
 
         await prisma.linkedAccount.upsert({
@@ -229,8 +314,12 @@ export const handleUberCallback = async (req, res) => {
 
         res.send('<html><body><script>window.opener?.postMessage({ type: "UBER_CONNECTED" }, "*"); window.close();</script>Uber connected. You can close this tab.</body></html>');
     } catch (err) {
+        const reason = err.response?.data?.error_description
+            || err.response?.data?.error
+            || err.message
+            || 'Token exchange failed';
         console.error('Uber Token Exchange Error:', err.response?.data || err.message);
-        res.send('<html><body><script>window.opener?.postMessage({ type: "UBER_FAILED" }, "*"); window.close();</script>Uber connection failed.</body></html>');
+        res.send(uberFailPage(reason));
     }
 };
 
@@ -246,10 +335,12 @@ export const verifyOTP = async () => {
 
 // POST /api/rides/book
 export const bookRide = async (req, res) => {
+    await assertPolicyAccepted(req.user.id, 'RIDE_TERMS');
+
     const { provider, vehicleType, pickupLocation, dropoffLocation, fare, currency, type } = req.body;
 
-    if (provider !== 'Uber') {
-        throw new AppError('In-app booking is only available for providers with official booking API integration. Configure provider partner APIs before enabling this provider.', 501);
+    if (!provider || !pickupLocation || !dropoffLocation) {
+        throw new AppError('Provider, pickup, and dropoff are required.', 400);
     }
 
     const ride = await prisma.rideBooking.create({
@@ -258,13 +349,35 @@ export const bookRide = async (req, res) => {
             provider,
             pickupLocation,
             dropoffLocation,
-            fare: Number(fare),
+            fare: Number(fare) || 0,
             currency: currency || 'INR',
             status: 'BOOKING_REQUESTED',
             type: type || 'LOCAL',
             providerRideId: vehicleType,
         },
     });
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { email: true, name: true },
+        });
+        await sendBookingConfirmationEmail({
+            to: user?.email,
+            subject: `Ride booking — ${provider} ${vehicleType || ''}`.trim(),
+            html: rideBookingEmailHtml({
+                userName: user?.name || req.user.name,
+                provider,
+                vehicleType: vehicleType || 'Ride',
+                pickup: pickupLocation,
+                dropoff: dropoffLocation,
+                fare: Number(fare) || 0,
+                currency: currency || 'INR',
+            }),
+        });
+    } catch (err) {
+        console.error('[Ride booking email]', err.message);
+    }
 
     res.status(201).json({ success: true, data: ride });
 };

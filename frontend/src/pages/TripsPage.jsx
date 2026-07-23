@@ -5,47 +5,73 @@ import { format } from 'date-fns';
 import './TripsPage.css';
 
 const STATUSES = ['', 'OPEN', 'FULL', 'IN_PROGRESS', 'COMPLETED'];
-const STATUS_LABELS = { OPEN: 'Open', FULL: 'Full', IN_PROGRESS: 'Ongoing', COMPLETED: 'Completed', DRAFT: 'Draft' };
-const STATUS_BADGE = { OPEN: 'badge-success', FULL: 'badge-warning', IN_PROGRESS: 'badge-info', COMPLETED: 'badge-neutral', DRAFT: 'badge-neutral' };
+const STATUS_LABELS = {
+    OPEN: 'Open',
+    FULL: 'Filling',
+    IN_PROGRESS: 'Ongoing',
+    COMPLETED: 'Closed',
+    DRAFT: 'Draft',
+};
 
-function TripCard({ trip }) {
+const COVER_FALLBACKS = [
+    'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=80',
+];
+
+const coverFor = (trip, index) =>
+    trip.coverImageUrl || COVER_FALLBACKS[index % COVER_FALLBACKS.length];
+
+function Avatar({ user, className = '' }) {
+    if (user?.avatarUrl) {
+        return <img src={user.avatarUrl} alt={user.name || ''} className={`tt-avatar ${className}`} />;
+    }
+    return (
+        <div className={`tt-avatar tt-avatar-fallback ${className}`} aria-hidden="true">
+            {(user?.name || '?')[0]}
+        </div>
+    );
+}
+
+function TripCard({ trip, index }) {
     const startDate = trip.startDate ? format(new Date(trip.startDate), 'MMM d') : '';
     const endDate = trip.endDate ? format(new Date(trip.endDate), 'MMM d, yyyy') : '';
+    const statusKey = (trip.status || 'OPEN').toLowerCase();
+    const statusLabel = STATUS_LABELS[trip.status] || trip.status;
+    const members = trip.members || [];
+    const glow = index % 3 === 0 ? 'glow-teal' : 'glow-orange';
 
     return (
-        <Link to={`/trips/${trip.id}`} className="trip-card card">
-            <div className="trip-card-img">
-                {trip.coverImageUrl
-                    ? <img src={trip.coverImageUrl} alt={trip.title} />
-                    : <div className="trip-card-img-placeholder">🌍</div>
-                }
-                <span className={`badge ${STATUS_BADGE[trip.status] || 'badge-neutral'} trip-status-badge`}>
-                    {STATUS_LABELS[trip.status] || trip.status}
-                </span>
+        <article className={`tt-card ${glow}`}>
+            <div className="tt-card-media">
+                <img src={coverFor(trip, index)} alt={trip.title} loading="lazy" />
+                <span className={`tt-status tt-status-${statusKey}`}>{statusLabel}</span>
             </div>
-            <div className="trip-card-body">
-                <div className="trip-card-meta">
-                    <span>📍 {trip.destination}</span>
-                    {startDate && <span>📅 {startDate} – {endDate}</span>}
+            <div className="tt-card-body">
+                <h3 className="tt-card-title">{trip.title}</h3>
+                <p className="tt-card-dates">
+                    {startDate && endDate ? `${startDate} – ${endDate}` : trip.destination}
+                </p>
+                <div className="tt-card-host">
+                    <Avatar user={trip.organizer} />
+                    <span>{trip.organizer?.name || 'Host'}</span>
                 </div>
-                <h3 className="trip-card-title">{trip.title}</h3>
-                {trip.description && <p className="trip-card-desc">{trip.description.slice(0, 100)}{trip.description.length > 100 && '…'}</p>}
-                <div className="trip-card-footer">
-                    {trip.organizer && (
-                        <div className="flex items-center gap-2">
-                            {trip.organizer.avatarUrl
-                                ? <img src={trip.organizer.avatarUrl} alt={trip.organizer.name} className="avatar avatar-sm" />
-                                : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{trip.organizer.name[0]}</div>
-                            }
-                            <span>{trip.organizer.name}</span>
-                        </div>
-                    )}
-                    {trip._count && (
-                        <span className="trip-member-count">👥 {trip._count.members} / {trip.maxParticipants}</span>
-                    )}
+                <div className="tt-card-footer">
+                    <div className="tt-avatars" aria-label={`${trip._count?.members || members.length} travelers`}>
+                        {members.slice(0, 4).map((m) => (
+                            <Avatar key={m.userId || m.user?.id} user={m.user} />
+                        ))}
+                        {(trip._count?.members || 0) > 4 && (
+                            <span className="tt-avatar tt-avatar-more">+{(trip._count.members) - 4}</span>
+                        )}
+                    </div>
+                    <Link to={`/trips/${trip.id}`} className="tt-view-btn">View Details</Link>
                 </div>
             </div>
-        </Link>
+        </article>
     );
 }
 
@@ -72,67 +98,92 @@ export default function TripsPage() {
 
     useEffect(() => { fetchTrips(); }, [fetchTrips]);
 
-    const handleSearch = (e) => { setSearch(e.target.value); setPage(1); };
-    const handleStatus = (e) => { setStatus(e.target.value); setPage(1); };
-
     return (
-        <div className="trips-page page-enter">
-            <div className="container">
-                {/* Header */}
-                <div className="trips-header">
-                    <div>
-                        <h1>Explore Trips</h1>
-                        <p>Discover group trips and find your next adventure.</p>
+        <div className="tt-page page-enter">
+            <section className="tt-hero">
+                <div className="tt-hero-bg" aria-hidden="true">
+                    <svg className="tt-waves" viewBox="0 0 1440 420" preserveAspectRatio="none">
+                        <path className="tt-wave tt-wave-1" d="M-40,260 C180,120 360,340 540,210 C720,80 900,300 1080,190 C1260,80 1380,240 1520,160" />
+                        <path className="tt-wave tt-wave-2" d="M-40,300 C200,160 380,360 560,240 C740,120 920,320 1100,220 C1280,120 1400,280 1520,200" />
+                        <path className="tt-wave tt-wave-3" d="M-40,220 C160,100 340,280 520,170 C700,60 880,250 1060,150 C1240,50 1360,210 1520,130" />
+                        <path className="tt-wave tt-wave-4" d="M-40,340 C220,220 400,380 580,280 C760,180 940,360 1120,270 C1300,180 1420,320 1520,250" />
+                    </svg>
+                    <div className="tt-bokeh">
+                        <span /><span /><span /><span /><span /><span /><span /><span />
+                        <span /><span /><span /><span /><span /><span /><span /><span />
                     </div>
-                    <Link to="/trips/create" className="btn btn-primary">+ Create Trip</Link>
+                </div>
+                <div className="container tt-hero-inner">
+                    <div className="tt-hero-copy">
+                        <h1>Travel Together</h1>
+                        <p>Browse trips others posted — join them and split the money with the group.</p>
+                    </div>
+                    <Link to="/trips/create" className="tt-post-btn">
+                        <span className="tt-post-plus">+</span>
+                        Post a Trip
+                    </Link>
+                </div>
+            </section>
+
+            <div className="container tt-main">
+                <div className="tt-toolbar">
+                    <label className="tt-search">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                            <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        <input
+                            type="search"
+                            placeholder="Search destinations, trip names..."
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        />
+                    </label>
+                    <label className="tt-filter">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+                            <option value="">All Statuses</option>
+                            {STATUSES.filter(Boolean).map((s) => (
+                                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                            ))}
+                        </select>
+                    </label>
                 </div>
 
-                {/* Filters */}
-                <div className="trips-filters">
-                    <input type="search" className="form-input search-input"
-                        placeholder="🔍  Search destinations, trip names…"
-                        value={search} onChange={handleSearch} />
-                    <select className="form-input status-select" value={status} onChange={handleStatus}>
-                        <option value="">All Statuses</option>
-                        {STATUSES.filter(Boolean).map((s) => (
-                            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Grid */}
                 {isLoading ? (
-                    <div className="trip-grid">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="trip-card-skeleton">
-                                <div className="skeleton" style={{ height: '200px', borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0' }} />
-                                <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                    <div className="skeleton" style={{ height: '14px', width: '60%' }} />
-                                    <div className="skeleton" style={{ height: '20px', width: '85%' }} />
-                                    <div className="skeleton" style={{ height: '14px', width: '100%' }} />
-                                    <div className="skeleton" style={{ height: '14px', width: '40%' }} />
+                    <div className="tt-grid">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="tt-card tt-skeleton">
+                                <div className="skeleton" style={{ aspectRatio: '16/10' }} />
+                                <div style={{ padding: '1rem', display: 'grid', gap: '0.6rem' }}>
+                                    <div className="skeleton" style={{ height: 18, width: '80%' }} />
+                                    <div className="skeleton" style={{ height: 12, width: '50%' }} />
+                                    <div className="skeleton" style={{ height: 28, width: '40%' }} />
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : trips.length === 0 ? (
-                    <div className="trips-empty">
-                        <span>🌍</span>
+                    <div className="tt-empty">
                         <h3>No trips found</h3>
-                        <p>Try adjusting your filters or <Link to="/trips/create">create the first trip!</Link></p>
+                        <p>Try another search or be the first to post.</p>
+                        <Link to="/trips/create" className="tt-post-btn">+ Post a Trip</Link>
                     </div>
                 ) : (
-                    <div className="trip-grid">
-                        {trips.map((trip) => <TripCard key={trip.id} trip={trip} />)}
+                    <div className="tt-grid">
+                        {trips.map((trip, index) => (
+                            <TripCard key={trip.id} trip={trip} index={index} />
+                        ))}
                     </div>
                 )}
 
-                {/* Pagination */}
                 {pagination && pagination.pages > 1 && (
-                    <div className="pagination">
-                        <button className="btn btn-ghost btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Prev</button>
+                    <div className="tt-pagination">
+                        <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
                         <span>{page} / {pagination.pages}</span>
-                        <button className="btn btn-ghost btn-sm" disabled={page >= pagination.pages} onClick={() => setPage((p) => p + 1)}>Next →</button>
+                        <button type="button" disabled={page >= pagination.pages} onClick={() => setPage((p) => p + 1)}>Next</button>
                     </div>
                 )}
             </div>

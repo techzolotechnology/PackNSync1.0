@@ -3,7 +3,7 @@ import { Linking, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInpu
 import { StatusBar } from 'expo-status-bar';
 import { api } from './src/api';
 
-const tabs = ['Home', 'Rides', 'Rentals', 'Host', 'Account'];
+const tabs = ['Home', 'Rentals', 'Host', 'Account'];
 const today = new Date().toISOString().slice(0, 10);
 const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
@@ -44,22 +44,22 @@ function Home({ setTab }) {
   return (
     <View>
       <View style={styles.hero}>
-        <Pill>Trips • Rides • Rentals</Pill>
+        <Pill>Travel Together · Car on Rent</Pill>
         <Text style={styles.title}>Travel Together, Better</Text>
-        <Text style={styles.muted}>Plan group travel, compare ride options safely, and book self-drive cars from local hosts.</Text>
+        <Text style={styles.muted}>Post a trip so others can join and split costs, or rent a self-drive car from a host.</Text>
         <View style={styles.stats}>
-          <View style={styles.stat}><Text style={styles.statValue}>4</Text><Text style={styles.statLabel}>Providers</Text></View>
-          <View style={styles.stat}><Text style={styles.statValue}>24/7</Text><Text style={styles.statLabel}>Planning</Text></View>
-          <View style={styles.stat}><Text style={styles.statValue}>Real</Text><Text style={styles.statLabel}>Bookings</Text></View>
+          <View style={styles.stat}><Text style={styles.statValue}>Join</Text><Text style={styles.statLabel}>Shared trips</Text></View>
+          <View style={styles.stat}><Text style={styles.statValue}>Split</Text><Text style={styles.statLabel}>The money</Text></View>
+          <View style={styles.stat}><Text style={styles.statValue}>Rent</Text><Text style={styles.statLabel}>Cars</Text></View>
         </View>
         <View style={styles.actions}>
-          <Button onPress={() => setTab('Rentals')}>Find Cars</Button>
-          <Button variant="ghost" onPress={() => setTab('Rides')}>Compare Rides</Button>
+          <Button onPress={() => setTab('Rentals')}>Car on Rent</Button>
+          <Button variant="ghost" onPress={() => Linking.openURL('http://localhost:5173/trips')}>Travel Together</Button>
         </View>
       </View>
       {[
+        ['Travel Together', 'One person posts a trip. Others join and split shared costs on the web app.'],
         ['Self-drive marketplace', 'Search hosted cars, request booking, and manage rentals.'],
-        ['Ride comparison ready', 'Connect official provider APIs for live fares without unsafe password sharing.'],
         ['Host dashboard', 'Publish your own vehicle listing from the app.']
       ].map(([title, text]) => (
         <View key={title} style={styles.card}>
@@ -67,42 +67,6 @@ function Home({ setTab }) {
           <Text style={styles.muted}>{text}</Text>
         </View>
       ))}
-    </View>
-  );
-}
-
-function Rides({ user, setTab }) {
-  const [pickup, setPickup] = useState('');
-  const [dropoff, setDropoff] = useState('');
-  const [message, setMessage] = useState('');
-
-  const openProvider = (provider) => {
-    const q = encodeURIComponent(`${pickup} to ${dropoff}`);
-    const urls = {
-      Uber: `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(dropoff)}`,
-      Ola: `https://book.olacabs.com/?pickup_name=${encodeURIComponent(pickup)}&drop_name=${encodeURIComponent(dropoff)}`,
-      Rapido: `https://www.rapido.bike/Home`,
-      Zoomcar: `https://www.zoomcar.com/search?query=${q}`
-    };
-    Linking.openURL(urls[provider]);
-  };
-
-  return (
-    <View>
-      <Text style={styles.heading}>Ride Price Check</Text>
-      <Text style={styles.muted}>Real in-app comparison needs official provider APIs. Until credentials are approved, open each provider safely and book there.</Text>
-      {!user && <Button onPress={() => setTab('Account')}>Login to Use Real APIs</Button>}
-      <Field label="Pickup" value={pickup} onChangeText={setPickup} placeholder="Bangalore Airport" />
-      <Field label="Dropoff" value={dropoff} onChangeText={setDropoff} placeholder="Mysore / HSR Layout" />
-      <View style={styles.providerGrid}>
-        {['Uber', 'Ola', 'Rapido', 'Zoomcar'].map((p) => (
-          <TouchableOpacity key={p} style={styles.providerCard} onPress={() => pickup && dropoff ? openProvider(p) : setMessage('Enter pickup and dropoff first.')}>
-            <Text style={styles.cardTitle}>{p}</Text>
-            <Text style={styles.smallMuted}>{p === 'Zoomcar' ? 'Outer-city rentals' : 'Open official booking'}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {!!message && <Text style={styles.warning}>{message}</Text>}
     </View>
   );
 }
@@ -204,20 +168,57 @@ function Host({ user, setTab }) {
 
 function Account({ user, setUser }) {
   const [isRegister, setIsRegister] = useState(false);
+  const [step, setStep] = useState(1);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [contact, setContact] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [apiUrl, setApiUrl] = useState(Platform.OS === 'android' ? 'http://10.0.2.2:3001/api' : 'http://127.0.0.1:3001/api');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const submit = async () => {
+  const resetFlow = () => {
+    setStep(1);
+    setOtpCode('');
+    setMessage('');
+  };
+
+  const requestOtp = async () => {
+    if (!contact.trim()) return setMessage('Email or phone number is required.');
+    if (isRegister && !name.trim()) return setMessage('Name is required for registration.');
+
+    setLoading(true);
+    setMessage('');
     try {
-      const res = await api.post(isRegister ? '/auth/register' : '/auth/login', isRegister ? { name, email, password } : { email, password });
+      const res = await api.post('/auth/request-otp', {
+        contact: contact.trim(),
+        name: isRegister ? name.trim() : undefined,
+        isRegister,
+      });
+      setMessage(res.message || 'OTP sent.');
+      setStep(2);
+    } catch (e) {
+      setMessage(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (!otpCode || otpCode.length !== 6) return setMessage('Enter the 6-digit OTP.');
+
+    setLoading(true);
+    setMessage('');
+    try {
+      const res = await api.post('/auth/verify-otp', { contact: contact.trim(), otpCode });
       api.setToken(res.accessToken);
       setUser(res.user);
       setMessage('Logged in.');
+      setStep(1);
+      setOtpCode('');
     } catch (e) {
       setMessage(e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -226,8 +227,8 @@ function Account({ user, setUser }) {
       <View>
         <Text style={styles.heading}>Account</Text>
         <Text style={styles.cardTitle}>{user.name}</Text>
-        <Text style={styles.muted}>{user.email}</Text>
-        <Button variant="ghost" onPress={() => { api.setToken(null); setUser(null); }}>Logout</Button>
+        <Text style={styles.muted}>{user.email || user.phoneNumber}</Text>
+        <Button variant="ghost" onPress={() => { api.setToken(null); setUser(null); resetFlow(); }}>Logout</Button>
       </View>
     );
   }
@@ -235,11 +236,26 @@ function Account({ user, setUser }) {
   return (
     <View>
       <Text style={styles.heading}>{isRegister ? 'Create Account' : 'Login'}</Text>
-      {isRegister && <Field label="Name" value={name} onChangeText={setName} />}
-      <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-      <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry />
-      <Button onPress={submit}>{isRegister ? 'Register' : 'Login'}</Button>
-      <Button variant="ghost" onPress={() => setIsRegister(!isRegister)}>{isRegister ? 'Have account? Login' : 'Need account? Register'}</Button>
+      <Text style={styles.muted}>OTP-only login — same as the web app.</Text>
+
+      {step === 1 ? (
+        <>
+          {isRegister && <Field label="Name" value={name} onChangeText={setName} placeholder="Your name" />}
+          <Field label="Email or phone" value={contact} onChangeText={setContact} placeholder="you@example.com or +919876543210" keyboardType="email-address" />
+          <Button onPress={requestOtp} disabled={loading}>{loading ? 'Sending…' : 'Get OTP'}</Button>
+        </>
+      ) : (
+        <>
+          <Text style={styles.muted}>Enter the 6-digit code sent to {contact}</Text>
+          <Field label="OTP" value={otpCode} onChangeText={setOtpCode} placeholder="123456" keyboardType="number-pad" />
+          <Button onPress={verifyOtp} disabled={loading}>{loading ? 'Verifying…' : isRegister ? 'Create Account' : 'Log In'}</Button>
+          <Button variant="ghost" onPress={() => { setStep(1); setOtpCode(''); }}>Back</Button>
+        </>
+      )}
+
+      <Button variant="ghost" onPress={() => { setIsRegister(!isRegister); resetFlow(); }}>
+        {isRegister ? 'Have account? Login' : 'Need account? Register'}
+      </Button>
       <Field label="Backend API URL" value={apiUrl} onChangeText={setApiUrl} placeholder="http://192.168.1.10:3001/api" />
       <Button variant="ghost" onPress={() => { api.setBaseUrl(apiUrl); setMessage('Backend synced.'); }}>Sync Backend</Button>
       {!!message && <Text style={styles.warning}>{message}</Text>}
@@ -250,7 +266,7 @@ function Account({ user, setUser }) {
 export default function App() {
   const [tab, setTab] = useState('Home');
   const [user, setUser] = useState(null);
-  const screen = { Home, Rides, Rentals, Host, Account }[tab];
+  const screen = { Home, Rentals, Host, Account }[tab];
   const Screen = screen;
 
   useEffect(() => {

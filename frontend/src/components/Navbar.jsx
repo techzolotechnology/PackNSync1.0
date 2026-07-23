@@ -32,15 +32,17 @@ export default function Navbar() {
             <div className="container navbar-inner">
                 {/* Logo */}
                 <Link to="/" className="navbar-logo">
-                    <span className="logo-icon">🚗</span>
-                    <span className="gradient-text font-display">PackAndSync</span>
+                    <span className="logo-mark" aria-hidden="true" />
+                    <span className="logo-word">PackAndSync</span>
                 </Link>
 
                 {/* Desktop Nav */}
                 <nav className="navbar-links hide-mobile">
-                    <Link to="/trips" className={`nav-link ${isActive('/trips') ? 'active' : ''}`}>Explore Trips</Link>
-                    <Link to="/rides" className={`nav-link ${isActive('/rides') ? 'active' : ''}`}>Book a Ride</Link>
-                    <Link to="/rentals" className={`nav-link ${isActive('/rentals') ? 'active' : ''}`}>Rent a Car</Link>
+                    <Link to="/trips" className={`nav-link ${isActive('/trips') ? 'active' : ''}`}>Travel Together</Link>
+                    <Link to="/rentals" className={`nav-link ${isActive('/rentals') ? 'active' : ''}`}>Car on Rent</Link>
+                    {user && (
+                        <Link to="/bookings" className={`nav-link ${isActive('/bookings') ? 'active' : ''}`}>My Bookings</Link>
+                    )}
                     {user && (
                         <Link to="/host" className={`nav-link ${isActive('/host') ? 'active' : ''}`}>Host a Vehicle</Link>
                     )}
@@ -48,6 +50,9 @@ export default function Navbar() {
                         <Link to="/trips/create" className={`nav-link ${isActive('/trips/create') ? 'active' : ''}`}>
                             + New Trip
                         </Link>
+                    )}
+                    {user && (
+                        <Link to="/verify" className={`nav-link ${isActive('/verify') ? 'active' : ''}`}>Verify ID</Link>
                     )}
                     {user?.role === 'ADMIN' && (
                         <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`}>Admin</Link>
@@ -103,11 +108,12 @@ export default function Navbar() {
                             </a>
                         ))}
                     </div>
-                    <Link to="/trips" onClick={() => setMenuOpen(false)} className="mobile-link">Explore Trips</Link>
-                    <Link to="/rides" onClick={() => setMenuOpen(false)} className="mobile-link">Book a Ride</Link>
-                    <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Rent a Car</Link>
+                    <Link to="/trips" onClick={() => setMenuOpen(false)} className="mobile-link">Travel Together</Link>
+                    <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Car on Rent</Link>
+                    {user && <Link to="/bookings" onClick={() => setMenuOpen(false)} className="mobile-link">My Bookings</Link>}
                     {user && <Link to="/host" onClick={() => setMenuOpen(false)} className="mobile-link">Host a Vehicle</Link>}
                     {user && <Link to="/trips/create" onClick={() => setMenuOpen(false)} className="mobile-link">+ New Trip</Link>}
+                    {user && <Link to="/verify" onClick={() => setMenuOpen(false)} className="mobile-link">Verify ID</Link>}
                     {user?.role === 'ADMIN' && <Link to="/admin" onClick={() => setMenuOpen(false)} className="mobile-link">Admin</Link>}
                     {user
                         ? <>

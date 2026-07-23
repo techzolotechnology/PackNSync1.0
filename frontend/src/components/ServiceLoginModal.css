@@ -25,7 +25,7 @@
 }
 
 .modal-content {
-    max-width: 500px;
+    max-width: 640px;
     width: 100%;
     padding: var(--space-8);
     background: var(--clr-bg-800);
@@ -114,11 +114,34 @@
 .service-info h3 {
     font-size: 1rem;
     margin-bottom: 2px;
+    color: var(--clr-text-primary, #f8fafc);
 }
 
 .service-info span {
-    font-size: 0.75rem;
-    color: var(--clr-text-muted);
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+    display: block;
+}
+
+.uber-setup-hint {
+    font-size: 0.8rem;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: 8px;
+    padding: 0.75rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.uber-setup-hint code {
+    color: #fde68a;
+    word-break: break-all;
+}
+
+.uber-setup-hint a {
+    color: #93c5fd;
 }
 
 /* Mock Login View Styles */

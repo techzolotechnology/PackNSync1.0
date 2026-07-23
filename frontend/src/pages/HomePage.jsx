@@ -2,19 +2,10 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import './HomePage.css';
 
-const HERO_STATS = [
-    { value: 'Plan', label: 'Itineraries together' },
-    { value: 'Split', label: 'Expenses clearly' },
-    { value: 'Book', label: 'Rides and rentals' },
-];
-
-const FEATURES = [
-    { emoji: '🗺️', title: 'Visual Itinerary Builder', desc: 'Drag-and-drop day planner to schedule every moment of your trip.' },
-    { emoji: '💬', title: 'Live Group Chat', desc: 'Real-time chat with your travel crew — no extra apps needed.' },
-    { emoji: '💰', title: 'Smart Expense Splitting', desc: 'Track expenses and auto-split costs so no one overpays.' },
-    { emoji: '🗳️', title: 'Group Polls', desc: 'Vote on destinations, activities, and restaurants democratically.' },
-    { emoji: '🔔', title: 'Instant Notifications', desc: 'Stay in sync with real-time updates on trip changes.' },
-    { emoji: '🔐', title: 'Secure Payments', desc: 'Pay your share securely with Stripe integration.' },
+const STEPS = [
+    { n: '01', title: 'Post a trip', desc: 'Share where you’re going and when. Your route becomes a joinable trip.' },
+    { n: '02', title: 'Others join', desc: 'Travelers request to join. You approve who comes along.' },
+    { n: '03', title: 'Split the money', desc: 'Add fuel, stay, or food costs and split fairly across the group.' },
 ];
 
 export default function HomePage() {
@@ -22,76 +13,68 @@ export default function HomePage() {
 
     return (
         <div className="home page-enter">
-            {/* Hero */}
             <section className="hero">
-                <div className="container home-hero-content">
-                    <div className="hero-copy">
-                        <p className="hero-tag">Group trips, rides, rentals</p>
-                        <h1 className="hero-title">
-                            Travel Together,
-                            <span className="gradient-text"> Better</span>
-                        </h1>
-                        <p className="hero-subtitle">
-                            Plan the route, coordinate the crew, compare rides, rent cars, and keep shared costs simple from the first idea to the last ride home.
-                        </p>
-                        <div className="hero-ctas">
-                            {user
-                                ? <Link to="/trips" className="btn btn-primary btn-lg">Browse Trips</Link>
-                                : <>
-                                    <Link to="/register" className="btn btn-primary btn-lg">Get Started Free</Link>
-                                    <Link to="/trips" className="btn btn-ghost btn-lg">Explore Trips</Link>
-                                </>
-                            }
-                        </div>
-                    </div>
-
-                    <div className="hero-panel" aria-label="Travel planning preview">
-                        <img
-                            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
-                            alt="Friends planning a trip near a scenic road"
-                        />
-                        <div className="hero-panel-overlay">
-                            <span>Weekend Goa Run</span>
-                            <strong>4 travelers synced</strong>
-                        </div>
-                    </div>
-
-                    <div className="hero-stats" aria-label="PackAndSync planning highlights">
-                        {HERO_STATS.map((s) => (
-                            <div key={s.label} className="hero-stat">
-                                <span className="hero-stat-value gradient-text">{s.value}</span>
-                                <span className="hero-stat-label">{s.label}</span>
-                            </div>
-                        ))}
+                <div className="hero-atmosphere" aria-hidden="true" />
+                <div className="container hero-stage">
+                    <p className="brand-mark font-display">PackAndSync</p>
+                    <h1 className="hero-title">
+                        Travel together.
+                        <br />
+                        <span className="gradient-text">Rent when you need.</span>
+                    </h1>
+                    <p className="hero-subtitle">
+                        Post a trip for others to join and split costs — or book a self-drive car from a local host.
+                    </p>
+                    <div className="hero-ctas">
+                        <Link to="/trips" className="btn btn-primary btn-lg">Travel Together</Link>
+                        <Link to="/rentals" className="btn btn-ghost btn-lg">Car on Rent</Link>
                     </div>
                 </div>
             </section>
 
-            {/* Features */}
-            <section className="features-section">
+            <section className="pathways">
+                <div className="container pathways-grid">
+                    <Link to="/trips" className="pathway pathway-trips">
+                        <span className="pathway-kicker">Module one</span>
+                        <h2 className="font-display">Travel Together</h2>
+                        <p>One person posts the trip. Friends and travelers join the route and share the cost.</p>
+                        <span className="pathway-cta">Browse trips →</span>
+                    </Link>
+                    <Link to="/rentals" className="pathway pathway-rentals">
+                        <span className="pathway-kicker">Module two</span>
+                        <h2 className="font-display">Car on Rent</h2>
+                        <p>Self-drive cars from community hosts — weekends, outer-city runs, full control of the wheel.</p>
+                        <span className="pathway-cta">Find a car →</span>
+                    </Link>
+                </div>
+            </section>
+
+            <section className="steps-section">
                 <div className="container">
-                    <h2 className="section-title">Everything your group needs</h2>
-                    <p className="section-subtitle">One platform to plan, communicate, and travel — together.</p>
-                    <div className="features-grid">
-                        {FEATURES.map((f) => (
-                            <div key={f.title} className="feature-card card">
-                                <div className="feature-icon">{f.emoji}</div>
-                                <h3>{f.title}</h3>
-                                <p>{f.desc}</p>
-                            </div>
+                    <h2 className="section-title font-display">How Travel Together works</h2>
+                    <p className="section-subtitle">Built for group trips — not ride price comparison.</p>
+                    <ol className="steps-row">
+                        {STEPS.map((s) => (
+                            <li key={s.n} className="step-item">
+                                <span className="step-n">{s.n}</span>
+                                <h3>{s.title}</h3>
+                                <p>{s.desc}</p>
+                            </li>
                         ))}
-                    </div>
+                    </ol>
                 </div>
             </section>
 
-            {/* CTA Banner */}
             <section className="cta-section">
                 <div className="container cta-inner">
-                    <h2>Ready to start your next adventure?</h2>
-                    <p>Join thousands of travelers who plan smarter with PackAndSync.</p>
-                    <Link to={user ? '/trips/create' : '/register'} className="btn btn-primary btn-lg">
-                        {user ? 'Create a Trip' : 'Join for Free'}
-                    </Link>
+                    <h2 className="font-display">Ready for the next trip?</h2>
+                    <p>Post a route, let people join, and keep shared money clear.</p>
+                    <div className="hero-ctas" style={{ justifyContent: 'center', marginBottom: 0 }}>
+                        <Link to={user ? '/trips/create' : '/register'} className="btn btn-primary btn-lg">
+                            {user ? 'Post a Trip' : 'Get started free'}
+                        </Link>
+                        <Link to="/host" className="btn btn-ghost btn-lg">Host a car</Link>
+                    </div>
                 </div>
             </section>
         </div>

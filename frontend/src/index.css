@@ -15,35 +15,35 @@
   --clr-primary-600: #ea580c;
   --clr-primary-700: #c2410c;
 
-  --clr-accent-400: #818cf8;
-  --clr-accent-500: #6366f1;
-  --clr-accent-600: #4f46e5;
+  --clr-accent-400: #5eead4;
+  --clr-accent-500: #14b8a6;
+  --clr-accent-600: #0d9488;
 
   --clr-success: #22c55e;
   --clr-warning: #f59e0b;
   --clr-danger: #ef4444;
   --clr-info: #38bdf8;
 
-  /* Dark background palette */
-  --clr-bg-900: #080c10;
-  --clr-bg-800: #0f1419;
-  --clr-bg-700: #161d27;
-  --clr-bg-600: #1e2837;
-  --clr-bg-500: #253042;
-  --clr-bg-glass: rgba(255, 255, 255, 0.04);
-  --clr-bg-glass-hover: rgba(255, 255, 255, 0.07);
+  /* Dark background palette — deep ink with warm undertone */
+  --clr-bg-900: #0a0c0f;
+  --clr-bg-800: #12161c;
+  --clr-bg-700: #1a2029;
+  --clr-bg-600: #232b36;
+  --clr-bg-500: #2c3644;
+  --clr-bg-glass: rgba(255, 255, 255, 0.045);
+  --clr-bg-glass-hover: rgba(255, 255, 255, 0.08);
 
-  --clr-border: rgba(255, 255, 255, 0.08);
-  --clr-border-bright: rgba(255, 255, 255, 0.15);
+  --clr-border: rgba(255, 255, 255, 0.09);
+  --clr-border-bright: rgba(255, 255, 255, 0.16);
 
   /* Text */
-  --clr-text-primary: #f1f5f9;
-  --clr-text-secondary: #94a3b8;
-  --clr-text-muted: #64748b;
+  --clr-text-primary: #f4f1ea;
+  --clr-text-secondary: #a8b0bc;
+  --clr-text-muted: #6b7583;
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -70,8 +70,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(249, 115, 22, 0.3);
-  --shadow-glow-accent: 0 0 20px rgba(99, 102, 241, 0.3);
+  --shadow-glow: 0 0 24px rgba(249, 115, 22, 0.28);
+  --shadow-glow-accent: 0 0 24px rgba(20, 184, 166, 0.22);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -99,6 +99,7 @@ body {
   background-color: var(--clr-bg-900);
   color: var(--clr-text-primary);
   line-height: 1.6;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
@@ -165,7 +166,12 @@ h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--clr-text-primary);
+}
+
+h1 {
+  font-weight: 800;
 }
 
 /* 6. Layout Utilities */
@@ -457,15 +463,30 @@ h6 {
 
 /* 14. Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--clr-primary-400), var(--clr-accent-400));
+  background: linear-gradient(120deg, #fdba74 0%, #f97316 45%, #14b8a6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+.font-display {
+  font-family: var(--font-display);
+}
+
 /* 15. Page transitions */
 .page-enter {
-  animation: page-fade-in 0.3s ease forwards;
+  animation: page-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes page-fade-in {

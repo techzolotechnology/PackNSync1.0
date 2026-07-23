@@ -1,0 +1,106 @@
+.rental-map-panel {
+    position: sticky;
+    top: 1rem;
+    background: var(--clr-bg-800, #fff);
+    border: 1px solid var(--clr-border, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.rental-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--clr-border, #e5e7eb);
+    font-size: 0.9rem;
+}
+
+.rental-map-header h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.rental-map-header span {
+    color: var(--clr-text-secondary, #6b7280);
+}
+
+.rental-map-canvas {
+    flex: 1;
+    min-height: 360px;
+    width: 100%;
+}
+
+.rental-map-fallback {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--clr-text-secondary, #6b7280);
+    background: var(--clr-bg-700, #f3f4f6);
+}
+
+.rental-map-hint {
+    margin: 0;
+    padding: 0.5rem 1rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--clr-text-secondary, #6b7280);
+}
+
+.rentals-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 42%);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.rentals-list-column {
+    min-width: 0;
+}
+
+.view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--clr-border, #e5e7eb);
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.view-toggle button {
+    padding: 0.45rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--clr-text-secondary, #6b7280);
+}
+
+.view-toggle button.active {
+    background: var(--clr-primary-500, #6366f1);
+    color: #fff;
+}
+
+.rental-card.selected {
+    outline: 2px solid var(--clr-primary-500, #6366f1);
+    outline-offset: 2px;
+}
+
+.rentals-grid.compact {
+    grid-template-columns: 1fr;
+}
+
+@media (max-width: 960px) {
+    .rentals-split {
+        grid-template-columns: 1fr;
+    }
+
+    .rental-map-panel {
+        position: static;
+        min-height: 320px;
+    }
+}
