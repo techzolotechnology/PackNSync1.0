@@ -47,8 +47,8 @@ jobs:
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
-          # Project Pages path: /<repo-name>/
-          VITE_BASE: /${{ github.event.repository.name }}/
+          # Custom domain (pickandsync.com) is served at site root.
+          VITE_BASE: /
 
       - name: SPA fallback (404 → index)
         run: cp frontend/dist/index.html frontend/dist/404.html

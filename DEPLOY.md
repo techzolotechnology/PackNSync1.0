@@ -73,6 +73,9 @@ Manual deploy: **Actions** → **Deploy** → **Run workflow**.
 
 Frontend reads `VITE_API_URL` / `VITE_SOCKET_URL` at **build** time (set in the Deploy workflow secrets).
 
+For **custom domains** (e.g. `pickandsync.com`), the workflow builds with `VITE_BASE=/` so JS/CSS load from `/assets/...`.  
+If you only use `https://<org>.github.io/<repo>/` with **no** custom domain, change `VITE_BASE` in `.github/workflows/deploy.yml` to `/<repo>/`.
+
 ---
 
 ## Files added
@@ -89,7 +92,8 @@ Frontend reads `VITE_API_URL` / `VITE_SOCKET_URL` at **build** time (set in the 
 | Problem | Fix |
 |---------|-----|
 | Pages site loads but API fails / CORS | Set `FRONTEND_URL` / `FRONTEND_URLS` on Render to the exact Pages origin |
-| Blank page on refresh of a deep route | Deploy copies `404.html` → should work; hard-refresh |
+| Blank page / JS+CSS 404 on custom domain | Rebuild with `VITE_BASE=/` (already set for pickandsync.com) |
+| Blank page on `github.io/Repo/` only | Set `VITE_BASE` to `/RepoName/` in deploy.yml |
 | Deploy job skips backend | Add `RENDER_DEPLOY_HOOK_URL` secret |
 | `VITE_API_URL` empty build | Add the secret, then re-run **Deploy** workflow |
 | Render free tier sleeps | First request after idle can take ~30–60s |
