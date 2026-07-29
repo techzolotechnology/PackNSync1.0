@@ -1,4 +1,5 @@
 node_modules
+**/node_modules
 npm-debug.log*
 .git
 .gitignore
@@ -6,10 +7,22 @@ npm-debug.log*
 .env
 .env.*
 dist
+**/dist
 coverage
-apps
-desktop
-frontend
 PS_updates
 PickAndSync
 **/.DS_Store
+
+# Heavy app source not needed for API image (package.json still included)
+frontend/src
+frontend/public
+frontend/dist
+frontend/.env
+frontend/.env.*
+apps/mobile/src
+apps/mobile/android
+apps/mobile/ios
+apps/mobile/.expo
+desktop/src
+desktop/dist
+desktop/release

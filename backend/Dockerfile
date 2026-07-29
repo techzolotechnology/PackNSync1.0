@@ -6,11 +6,18 @@ WORKDIR /app
 # OpenSSL for Prisma engines
 RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Root workspace manifests (monorepo)
+# Root lockfile + all workspace package.json files (npm workspaces requires every member)
 COPY package.json package-lock.json ./
 COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY apps/mobile/package.json ./apps/mobile/
+COPY desktop/package.json ./desktop/
 
-RUN npm ci --workspace=backend --include-workspace-root
+# Schema needed if any install script touches Prisma; we skip scripts and generate later
+COPY backend/prisma ./backend/prisma
+
+# Ignore lifecycle scripts during install (root postinstall needs full tree)
+RUN npm ci --workspace=backend --include-workspace-root --omit=dev --ignore-scripts
 
 COPY backend ./backend
 
@@ -22,5 +29,5 @@ ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
 
-# Migrate then start (DATABASE_URL must be set in the host)
+# Migrate then start (DATABASE_URL must be set on the host)
 CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]
