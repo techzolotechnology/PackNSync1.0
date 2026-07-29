@@ -1,5 +1,5 @@
-import { Resend } from 'resend';
 import { AppError } from './AppError.js';
+import { sendMail, smtpConfigured } from './mailer.js';
 
 /** Normalize contact for DB lookup/storage */
 export function normalizeContact(contact) {
@@ -44,38 +44,33 @@ function logDevOtp(label, contact, otpCode) {
 }
 
 async function sendEmailOtp(email, otpCode) {
-    const apiKey = process.env.RESEND_API_KEY;
-    const isPlaceholder = !apiKey || apiKey.includes('your_resend');
-    // Resend trial cannot deliver to example.com / random domains
-    const resendBlockedDomain = /\@(example\.com|test\.com|localhost|packandsync\.local)$/i.test(email);
+    const blockedDomain = /\@(example\.com|test\.com|localhost|packandsync\.local)$/i.test(email);
 
-    if (isPlaceholder || resendBlockedDomain || process.env.OTP_CONSOLE_FALLBACK === 'true') {
+    if (!smtpConfigured() || blockedDomain || process.env.OTP_CONSOLE_FALLBACK === 'true') {
         logDevOtp('Email', email, otpCode);
         return 'console';
     }
 
-    const resend = new Resend(apiKey);
-    const from = process.env.EMAIL_FROM || 'PackAndSync <onboarding@resend.dev>';
-
-    const { error } = await resend.emails.send({
-        from,
-        to: email,
-        subject: 'Your PackAndSync verification code',
-        html: `
+    const html = `
             <h2>PackAndSync</h2>
             <p>Your verification code is:</p>
             <p style="font-size:28px;font-weight:bold;letter-spacing:4px">${otpCode}</p>
             <p>This code expires in 10 minutes. Do not share it with anyone.</p>
-        `,
-    });
+        `;
 
-    if (error) {
-        console.error('[Resend] falling back to console OTP:', error.message || error);
-        logDevOtp('Email (Resend failed)', email, otpCode);
+    try {
+        await sendMail({
+            to: email,
+            subject: 'Your PackAndSync verification code',
+            html,
+            text: `Your PackAndSync verification code is ${otpCode}. Expires in 10 minutes.`,
+        });
+        return 'email';
+    } catch (err) {
+        console.error('[ZeptoMail/SMTP] falling back to console OTP:', err.message || err);
+        logDevOtp('Email (SMTP failed)', email, otpCode);
         return 'console';
     }
-
-    return 'email';
 }
 
 async function sendTwilioSms(phoneNumber, otpCode) {

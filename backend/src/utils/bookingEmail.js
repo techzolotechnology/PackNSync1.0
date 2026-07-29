@@ -1,9 +1,4 @@
-import { Resend } from 'resend';
-
-const resendConfigured = () => {
-    const key = process.env.RESEND_API_KEY;
-    return Boolean(key && !key.includes('your_resend'));
-};
+import { sendMail, smtpConfigured } from './mailer.js';
 
 export async function sendBookingConfirmationEmail({ to, subject, html }) {
     if (!to) {
@@ -11,20 +6,18 @@ export async function sendBookingConfirmationEmail({ to, subject, html }) {
         return false;
     }
 
-    if (!resendConfigured()) {
+    if (!smtpConfigured()) {
         console.log(`[DEV] Booking email to ${to}: ${subject}`);
         return false;
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const from = process.env.EMAIL_FROM || 'PackAndSync <onboarding@resend.dev>';
-
-    const { error } = await resend.emails.send({ from, to, subject, html });
-    if (error) {
-        console.error('[Resend booking]', error);
+    try {
+        await sendMail({ to, subject, html });
+        return true;
+    } catch (err) {
+        console.error('[ZeptoMail/SMTP booking]', err.message || err);
         return false;
     }
-    return true;
 }
 
 export function rentalBookingEmailHtml({ renterName, hostName, vehicleLabel, location, startDate, endDate, totalPrice, isHost }) {

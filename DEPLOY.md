@@ -36,7 +36,7 @@ GitHub (push main)
    - `FRONTEND_URL` = your GitHub Pages URL  
      e.g. `https://<org>.github.io/<repo>`
    - `FRONTEND_URLS` = same (comma-separated if multiple)
-   - Optional: `OPENAI_API_KEY`, Cloudinary, Resend, etc. (same as local `.env`)
+   - Optional: `OPENAI_API_KEY`, Cloudinary, ZeptoMail `SMTP_*` + `EMAIL_FROM`, etc. (same as local `.env`)
 
 ### 3) Add GitHub Actions secrets
 
