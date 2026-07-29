@@ -50,7 +50,10 @@ export default function HostDashboard() {
     const [termsLoading, setTermsLoading] = useState(false);
     const [formData, setFormData] = useState(initialVehicleForm);
     const [vehicleImages, setVehicleImages] = useState([]);
+    const [rcFile, setRcFile] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [savingVehicle, setSavingVehicle] = useState(false);
+    const [rcUploadTarget, setRcUploadTarget] = useState(null);
     const [listingForm, setListingForm] = useState(initialListingForm);
     const [message, setMessage] = useState('');
 
@@ -105,21 +108,63 @@ export default function HostDashboard() {
         }
     };
 
+    const resetAddForm = () => {
+        setShowAddForm(false);
+        setFormData(initialVehicleForm);
+        setVehicleImages([]);
+        setRcFile(null);
+    };
+
     const handleAddVehicle = async (e) => {
         e.preventDefault();
+        if (!rcFile) {
+            toast.error('Upload a clear photo of the vehicle RC.');
+            return;
+        }
         await requireListingCompliance(async () => {
             setMessage('');
+            setSavingVehicle(true);
             try {
-                await vehiclesApi.create({ ...formData, images: vehicleImages });
-                toast.success('Vehicle added. Upload RC photo on the Verify page for OCR auto-check.');
-                setShowAddForm(false);
-                setFormData(initialVehicleForm);
-                setVehicleImages([]);
+                const plate = String(formData.licensePlate || '').trim().toUpperCase();
+                await vehiclesApi.create({ ...formData, licensePlate: plate, images: vehicleImages });
+                const rcRes = await verificationsApi.uploadRcOcr(plate, rcFile);
+                toast.success(rcRes.data.message || 'Vehicle added and RC submitted for review.');
+                resetAddForm();
                 fetchDashboard();
             } catch (err) {
                 setMessage(err.response?.data?.message || 'Failed to add vehicle.');
+            } finally {
+                setSavingVehicle(false);
             }
         });
+    };
+
+    const handleUploadRc = async (e) => {
+        e.preventDefault();
+        if (!rcUploadTarget) return;
+        if (!rcFile) {
+            toast.error('Choose a clear photo of the RC.');
+            return;
+        }
+        setSavingVehicle(true);
+        setMessage('');
+        try {
+            const res = await verificationsApi.uploadRcOcr(rcUploadTarget.licensePlate, rcFile);
+            toast.success(res.data.message || 'RC submitted for review.');
+            setRcUploadTarget(null);
+            setRcFile(null);
+            fetchDashboard();
+        } catch (err) {
+            setMessage(err.response?.data?.message || 'RC upload failed.');
+        } finally {
+            setSavingVehicle(false);
+        }
+    };
+
+    const rcLabel = (vehicle) => {
+        if (vehicle.isVerified) return { text: 'RC verified', className: 'rc-ok' };
+        if (vehicle.rcUrl) return { text: 'RC under review', className: 'rc-pending' };
+        return { text: 'RC required', className: 'rc-needed' };
     };
 
     const handleVehiclePhoto = async (e) => {
@@ -142,8 +187,18 @@ export default function HostDashboard() {
         }
     };
 
-    const openListingForm = (vehicleId) => {
-        setListingForm({ ...initialListingForm, vehicleId });
+    const openListingForm = (vehicle) => {
+        if (!vehicle.isVerified) {
+            if (!vehicle.rcUrl) {
+                toast.error('Upload the vehicle RC first.');
+                setRcUploadTarget(vehicle);
+                setRcFile(null);
+                return;
+            }
+            toast.error('Wait for admin to approve this vehicle RC before listing.');
+            return;
+        }
+        setListingForm({ ...initialListingForm, vehicleId: vehicle.id });
         setShowListingForm(true);
     };
 
@@ -222,6 +277,8 @@ export default function HostDashboard() {
                                 const price = formatPrice(listing?.pricePerDay);
                                 const thumb = vehicle.images?.[0] || FALLBACK_THUMB;
                                 const title = `${vehicle.make} ${vehicle.model}`.trim();
+                                const rc = rcLabel(vehicle);
+                                const needsRc = !vehicle.isVerified && !vehicle.rcUrl;
 
                                 return (
                                     <article key={vehicle.id} className="host-v-card">
@@ -229,22 +286,34 @@ export default function HostDashboard() {
                                             <img src={thumb} alt={title} className="host-v-thumb" />
                                             <div className="host-v-meta">
                                                 <h3>{title}</h3>
-                                                <span className={`host-v-status ${booked ? 'booked' : 'available'}`}>
+                                                <span className={`host-v-status ${booked ? 'booked' : listing ? 'available' : 'idle'}`}>
                                                     {booked ? 'Booked' : listing ? 'Available' : 'Not listed'}
                                                 </span>
+                                                <span className={`host-rc-pill ${rc.className}`}>{rc.text}</span>
                                             </div>
                                         </div>
                                         <div className="host-v-foot">
                                             <strong className="host-v-price">
-                                                {price || 'Set a daily rate'}
+                                                {price || (needsRc ? 'RC photo required' : vehicle.isVerified ? 'Set a daily rate' : 'Awaiting RC approval')}
                                             </strong>
-                                            <button
-                                                type="button"
-                                                className="host-v-action"
-                                                onClick={() => openListingForm(vehicle.id)}
-                                            >
-                                                {listing ? 'Update listing' : 'Create listing'}
-                                            </button>
+                                            {needsRc ? (
+                                                <button
+                                                    type="button"
+                                                    className="host-v-action"
+                                                    onClick={() => { setRcUploadTarget(vehicle); setRcFile(null); }}
+                                                >
+                                                    Upload RC
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="host-v-action"
+                                                    onClick={() => openListingForm(vehicle)}
+                                                    disabled={!vehicle.isVerified && !listing}
+                                                >
+                                                    {listing ? 'Update listing' : 'Create listing'}
+                                                </button>
+                                            )}
                                         </div>
                                     </article>
                                 );
@@ -310,7 +379,7 @@ export default function HostDashboard() {
                             </select>
                             <label className="vehicle-photo-label">
                                 Vehicle photos (up to 5)
-                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleVehiclePhoto} disabled={uploadingImage} />
+                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleVehiclePhoto} disabled={uploadingImage || savingVehicle} />
                             </label>
                             {vehicleImages.length > 0 && (
                                 <div className="vehicle-photo-preview">
@@ -319,9 +388,58 @@ export default function HostDashboard() {
                                     ))}
                                 </div>
                             )}
+                            <label className="vehicle-photo-label">
+                                Vehicle RC photo (required)
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    required
+                                    disabled={savingVehicle}
+                                    onChange={(e) => setRcFile(e.target.files?.[0] || null)}
+                                />
+                            </label>
+                            {rcFile && <p className="host-file-name">{rcFile.name}</p>}
+                            <p className="host-form-hint">We scan the RC against the plate and send it to admin for approval before listing.</p>
                             <div className="modal-btns">
-                                <button type="submit" className="save-btn">Save Vehicle</button>
-                                <button type="button" className="cancel-btn" onClick={() => { setShowAddForm(false); setVehicleImages([]); }}>Cancel</button>
+                                <button type="submit" className="save-btn" disabled={savingVehicle}>
+                                    {savingVehicle ? 'Saving…' : 'Save Vehicle'}
+                                </button>
+                                <button type="button" className="cancel-btn" disabled={savingVehicle} onClick={resetAddForm}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {rcUploadTarget && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Upload RC — {rcUploadTarget.make} {rcUploadTarget.model}</h3>
+                        <p className="host-form-hint">Plate: {rcUploadTarget.licensePlate}. Use a clear photo of the registration certificate.</p>
+                        <form onSubmit={handleUploadRc}>
+                            <label className="vehicle-photo-label">
+                                RC photo
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    required
+                                    disabled={savingVehicle}
+                                    onChange={(e) => setRcFile(e.target.files?.[0] || null)}
+                                />
+                            </label>
+                            {rcFile && <p className="host-file-name">{rcFile.name}</p>}
+                            <div className="modal-btns">
+                                <button type="submit" className="save-btn" disabled={savingVehicle}>
+                                    {savingVehicle ? 'Uploading…' : 'Submit RC'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="cancel-btn"
+                                    disabled={savingVehicle}
+                                    onClick={() => { setRcUploadTarget(null); setRcFile(null); }}
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>

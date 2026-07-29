@@ -194,7 +194,7 @@ export default function VerificationPage() {
                 <section className="verify-panel verify-panel-secondary">
                     <div className="verify-panel-head">
                         <h2>For hosts — vehicle RC</h2>
-                        <p>Add a vehicle on Host, then upload a clear RC photo. OCR checks plate + make/model.</p>
+                        <p>Preferred: upload RC when adding a vehicle on Host. You can also scan an existing plate here.</p>
                     </div>
 
                     <form className="verify-rc-form" onSubmit={handleRcOcrUpload}>

@@ -1,0 +1,101 @@
+# Deploy PackAndSync with GitHub
+
+This repo includes a **GitHub Actions CI/CD pipeline** so pushes to `main` build and deploy the website.
+
+## What the pipeline does
+
+| Workflow | When | What |
+|----------|------|------|
+| **CI** (`.github/workflows/ci.yml`) | Every push & PR | Install → Prisma generate → lint → build frontend |
+| **Deploy** (`.github/workflows/deploy.yml`) | Push to `main` / manual run | Build frontend → **GitHub Pages** → optionally trigger **Render** API |
+
+```
+GitHub (push main)
+   ├─ CI: build check
+   ├─ Frontend → GitHub Pages (static site)
+   └─ Backend  → Render (Docker + Postgres) via deploy hook
+```
+
+---
+
+## One-time setup (do this with sir / team)
+
+### 1) Enable GitHub Pages
+
+1. Repo → **Settings** → **Pages**
+2. **Source**: GitHub Actions
+
+### 2) Deploy the API on Render (free)
+
+1. Go to [render.com](https://render.com) → **New** → **Blueprint**
+2. Connect this GitHub repo (it will read `render.yaml`)
+3. After the service is live, copy the API URL, e.g.  
+   `https://packandsync-api.onrender.com`
+4. In Render → your web service → **Settings** → **Deploy Hook** → copy the URL
+5. Set env vars on Render (at least):
+   - `FRONTEND_URL` = your GitHub Pages URL  
+     e.g. `https://<org>.github.io/<repo>`
+   - `FRONTEND_URLS` = same (comma-separated if multiple)
+   - Optional: `OPENAI_API_KEY`, Cloudinary, Resend, etc. (same as local `.env`)
+
+### 3) Add GitHub Actions secrets
+
+Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+| Secret | Example | Required |
+|--------|---------|----------|
+| `VITE_API_URL` | `https://packandsync-api.onrender.com/api` | **Yes** |
+| `VITE_SOCKET_URL` | `https://packandsync-api.onrender.com` | **Yes** |
+| `RENDER_DEPLOY_HOOK_URL` | `https://api.render.com/deploy/srv-...` | Recommended |
+| `VITE_GOOGLE_MAPS_API_KEY` | your Maps key | Optional |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` / test | Optional |
+
+### 4) Push to deploy
+
+```powershell
+git add .
+git commit -m "Add GitHub CI/CD deploy pipeline"
+git push origin main
+```
+
+Then open: **Actions** tab → watch **Deploy** → when green, open the Pages URL from the job summary.
+
+Manual deploy: **Actions** → **Deploy** → **Run workflow**.
+
+---
+
+## Local vs production URLs
+
+| | Local | Production |
+|--|--------|------------|
+| Website | `http://localhost:5173` | `https://<org>.github.io/<repo>/` |
+| API | `http://localhost:3001/api` | `https://<api>.onrender.com/api` |
+
+Frontend reads `VITE_API_URL` / `VITE_SOCKET_URL` at **build** time (set in the Deploy workflow secrets).
+
+---
+
+## Files added
+
+- `.github/workflows/ci.yml` — continuous integration
+- `.github/workflows/deploy.yml` — Pages deploy + Render hook
+- `backend/Dockerfile` — production API image
+- `render.yaml` — Render Blueprint (API + Postgres)
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Pages site loads but API fails / CORS | Set `FRONTEND_URL` / `FRONTEND_URLS` on Render to the exact Pages origin |
+| Blank page on refresh of a deep route | Deploy copies `404.html` → should work; hard-refresh |
+| Deploy job skips backend | Add `RENDER_DEPLOY_HOOK_URL` secret |
+| `VITE_API_URL` empty build | Add the secret, then re-run **Deploy** workflow |
+| Render free tier sleeps | First request after idle can take ~30–60s |
+
+---
+
+## What to tell sir
+
+> We added a GitHub Actions pipeline: CI builds on every PR, and merges to `main` deploy the React site to GitHub Pages and trigger the Node/Postgres API on Render via Docker.

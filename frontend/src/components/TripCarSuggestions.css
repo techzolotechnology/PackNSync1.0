@@ -1,0 +1,168 @@
+.trip-cars {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.35rem 1.4rem;
+    border-radius: 1rem;
+    border: 1px solid var(--clr-border, rgba(255, 255, 255, 0.1));
+    background: var(--clr-bg-800, #12161c);
+}
+
+.trip-cars.compact {
+    margin-top: 1.25rem;
+    padding: 1rem 1.1rem 1.15rem;
+}
+
+.trip-cars-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.trip-cars-head h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+    font-family: var(--font-display, Georgia, serif);
+    letter-spacing: -0.02em;
+}
+
+.trip-cars-head p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--clr-text-secondary, #94a3b8);
+    line-height: 1.4;
+}
+
+.trip-cars-browse {
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--clr-primary-400, #fb923c);
+    text-decoration: none;
+}
+
+.trip-cars-browse:hover {
+    text-decoration: underline;
+}
+
+.trip-cars-muted,
+.trip-cars-error {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.trip-cars-muted {
+    color: var(--clr-text-muted, #6b7583);
+}
+
+.trip-cars-error {
+    color: #fca5a5;
+}
+
+.trip-cars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.85rem;
+}
+
+.trip-car-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.85rem;
+    overflow: hidden;
+    border: 1px solid var(--clr-border, rgba(255, 255, 255, 0.08));
+    background: var(--clr-bg-900, #0a0c0f);
+}
+
+.trip-car-thumb {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    background: #1a1d22;
+}
+
+.trip-car-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 0.9rem 1rem;
+    flex: 1;
+}
+
+.trip-car-body h4 {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.trip-car-loc {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--clr-text-secondary, #94a3b8);
+}
+
+.trip-car-reasons {
+    margin: 0.2rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.trip-car-reasons li {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(249, 115, 22, 0.12);
+    color: #fdba74;
+}
+
+.trip-car-foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.trip-car-foot strong {
+    font-size: 0.95rem;
+}
+
+.trip-car-foot strong span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--clr-text-muted, #6b7583);
+}
+
+.trip-car-total {
+    font-size: 0.75rem;
+    color: var(--clr-text-secondary, #94a3b8);
+}
+
+.trip-car-cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--clr-primary-500, #f97316), var(--clr-primary-600, #ea580c));
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.trip-car-cta:hover {
+    filter: brightness(1.06);
+}
+
+@media (max-width: 560px) {
+    .trip-cars-head {
+        flex-direction: column;
+    }
+}

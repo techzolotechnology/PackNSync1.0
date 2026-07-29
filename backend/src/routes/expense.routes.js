@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { authenticate } from '../middleware/auth.middleware.js';
+import { notifyUser } from '../utils/notify.js';
 
 export const expenseRouter = Router();
 
@@ -35,6 +36,25 @@ expenseRouter.post('/:id/expenses', authenticate, async (req, res) => {
         },
         include: { payer: { select: { id: true, name: true, avatarUrl: true } }, shares: true },
     });
+
+    const trip = await prisma.trip.findUnique({
+        where: { id: req.params.id },
+        select: { title: true },
+    });
+    const notifyIds = new Set(
+        (splitWith || []).map((s) => s.userId).filter((uid) => uid && uid !== req.user.id)
+    );
+    await Promise.all(
+        [...notifyIds].map((userId) =>
+            notifyUser({
+                userId,
+                type: 'EXPENSE_ADDED',
+                title: 'New shared expense',
+                body: `${req.user.name} added “${title}” (₹${Number(amount).toLocaleString()}) on ${trip?.title || 'a trip'}.`,
+                data: { tripId: req.params.id, expenseId: expense.id },
+            })
+        )
+    );
 
     res.status(201).json({ success: true, data: expense });
 });

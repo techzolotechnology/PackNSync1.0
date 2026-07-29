@@ -4,22 +4,64 @@ import { tripsApi, expensesApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
+import CoverImagePicker from '../components/CoverImagePicker.jsx';
+import TripCarSuggestions from '../components/TripCarSuggestions.jsx';
+import TripChat from '../components/TripChat.jsx';
+import { useChatUnreadStore } from '../store/chatUnreadStore.js';
+import { displayName } from '../utils/displayName.js';
 import './TripDetailPage.css';
 
-const STATUS_BADGE = { OPEN: 'badge-success', FULL: 'badge-warning', IN_PROGRESS: 'badge-info', COMPLETED: 'badge-neutral', DRAFT: 'badge-neutral' };
+const STATUS_BADGE = {
+    OPEN: 'badge-success',
+    FULL: 'badge-warning',
+    IN_PROGRESS: 'badge-info',
+    COMPLETED: 'badge-neutral',
+    DRAFT: 'badge-neutral',
+    CANCELLED: 'badge-danger',
+};
+
+const toInputDate = (value) => {
+    if (!value) return '';
+    try {
+        return new Date(value).toISOString().slice(0, 10);
+    } catch {
+        return '';
+    }
+};
+
+const emptyEditForm = {
+    title: '',
+    description: '',
+    destination: '',
+    coverImageUrl: '',
+    startDate: '',
+    endDate: '',
+    maxParticipants: 6,
+    budgetEstimate: '',
+    status: 'OPEN',
+    isPublic: true,
+};
 
 export default function TripDetailPage() {
     const { id } = useParams();
     const { user } = useAuthStore();
+    const chatUnreadForTrip = useChatUnreadStore((s) => s.byTrip[id] || 0);
     const navigate = useNavigate();
     const [trip, setTrip] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isJoining, setIsJoining] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
     const [expenses, setExpenses] = useState([]);
     const [balances, setBalances] = useState({});
     const [expenseForm, setExpenseForm] = useState({ title: '', amount: '', category: 'OTHER' });
     const [savingExpense, setSavingExpense] = useState(false);
+    const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', isPinned: false });
+    const [savingAnnouncement, setSavingAnnouncement] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState(emptyEditForm);
+    const [savingTrip, setSavingTrip] = useState(false);
 
     const refreshTrip = async () => {
         const res = await tripsApi.getById(id);
@@ -62,6 +104,17 @@ export default function TripDetailPage() {
         () => trip?.members?.filter((m) => m.status === 'APPROVED') || [],
         [trip]
     );
+    const chatMembers = useMemo(() => {
+        const list = [...approvedMembers];
+        if (trip?.organizer && !list.some((m) => m.userId === trip.organizer.id)) {
+            list.unshift({
+                userId: trip.organizer.id,
+                status: 'APPROVED',
+                user: trip.organizer,
+            });
+        }
+        return list;
+    }, [approvedMembers, trip]);
     const pendingMembers = useMemo(
         () => trip?.members?.filter((m) => m.status === 'PENDING') || [],
         [trip]
@@ -74,11 +127,13 @@ export default function TripDetailPage() {
     const nameById = useMemo(() => {
         const map = {};
         trip?.members?.forEach((m) => {
-            if (m.user) map[m.userId] = m.user.name;
+            if (m.user) map[m.userId] = displayName(m.user.name, m.userId, user?.id);
         });
-        if (trip?.organizer) map[trip.organizer.id] = trip.organizer.name;
+        if (trip?.organizer) {
+            map[trip.organizer.id] = displayName(trip.organizer.name, trip.organizer.id, user?.id);
+        }
         return map;
-    }, [trip]);
+    }, [trip, user?.id]);
 
     const handleJoin = async () => {
         if (!user) return navigate('/login');
@@ -94,10 +149,41 @@ export default function TripDetailPage() {
         }
     };
 
+    const handleLeave = async () => {
+        if (!window.confirm(myMembership?.status === 'PENDING'
+            ? 'Withdraw your join request?'
+            : 'Leave this trip?')) return;
+        setIsLeaving(true);
+        try {
+            await tripsApi.leave(id);
+            toast.success(myMembership?.status === 'PENDING' ? 'Join request withdrawn.' : 'You left the trip.');
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not leave trip.');
+        } finally {
+            setIsLeaving(false);
+        }
+    };
+
     const handleMemberStatus = async (userId, status) => {
+        if (status === 'LEFT') {
+            const name = displayName(
+                trip?.members?.find((m) => m.userId === userId)?.user?.name,
+                userId,
+                user?.id,
+                'this member'
+            );
+            if (!window.confirm(`Remove ${name} from this trip?`)) return;
+        }
         try {
             await tripsApi.updateMember(id, userId, { status });
-            toast.success(status === 'APPROVED' ? 'Member approved.' : 'Request declined.');
+            toast.success(
+                status === 'APPROVED'
+                    ? 'Member approved.'
+                    : status === 'LEFT'
+                        ? 'Member removed.'
+                        : 'Request declined.'
+            );
             await refreshTrip();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not update member.');
@@ -155,6 +241,102 @@ export default function TripDetailPage() {
         }
     };
 
+    const handlePostAnnouncement = async (e) => {
+        e.preventDefault();
+        if (!announcementForm.title.trim() || !announcementForm.content.trim()) {
+            toast.error('Enter a title and message.');
+            return;
+        }
+        setSavingAnnouncement(true);
+        try {
+            await tripsApi.createAnnouncement(id, {
+                title: announcementForm.title.trim(),
+                content: announcementForm.content.trim(),
+                isPinned: announcementForm.isPinned,
+            });
+            toast.success('Announcement posted. Members were notified.');
+            setAnnouncementForm({ title: '', content: '', isPinned: false });
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to post announcement.');
+        } finally {
+            setSavingAnnouncement(false);
+        }
+    };
+
+    const handleDeleteAnnouncement = async (announcementId) => {
+        if (!window.confirm('Delete this announcement?')) return;
+        try {
+            await tripsApi.deleteAnnouncement(id, announcementId);
+            toast.success('Announcement deleted.');
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to delete announcement.');
+        }
+    };
+
+    const openEditTrip = () => {
+        if (!trip) return;
+        setEditForm({
+            title: trip.title || '',
+            description: trip.description || '',
+            destination: trip.destination || '',
+            coverImageUrl: trip.coverImageUrl || '',
+            startDate: toInputDate(trip.startDate),
+            endDate: toInputDate(trip.endDate),
+            maxParticipants: trip.maxParticipants || 6,
+            budgetEstimate: trip.budgetEstimate ?? '',
+            status: trip.status || 'OPEN',
+            isPublic: trip.isPublic !== false,
+        });
+        setIsEditing(true);
+        setActiveTab('overview');
+    };
+
+    const handleSaveTrip = async (e) => {
+        e.preventDefault();
+        if (!editForm.title.trim() || !editForm.destination.trim()) {
+            toast.error('Title and destination are required.');
+            return;
+        }
+        if (!editForm.startDate || !editForm.endDate) {
+            toast.error('Start and end dates are required.');
+            return;
+        }
+        if (editForm.endDate < editForm.startDate) {
+            toast.error('End date must be on or after start date.');
+            return;
+        }
+
+        setSavingTrip(true);
+        try {
+            const res = await tripsApi.update(id, {
+                title: editForm.title.trim(),
+                description: editForm.description.trim() || null,
+                destination: editForm.destination.trim(),
+                coverImageUrl: editForm.coverImageUrl || null,
+                startDate: editForm.startDate,
+                endDate: editForm.endDate,
+                maxParticipants: Number(editForm.maxParticipants) || 6,
+                budgetEstimate: editForm.budgetEstimate === '' ? null : Number(editForm.budgetEstimate),
+                status: editForm.status,
+                isPublic: editForm.isPublic,
+            });
+            const changeCount = res.data.changes?.length || 0;
+            toast.success(
+                changeCount
+                    ? `Trip updated. ${changeCount} change${changeCount === 1 ? '' : 's'} — members notified.`
+                    : 'No changes to save.'
+            );
+            setIsEditing(false);
+            await refreshTrip();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to update trip.');
+        } finally {
+            setSavingTrip(false);
+        }
+    };
+
     if (isLoading) return (
         <div className="trip-detail-loading">
             <div className="skeleton" style={{ height: '320px', borderRadius: 0 }} />
@@ -171,8 +353,11 @@ export default function TripDetailPage() {
     const isApprovedMember = myMembership?.status === 'APPROVED' || isOrganizer;
     const canManageExpenses = isApprovedMember;
     const canJoin = !isOrganizer
-        && (!myMembership || myMembership.status === 'REJECTED')
+        && (!myMembership || ['REJECTED', 'LEFT'].includes(myMembership.status))
         && ['OPEN', 'DRAFT'].includes(trip.status);
+    const canLeave = !isOrganizer
+        && myMembership
+        && ['PENDING', 'APPROVED'].includes(myMembership.status);
     const dayGroups = trip.itineraryItems?.reduce((acc, item) => {
         const day = `Day ${item.dayNumber}`;
         if (!acc[day]) acc[day] = [];
@@ -180,7 +365,7 @@ export default function TripDetailPage() {
         return acc;
     }, {});
 
-    const tabs = ['overview', 'itinerary', 'expenses', 'announcements'];
+    const tabs = ['overview', 'itinerary', 'expenses', 'announcements', 'chat'];
 
     const handlePublish = async () => {
         try {
@@ -228,19 +413,47 @@ export default function TripDetailPage() {
                                 : <div className="avatar-placeholder avatar-lg" style={{ fontSize: '1.4rem' }}>{trip.organizer?.name[0]}</div>
                             }
                             <div>
-                                <strong>{trip.organizer?.name}</strong>
+                                <strong className="member-name-row">
+                                    {displayName(trip.organizer?.name, trip.organizer?.id, user?.id)}
+                                    <span className={`verify-pill ${trip.organizer?.isVerified ? 'is-verified' : 'is-unverified'}`}>
+                                        {trip.organizer?.isVerified ? '✓ Verified' : 'Unverified'}
+                                    </span>
+                                </strong>
                                 {trip.organizer?.bio && <p>{trip.organizer.bio.slice(0, 60)}…</p>}
                             </div>
                         </Link>
 
                         {joinButton}
+                        {canLeave && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost w-full"
+                                onClick={handleLeave}
+                                disabled={isLeaving}
+                            >
+                                {isLeaving
+                                    ? 'Updating…'
+                                    : myMembership?.status === 'PENDING'
+                                        ? 'Withdraw request'
+                                        : 'Leave trip'}
+                            </button>
+                        )}
                         {!user && canJoin && (
                             <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
                                 Create an account or log in, then request to join this trip.
                             </p>
                         )}
+                        {isOrganizer && (
+                            <button
+                                type="button"
+                                className="btn btn-primary w-full"
+                                onClick={openEditTrip}
+                            >
+                                Edit trip details
+                            </button>
+                        )}
                         {isOrganizer && trip.status === 'DRAFT' && (
-                            <button type="button" className="btn btn-primary w-full" onClick={handlePublish}>
+                            <button type="button" className="btn btn-ghost w-full" onClick={handlePublish}>
                                 Open trip for joining
                             </button>
                         )}
@@ -253,7 +466,7 @@ export default function TripDetailPage() {
                         {isOrganizer && <span className="badge badge-success">You're the organizer</span>}
                         {isOrganizer && (
                             <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-                                Others will see a Join button on this trip. Log in with a different account to test joining.
+                                Changes to price, dates, or member limit notify approved members.
                             </p>
                         )}
                     </div>
@@ -269,7 +482,15 @@ export default function TripDetailPage() {
                                                 ? <img src={m.user.avatarUrl} alt={m.user.name} className="avatar avatar-sm" />
                                                 : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{m.user?.name?.[0]}</div>
                                             }
-                                            <span>{m.user?.name}</span>
+                                            <span className="member-name-row">
+                                                {displayName(m.user?.name, m.userId, user?.id)}
+                                                <span
+                                                    className={`verify-pill ${m.user?.isVerified ? 'is-verified' : 'is-unverified'}`}
+                                                    title={m.user?.isVerified ? 'Verified' : 'Unverified'}
+                                                >
+                                                    {m.user?.isVerified ? '✓' : '—'}
+                                                </span>
+                                            </span>
                                         </div>
                                         <div className="pending-actions">
                                             <button type="button" className="btn btn-primary btn-sm" onClick={() => handleMemberStatus(m.userId, 'APPROVED')}>Approve</button>
@@ -284,16 +505,39 @@ export default function TripDetailPage() {
                     <div className="card sidebar-card">
                         <h3>Members ({approvedMembers.length})</h3>
                         <div className="members-list">
-                            {approvedMembers.slice(0, 8).map((m) => (
-                                <Link key={m.userId} to={`/profile/${m.userId}`} className="member-chip">
-                                    {m.user?.avatarUrl
-                                        ? <img src={m.user.avatarUrl} alt={m.user.name} className="avatar avatar-sm" />
-                                        : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{m.user?.name[0]}</div>
-                                    }
-                                    <span>{m.user?.name}</span>
-                                </Link>
-                            ))}
-                            {approvedMembers.length > 8 && <span className="text-muted">+{approvedMembers.length - 8} more</span>}
+                            {approvedMembers.slice(0, 12).map((m) => {
+                                const isSelfOrganizer = m.userId === trip.organizerId;
+                                return (
+                                    <div key={m.userId} className="member-manage-row">
+                                        <Link to={`/profile/${m.userId}`} className="member-chip">
+                                            {m.user?.avatarUrl
+                                                ? <img src={m.user.avatarUrl} alt={m.user.name} className="avatar avatar-sm" />
+                                                : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{m.user?.name[0]}</div>
+                                            }
+                                            <span className="member-name-row">
+                                                {displayName(m.user?.name, m.userId, user?.id)}
+                                                {isSelfOrganizer ? ' (organizer)' : ''}
+                                                <span
+                                                    className={`verify-pill ${m.user?.isVerified ? 'is-verified' : 'is-unverified'}`}
+                                                    title={m.user?.isVerified ? 'Verified' : 'Unverified'}
+                                                >
+                                                    {m.user?.isVerified ? '✓' : '—'}
+                                                </span>
+                                            </span>
+                                        </Link>
+                                        {isOrganizer && !isSelfOrganizer && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-sm member-remove-btn"
+                                                onClick={() => handleMemberStatus(m.userId, 'LEFT')}
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {approvedMembers.length > 12 && <span className="text-muted">+{approvedMembers.length - 12} more</span>}
                         </div>
                     </div>
                 </aside>
@@ -303,6 +547,9 @@ export default function TripDetailPage() {
                         {tabs.map((tab) => (
                             <button key={tab} className={`trip-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'chat' && chatUnreadForTrip > 0 && activeTab !== 'chat' && (
+                                    <span className="trip-tab-badge">{chatUnreadForTrip > 99 ? '99+' : chatUnreadForTrip}</span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -310,6 +557,135 @@ export default function TripDetailPage() {
                     {activeTab === 'overview' && (
                         <div className="tab-content">
                             <h2>About this trip</h2>
+
+                            {isEditing && isOrganizer ? (
+                                <form className="trip-edit-form" onSubmit={handleSaveTrip}>
+                                    <p className="text-muted trip-edit-intro">
+                                        Update trip details. Approved members get an in-app notification for every saved change.
+                                    </p>
+                                    <label>
+                                        Title
+                                        <input
+                                            type="text"
+                                            value={editForm.title}
+                                            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                            required
+                                            maxLength={120}
+                                        />
+                                    </label>
+                                    <label>
+                                        Destination
+                                        <LocationAutocomplete
+                                            value={editForm.destination}
+                                            onChange={(value) => setEditForm({
+                                                ...editForm,
+                                                destination: value,
+                                                coverImageUrl: '',
+                                            })}
+                                            placeholder="City or region"
+                                        />
+                                    </label>
+                                    <CoverImagePicker
+                                        place={editForm.destination}
+                                        value={editForm.coverImageUrl}
+                                        onChange={(url) => setEditForm({ ...editForm, coverImageUrl: url })}
+                                    />
+                                    <label>
+                                        Description
+                                        <textarea
+                                            rows={4}
+                                            value={editForm.description}
+                                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                            placeholder="Plan, vibe, what you’ll split…"
+                                        />
+                                    </label>
+                                    <div className="trip-edit-row">
+                                        <label>
+                                            Start date
+                                            <input
+                                                type="date"
+                                                value={editForm.startDate}
+                                                onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
+                                                required
+                                            />
+                                        </label>
+                                        <label>
+                                            End date
+                                            <input
+                                                type="date"
+                                                value={editForm.endDate}
+                                                onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+                                                required
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="trip-edit-row">
+                                        <label>
+                                            Member limit
+                                            <input
+                                                type="number"
+                                                min={Math.max(2, approvedMembers.length)}
+                                                max={50}
+                                                value={editForm.maxParticipants}
+                                                onChange={(e) => setEditForm({ ...editForm, maxParticipants: e.target.value })}
+                                                required
+                                            />
+                                        </label>
+                                        <label>
+                                            Budget / person (₹)
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="100"
+                                                value={editForm.budgetEstimate}
+                                                onChange={(e) => setEditForm({ ...editForm, budgetEstimate: e.target.value })}
+                                                placeholder="e.g. 6500"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="trip-edit-row">
+                                        <label>
+                                            Status
+                                            <select
+                                                value={editForm.status}
+                                                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                                            >
+                                                <option value="DRAFT">Draft</option>
+                                                <option value="OPEN">Open</option>
+                                                <option value="FULL">Full</option>
+                                                <option value="IN_PROGRESS">In progress</option>
+                                                <option value="COMPLETED">Completed</option>
+                                                <option value="CANCELLED">Cancelled</option>
+                                            </select>
+                                        </label>
+                                        <label className="trip-edit-check">
+                                            <span>Visibility</span>
+                                            <span className="trip-edit-check-row">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editForm.isPublic}
+                                                    onChange={(e) => setEditForm({ ...editForm, isPublic: e.target.checked })}
+                                                />
+                                                Public listing
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div className="trip-edit-actions">
+                                        <button type="submit" className="btn btn-primary" disabled={savingTrip}>
+                                            {savingTrip ? 'Saving…' : 'Save changes'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost"
+                                            disabled={savingTrip}
+                                            onClick={() => setIsEditing(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <>
                             <p className="trip-description">{trip.description || 'No description provided.'}</p>
                             {canJoin && (
                                 <div className="join-banner card">
@@ -327,6 +703,17 @@ export default function TripDetailPage() {
                             <p className="text-muted" style={{ marginTop: '1rem' }}>
                                 Travel together: one person posts the trip, others join, and shared costs are split on the Expenses tab.
                             </p>
+
+                            <TripCarSuggestions
+                                tripId={trip.id}
+                                destination={trip.destination}
+                                startDate={toInputDate(trip.startDate)}
+                                endDate={toInputDate(trip.endDate)}
+                                seats={trip.maxParticipants}
+                                title={isOrganizer ? 'Cars for your trip' : 'Cars that fit this trip'}
+                            />
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -427,7 +814,7 @@ export default function TripDetailPage() {
                                                 <div>
                                                     <strong>{exp.title}</strong>
                                                     <p className="text-muted">
-                                                        Paid by {exp.payer?.name || 'Someone'} · {format(new Date(exp.date || exp.createdAt), 'MMM d, yyyy')}
+                                                        Paid by {displayName(exp.payer?.name, exp.payerId || exp.payer?.id, user?.id, 'Someone')} · {format(new Date(exp.date || exp.createdAt), 'MMM d, yyyy')}
                                                         {exp.category ? ` · ${exp.category}` : ''}
                                                     </p>
                                                 </div>
@@ -450,18 +837,82 @@ export default function TripDetailPage() {
                     {activeTab === 'announcements' && (
                         <div className="tab-content">
                             <h2>Announcements</h2>
+                            <p className="text-muted" style={{ marginTop: 0 }}>
+                                {isOrganizer
+                                    ? 'Post updates for the group — approved members get an in-app notification.'
+                                    : 'Updates from the trip organizer.'}
+                            </p>
+
+                            {isOrganizer && (
+                                <form className="announcement-form" onSubmit={handlePostAnnouncement}>
+                                    <input
+                                        type="text"
+                                        placeholder="Title — e.g. Pickup point updated"
+                                        value={announcementForm.title}
+                                        onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                                        maxLength={120}
+                                        required
+                                    />
+                                    <textarea
+                                        placeholder="Message for the group…"
+                                        value={announcementForm.content}
+                                        onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
+                                        rows={4}
+                                        required
+                                    />
+                                    <div className="announcement-form-actions">
+                                        <label className="announcement-pin">
+                                            <input
+                                                type="checkbox"
+                                                checked={announcementForm.isPinned}
+                                                onChange={(e) => setAnnouncementForm({ ...announcementForm, isPinned: e.target.checked })}
+                                            />
+                                            Pin to top
+                                        </label>
+                                        <button type="submit" className="btn btn-primary" disabled={savingAnnouncement}>
+                                            {savingAnnouncement ? 'Posting…' : 'Post announcement'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
                             {!trip.announcements?.length
-                                ? <p className="text-muted">No announcements yet.</p>
+                                ? <p className="text-muted">{isOrganizer ? 'No announcements yet — post the first update above.' : 'No announcements yet.'}</p>
                                 : trip.announcements.map((a) => (
-                                    <div key={a.id} className="announcement card">
-                                        <div className="flex justify-between items-center">
-                                            <strong>{a.title}</strong>
-                                            <span className="text-muted" style={{ fontSize: '0.8rem' }}>{format(new Date(a.createdAt), 'MMM d, yyyy')}</span>
+                                    <div key={a.id} className={`announcement card ${a.isPinned ? 'pinned' : ''}`}>
+                                        <div className="flex justify-between items-center" style={{ gap: '0.75rem' }}>
+                                            <strong>
+                                                {a.isPinned && <span className="announcement-pinned-label">Pinned</span>}
+                                                {a.title}
+                                            </strong>
+                                            <span className="text-muted" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                                                {format(new Date(a.createdAt), 'MMM d, yyyy')}
+                                            </span>
                                         </div>
                                         <p>{a.content}</p>
+                                        <div className="announcement-meta">
+                                            <span className="text-muted" style={{ fontSize: '0.8rem' }}>
+                                                {a.author?.name || 'Organizer'}
+                                            </span>
+                                            {isOrganizer && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-ghost btn-sm"
+                                                    onClick={() => handleDeleteAnnouncement(a.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))
                             }
+                        </div>
+                    )}
+
+                    {activeTab === 'chat' && (
+                        <div className="tab-content">
+                            <TripChat tripId={id} user={user} canChat={isApprovedMember} members={chatMembers} />
                         </div>
                     )}
                 </div>

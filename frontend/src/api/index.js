@@ -89,12 +89,21 @@ export const authApi = {
 
 export const tripsApi = {
     getAll: (params) => api.get('/trips', { params }),
+    getMine: (params) => api.get('/trips/mine', { params }),
+    getCoverSuggestions: (q) => api.get('/trips/cover-suggestions', { params: { q } }),
     getById: (id) => api.get(`/trips/${id}`),
+    getCarSuggestions: (id, params) => api.get(`/trips/${id}/car-suggestions`, { params }),
     create: (data) => api.post('/trips', data),
     update: (id, data) => api.put(`/trips/${id}`, data),
     delete: (id) => api.delete(`/trips/${id}`),
     join: (id) => api.post(`/trips/${id}/join`),
+    leave: (id) => api.post(`/trips/${id}/leave`),
     updateMember: (tripId, userId, data) => api.put(`/trips/${tripId}/members/${userId}`, data),
+    createAnnouncement: (id, data) => api.post(`/trips/${id}/announcements`, data),
+    deleteAnnouncement: (tripId, announcementId) => api.delete(`/trips/${tripId}/announcements/${announcementId}`),
+    getMessages: (id, params) => api.get(`/trips/${id}/messages`, { params }),
+    getChatUnread: () => api.get('/trips/chat-unread'),
+    markChatRead: (id) => api.post(`/trips/${id}/messages/read`),
 };
 
 export const itineraryApi = {
@@ -145,11 +154,15 @@ export const ridesApi = {
 
 export const rentalsApi = {
     getListings: (params) => api.get('/rentals/listings', { params }),
+    getSuggestions: (params) => api.get('/rentals/suggestions', { params }),
     getById: (id) => api.get(`/rentals/listings/${id}`),
     createListing: (data) => api.post('/rentals/listings', data),
     book: (data) => api.post('/rentals/bookings', data),
     getMyBookings: () => api.get('/rentals/bookings/my'),
     getHostBookings: () => api.get('/rentals/bookings/host'),
+    cancelBooking: (id) => api.patch(`/rentals/bookings/${id}/cancel`),
+    respondToBooking: (id, status) => api.patch(`/rentals/bookings/${id}/respond`, { status }),
+    payBooking: (id) => api.post(`/rentals/bookings/${id}/pay`),
 };
 
 export const vehiclesApi = {
@@ -165,6 +178,27 @@ export const vehiclesApi = {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
+};
+
+export const exploreApi = {
+    getExamples: () => api.get('/explore/examples'),
+    getStatus: () => api.get('/explore/status'),
+    getPlannerMeta: () => api.get('/explore/planner/meta'),
+    search: (query, limit = 5, { lat, lng } = {}) =>
+        api.post('/explore/search', { query, limit, lat, lng }),
+    chat: (message, { sessionId, lat, lng, limit = 5 } = {}) =>
+        api.post('/explore/chat', { message, sessionId, lat, lng, limit }),
+    clearChat: (sessionId) => api.post('/explore/chat/clear', { sessionId }),
+    getChat: (sessionId) => api.get(`/explore/chat/${sessionId}`),
+    listPlans: () => api.get('/explore/plans'),
+    generatePlan: (data) => api.post('/explore/plans/generate', data),
+    getPlan: (id) => api.get(`/explore/plans/${id}`),
+    updatePlan: (id, data) => api.put(`/explore/plans/${id}`, data),
+    regeneratePlan: (id, data) => api.post(`/explore/plans/${id}/regenerate`, data),
+    savePlan: (id) => api.post(`/explore/plans/${id}/save`),
+    deletePlan: (id) => api.delete(`/explore/plans/${id}`),
+    updatePlanStop: (planId, stopId, data) => api.patch(`/explore/plans/${planId}/stops/${stopId}`, data),
+    deletePlanStop: (planId, stopId) => api.delete(`/explore/plans/${planId}/stops/${stopId}`),
 };
 
 export const verificationsApi = {
@@ -185,9 +219,26 @@ export const verificationsApi = {
 };
 
 export const adminApi = {
+    getStats: () => api.get('/admin/stats'),
+    getUsers: (params) => api.get('/admin/users', { params }),
+    updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
+    banUser: (id, isBanned, banReason) => api.put(`/admin/users/${id}/ban`, { isBanned, banReason }),
+    deleteUser: (id) => api.delete(`/admin/users/${id}`),
+    getTrips: (params) => api.get('/admin/trips', { params }),
+    getHosts: () => api.get('/admin/hosts'),
+    updateTrip: (id, data) => api.patch(`/admin/trips/${id}`, data),
+    updateTripMember: (tripId, userId, status) => api.put(`/admin/trips/${tripId}/members/${userId}`, { status }),
+    deleteTrip: (id) => api.delete(`/admin/trips/${id}`),
     getVerifications: (params) => api.get('/admin/verifications', { params }),
     approveVerification: (id) => api.put(`/admin/verifications/${id}/approve`),
     rejectVerification: (id, reason) => api.put(`/admin/verifications/${id}/reject`, { reason }),
     getVehicles: () => api.get('/admin/vehicles'),
     verifyVehicle: (id) => api.put(`/admin/vehicles/${id}/verify`),
+    rejectVehicle: (id, reason) => api.put(`/admin/vehicles/${id}/reject`, { reason }),
+    getRentalListings: () => api.get('/admin/rentals/listings'),
+    setListingActive: (id, isActive) => api.patch(`/admin/rentals/listings/${id}`, { isActive }),
+    getRentalBookings: (params) => api.get('/admin/rentals/bookings', { params }),
+    updateBookingStatus: (id, status) => api.patch(`/admin/rentals/bookings/${id}`, { status }),
+    getPayments: (params) => api.get('/admin/payments', { params }),
+    refundPayment: (id) => api.post(`/admin/payments/${id}/refund`),
 };

@@ -17,9 +17,13 @@ export const useAuthStore = create(
             requestOtp: async (data) => {
                 set({ isLoading: true });
                 try {
-                    await authApi.requestOtp(data);
+                    const res = await authApi.requestOtp(data);
                     set({ isLoading: false });
-                    return { success: true };
+                    return {
+                        success: true,
+                        message: res.data?.message,
+                        channel: res.data?.channel,
+                    };
                 } catch (err) {
                     set({ isLoading: false });
                     return { success: false, message: err.response?.data?.message || 'Failed to request OTP.' };

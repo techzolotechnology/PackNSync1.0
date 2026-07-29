@@ -80,6 +80,11 @@ export const assertPolicyAccepted = async (userId, policyType) => {
 
 export const assertVehicleVerified = async (vehicle) => {
     if (!vehicle.isVerified) {
-        throw new AppError('Vehicle RC must be verified by admin before listing. Submit RC via DigiLocker on the verify page.', 403);
+        throw new AppError(
+            vehicle.rcUrl
+                ? 'Vehicle RC is waiting for admin approval before you can list.'
+                : 'Upload a clear RC photo for this vehicle before listing.',
+            403,
+        );
     }
 };

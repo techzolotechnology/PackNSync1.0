@@ -34,12 +34,23 @@ function twilioConfigured() {
     );
 }
 
+function logDevOtp(label, contact, otpCode) {
+    console.log('');
+    console.log('========================================');
+    console.log(`[DEV OTP] ${label}: ${contact}`);
+    console.log(`[DEV OTP] Code: ${otpCode}`);
+    console.log('========================================');
+    console.log('');
+}
+
 async function sendEmailOtp(email, otpCode) {
     const apiKey = process.env.RESEND_API_KEY;
     const isPlaceholder = !apiKey || apiKey.includes('your_resend');
+    // Resend trial cannot deliver to example.com / random domains
+    const resendBlockedDomain = /\@(example\.com|test\.com|localhost|packandsync\.local)$/i.test(email);
 
-    if (isPlaceholder) {
-        console.log(`[DEV] Email OTP for ${email}: ${otpCode}`);
+    if (isPlaceholder || resendBlockedDomain || process.env.OTP_CONSOLE_FALLBACK === 'true') {
+        logDevOtp('Email', email, otpCode);
         return 'console';
     }
 
@@ -59,11 +70,9 @@ async function sendEmailOtp(email, otpCode) {
     });
 
     if (error) {
-        console.error('[Resend]', error);
-        throw new AppError(
-            `Failed to send email OTP: ${error.message}. Use onboarding@resend.dev until your domain is verified in Resend.`,
-            502
-        );
+        console.error('[Resend] falling back to console OTP:', error.message || error);
+        logDevOtp('Email (Resend failed)', email, otpCode);
+        return 'console';
     }
 
     return 'email';
@@ -137,7 +146,7 @@ async function sendSmsOtp(phoneNumber, otpCode) {
     const msg91Result = await sendMsg91Sms(phoneNumber, otpCode);
     if (msg91Result) return msg91Result;
 
-    console.log(`[DEV] SMS OTP for ${phoneNumber}: ${otpCode}`);
+    logDevOtp('SMS', phoneNumber, otpCode);
     return 'console';
 }
 

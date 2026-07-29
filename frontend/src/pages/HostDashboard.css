@@ -169,8 +169,46 @@
     color: #f27121;
 }
 
-.host-v-status:not(.available):not(.booked) {
+.host-v-status.idle {
     color: #94a3b8;
+}
+
+.host-rc-pill {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.host-rc-pill.rc-ok {
+    color: #86efac;
+}
+
+.host-rc-pill.rc-pending {
+    color: #fdba74;
+}
+
+.host-rc-pill.rc-needed {
+    color: #fca5a5;
+}
+
+.host-form-hint {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.host-file-name {
+    margin: -0.35rem 0 0;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+.host-v-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .host-v-foot {

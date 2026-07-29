@@ -26,6 +26,14 @@ export const authenticate = async (req, res, next) => {
             return next(err);
         }
 
+        if (user.isBanned) {
+            const err = new Error(user.banReason
+                ? `Account suspended: ${user.banReason}`
+                : 'Your account has been suspended. Contact support.');
+            err.statusCode = 403;
+            return next(err);
+        }
+
         req.user = user;
         next();
     } catch {

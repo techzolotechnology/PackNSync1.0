@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
+import { notifyUser } from '../utils/notify.js';
 
 // GET /api/admin/verifications
 export const listVerifications = async (req, res) => {
@@ -47,6 +48,14 @@ export const approveVerification = async (req, res) => {
         });
     }
 
+    await notifyUser({
+        userId: verification.userId,
+        type: 'REQUEST_APPROVED',
+        title: 'Verification approved',
+        body: `Your ${verification.documentType} verification was approved. You can use verified features now.`,
+        data: { verificationId: verification.id, documentType: verification.documentType },
+    });
+
     res.json({ success: true, data: updated, message: 'Verification approved.' });
 };
 
@@ -74,6 +83,16 @@ export const rejectVerification = async (req, res) => {
             data: { isVerified: false },
         });
     }
+
+    await notifyUser({
+        userId: verification.userId,
+        type: 'REQUEST_REJECTED',
+        title: 'Verification rejected',
+        body: reason
+            ? `Your ${verification.documentType} was rejected: ${reason}`
+            : `Your ${verification.documentType} verification was rejected. Please resubmit.`,
+        data: { verificationId: verification.id, documentType: verification.documentType, reason: reason || null },
+    });
 
     res.json({ success: true, data: updated, message: 'Verification rejected.' });
 };
@@ -114,5 +133,60 @@ export const verifyVehicle = async (req, res) => {
         }
     }
 
+    await notifyUser({
+        userId: vehicle.ownerId,
+        type: 'REQUEST_APPROVED',
+        title: 'Vehicle verified',
+        body: `${vehicle.make} ${vehicle.model} (${vehicle.licensePlate}) is verified. You can list it for rent.`,
+        data: { vehicleId: vehicle.id },
+    });
+
     res.json({ success: true, data: updated });
+};
+
+// PUT /api/admin/vehicles/:id/reject
+export const rejectVehicle = async (req, res) => {
+    const { reason } = req.body;
+    const vehicle = await prisma.vehicle.findUnique({ where: { id: req.params.id } });
+    if (!vehicle) throw new AppError('Vehicle not found.', 404);
+
+    const updated = await prisma.vehicle.update({
+        where: { id: vehicle.id },
+        data: { isVerified: false },
+    });
+
+    // Deactivate listings for unverified vehicles
+    await prisma.rentalListing.updateMany({
+        where: { vehicleId: vehicle.id },
+        data: { isActive: false },
+    });
+
+    if (vehicle.licensePlate) {
+        const existing = await prisma.verification.findFirst({
+            where: { userId: vehicle.ownerId, documentType: 'RC', documentNumber: vehicle.licensePlate },
+            orderBy: { createdAt: 'desc' },
+        });
+        if (existing && existing.status !== 'REJECTED') {
+            await prisma.verification.update({
+                where: { id: existing.id },
+                data: {
+                    status: 'REJECTED',
+                    verifiedAt: null,
+                    documentUrl: reason ? `REJECTED: ${reason}` : existing.documentUrl,
+                },
+            });
+        }
+    }
+
+    await notifyUser({
+        userId: vehicle.ownerId,
+        type: 'REQUEST_REJECTED',
+        title: 'Vehicle verification rejected',
+        body: reason
+            ? `${vehicle.make} ${vehicle.model} was rejected: ${reason}`
+            : `${vehicle.make} ${vehicle.model} RC was rejected. Listings were deactivated.`,
+        data: { vehicleId: vehicle.id, reason: reason || null },
+    });
+
+    res.json({ success: true, data: updated, message: 'Vehicle rejected and listings deactivated.' });
 };

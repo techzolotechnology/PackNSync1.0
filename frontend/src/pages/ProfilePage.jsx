@@ -340,7 +340,7 @@ export default function ProfilePage() {
                                             <span className="pf-badge verified">Verified</span>
                                         )}
                                         <span className={`pf-badge role ${profile.role?.toLowerCase()}`}>
-                                            {profile.role === 'ADMIN' ? 'Admin' : profile.role === 'ORGANIZER' ? 'Organizer' : 'Member'}
+                                            {profile.role === 'ADMIN' ? 'Admin' : 'Member'}
                                         </span>
                                     </div>
                                 </div>

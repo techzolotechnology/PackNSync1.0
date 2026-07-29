@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import Navbar from './components/Navbar.jsx';
@@ -16,7 +16,12 @@ import HostDashboard from './pages/HostDashboard.jsx';
 import VerificationPage from './pages/VerificationPage.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 import TermsPage from './pages/TermsPage.jsx';
+import ExplorePage from './pages/ExplorePage.jsx';
 import Footer from './components/Footer.jsx';
+import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
+
+const AUTH_SHELL_PATHS = new Set(['/login', '/register']);
+const HIDE_FOOTER_PATHS = new Set(['/login', '/register', '/explore']);
 
 const PrivateRoute = ({ children }) => {
     const user = useAuthStore((s) => s.user);
@@ -30,8 +35,18 @@ const AdminRoute = ({ children }) => {
     return children;
 };
 
+/** Admins stay in the control room — no traveler/host product UI. */
+const BlockAdminFromApp = ({ children }) => {
+    const user = useAuthStore((s) => s.user);
+    if (user?.role === 'ADMIN') return <Navigate to="/admin" replace />;
+    return children;
+};
+
 export default function App() {
+    const user = useAuthStore((s) => s.user);
     const fetchMe = useAuthStore((s) => s.fetchMe);
+    const { pathname } = useLocation();
+    const isAuthShell = AUTH_SHELL_PATHS.has(pathname);
 
     useEffect(() => {
         fetchMe();
@@ -39,28 +54,30 @@ export default function App() {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Navbar />
+            {!isAuthShell && <Navbar />}
+            <ChatUnreadBridge />
             <main style={{ flex: 1 }}>
                 <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/trips" element={<TripsPage />} />
-                    <Route path="/trips/create" element={<PrivateRoute><CreateTripPage /></PrivateRoute>} />
-                    <Route path="/trips/:id" element={<TripDetailPage />} />
-                    <Route path="/profile/:id" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+                    <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
+                    <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <LoginPage />} />
+                    <Route path="/register" element={<BlockAdminFromApp><RegisterPage /></BlockAdminFromApp>} />
+                    <Route path="/trips" element={<BlockAdminFromApp><TripsPage /></BlockAdminFromApp>} />
+                    <Route path="/trips/create" element={<BlockAdminFromApp><PrivateRoute><CreateTripPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/trips/:id" element={<BlockAdminFromApp><TripDetailPage /></BlockAdminFromApp>} />
+                    <Route path="/profile/:id" element={<BlockAdminFromApp><PrivateRoute><ProfilePage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
-                    <Route path="/rides" element={<Navigate to="/trips" replace />} />
-                    <Route path="/rentals" element={<RentalsPage />} />
-                    <Route path="/bookings" element={<PrivateRoute><MyBookingsPage /></PrivateRoute>} />
-                    <Route path="/host" element={<PrivateRoute><HostDashboard /></PrivateRoute>} />
-                    <Route path="/verify" element={<PrivateRoute><VerificationPage /></PrivateRoute>} />
+                    <Route path="/rides" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/trips'} replace />} />
+                    <Route path="/rentals" element={<BlockAdminFromApp><RentalsPage /></BlockAdminFromApp>} />
+                    <Route path="/explore" element={<BlockAdminFromApp><ExplorePage /></BlockAdminFromApp>} />
+                    <Route path="/bookings" element={<BlockAdminFromApp><PrivateRoute><MyBookingsPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/host" element={<BlockAdminFromApp><PrivateRoute><HostDashboard /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/verify" element={<BlockAdminFromApp><PrivateRoute><VerificationPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/terms/:type" element={<TermsPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
                 </Routes>
             </main>
-            <Footer />
+            {!HIDE_FOOTER_PATHS.has(pathname) && (!user || user.role !== 'ADMIN') ? <Footer /> : null}
         </div>
     );
 }

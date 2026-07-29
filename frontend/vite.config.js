@@ -2,8 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
+// GitHub Pages needs e.g. "/PackNSync1.0/" — set VITE_BASE in CI
+const base = process.env.VITE_BASE || './';
+
 export default defineConfig({
-    base: './',
+    base,
     plugins: [react()],
     resolve: {
         alias: {

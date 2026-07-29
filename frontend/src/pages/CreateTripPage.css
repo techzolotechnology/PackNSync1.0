@@ -424,6 +424,21 @@
     gap: 1rem;
 }
 
+.create-review-cover {
+    border-radius: 18px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #111316;
+}
+
+.create-review-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 .create-review-hero {
     padding: 1.35rem;
     border-radius: 18px;

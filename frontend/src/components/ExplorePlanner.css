@@ -1,0 +1,288 @@
+.explore-planner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.explore-planner.locked {
+    padding: 0.5rem 0;
+}
+
+.explore-planner.locked h2 {
+    margin: 0.2rem 0 0.5rem;
+    font-size: 1.6rem;
+}
+
+.explore-planner.locked p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.explore-planner-tabs {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.explore-planner-tabs button {
+    flex: 1;
+    padding: 0.45rem 0.5rem;
+    border-radius: 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.explore-planner-tabs button.active {
+    color: #fff;
+    border-color: rgba(249, 115, 22, 0.45);
+    background: rgba(249, 115, 22, 0.16);
+}
+
+.explore-planner-form,
+.explore-planner-result,
+.explore-planner-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.explore-planner-form h2,
+.explore-planner-list h2,
+.explore-planner-result-head h2 {
+    margin: 0;
+    font-size: 1.45rem;
+}
+
+.explore-planner-lead,
+.muted {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.explore-planner-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: #cbd5e1;
+}
+
+.explore-planner-form input,
+.explore-planner-form select,
+.explore-planner-form textarea,
+.explore-stop-edit input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0a0c0f;
+    color: #f8fafc;
+    font: inherit;
+}
+
+.explore-planner-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+}
+
+.explore-planner-interests span {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: #cbd5e1;
+}
+
+.explore-planner-interests div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.explore-planner-interests button {
+    padding: 0.28rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.explore-planner-interests button.on {
+    color: #fdba74;
+    border-color: rgba(249, 115, 22, 0.5);
+    background: rgba(249, 115, 22, 0.12);
+}
+
+.explore-planner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.explore-day-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.explore-day-tabs button {
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.explore-day-tabs button.active {
+    color: #fff;
+    background: rgba(45, 212, 191, 0.18);
+    border-color: rgba(45, 212, 191, 0.4);
+}
+
+.explore-day-panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.explore-day-panel-head h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+}
+
+.explore-stop-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.explore-stop-list li {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.55rem;
+}
+
+.explore-stop-list li.selected {
+    border-color: rgba(249, 115, 22, 0.5);
+}
+
+.explore-stop-main {
+    display: grid;
+    grid-template-columns: 4.2rem 1fr;
+    gap: 0.55rem;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+}
+
+.explore-stop-time {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fdba74;
+}
+
+.explore-stop-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.explore-stop-body strong {
+    font-size: 0.9rem;
+}
+
+.explore-stop-body em {
+    font-style: normal;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.explore-stop-body em.reason {
+    color: #cbd5e1;
+}
+
+.explore-stop-meta {
+    font-size: 0.68rem;
+    color: #64748b;
+    text-transform: capitalize;
+}
+
+.explore-stop-actions {
+    display: flex;
+    gap: 0.55rem;
+    margin-top: 0.4rem;
+    padding-left: 4.75rem;
+}
+
+.explore-stop-actions button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.explore-stop-edit {
+    margin-top: 0.45rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.explore-plan-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: #f8fafc;
+    cursor: pointer;
+}
+
+.explore-plan-row:hover {
+    border-color: rgba(249, 115, 22, 0.4);
+}
+
+.explore-plan-row span {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}

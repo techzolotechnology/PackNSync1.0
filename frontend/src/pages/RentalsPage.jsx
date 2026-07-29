@@ -10,61 +10,10 @@ const today = new Date().toISOString().slice(0, 10);
 const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
 const FALLBACK_IMAGES = [
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80',
-];
-
-const DEMO_LISTINGS = [
-    {
-        id: 'demo-porsche',
-        pricePerDay: 250,
-        location: 'Bangalore',
-        isDemo: true,
-        vehicle: {
-            make: 'Porsche', model: 'Panamera Turbo', transmission: 'Automatic', seats: 4,
-            fuelType: 'Petrol', year: 2022, type: 'CAR',
-            images: [FALLBACK_IMAGES[0]],
-        },
-        host: { id: 'demo-host-1', name: 'Prince', avatarUrl: null },
-    },
-    {
-        id: 'demo-range',
-        pricePerDay: 180,
-        location: 'Mumbai',
-        isDemo: true,
-        vehicle: {
-            make: 'Range Rover', model: 'Sport', transmission: 'Automatic', seats: 5,
-            fuelType: 'Diesel', year: 2021, type: 'CAR',
-            images: [FALLBACK_IMAGES[1]],
-        },
-        host: { id: 'demo-host-2', name: 'Sarah', avatarUrl: null },
-    },
-    {
-        id: 'demo-tesla',
-        pricePerDay: 220,
-        location: 'Hyderabad',
-        isDemo: true,
-        vehicle: {
-            make: 'Tesla', model: 'Model 3', transmission: 'Automatic', seats: 5,
-            fuelType: 'Electric', year: 2023, type: 'CAR',
-            images: [FALLBACK_IMAGES[2]],
-        },
-        host: { id: 'demo-host-3', name: 'Ken', avatarUrl: null },
-    },
-    {
-        id: 'demo-mustang',
-        pricePerDay: 160,
-        location: 'Goa',
-        isDemo: true,
-        vehicle: {
-            make: 'Ford', model: 'Mustang', transmission: 'Manual', seats: 4,
-            fuelType: 'Petrol', year: 1969, type: 'CAR',
-            images: [FALLBACK_IMAGES[3]],
-        },
-        host: { id: 'demo-host-4', name: 'Alex', avatarUrl: null },
-    },
+    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=900&q=80',
 ];
 
 const CATEGORIES = [
@@ -73,8 +22,8 @@ const CATEGORIES = [
         label: 'Luxury Sedans',
         accent: 'teal',
         icon: 'sedan',
-        thumb: FALLBACK_IMAGES[0],
-        match: (v) => /porsche|bmw|mercedes|audi|jaguar|lexus|panamera|sedan/i.test(`${v.make} ${v.model}`),
+        thumb: FALLBACK_IMAGES[3],
+        match: (v) => /bmw|mercedes|audi|jaguar|lexus|city|sedan|honda/i.test(`${v.make} ${v.model}`),
     },
     {
         id: 'suv',
@@ -82,7 +31,7 @@ const CATEGORIES = [
         accent: 'orange',
         icon: 'suv',
         thumb: FALLBACK_IMAGES[1],
-        match: (v) => /suv|xuv|fortuner|harrier|scorpio|endeavour|range|rover|mahindra/i.test(`${v.make} ${v.model} ${v.type || ''}`),
+        match: (v) => /suv|xuv|fortuner|harrier|scorpio|endeavour|creta|mahindra|toyota|hyundai/i.test(`${v.make} ${v.model} ${v.type || ''}`),
     },
     {
         id: 'electric',
@@ -90,15 +39,15 @@ const CATEGORIES = [
         accent: 'orange',
         icon: 'ev',
         thumb: FALLBACK_IMAGES[2],
-        match: (v) => /electric|ev|tesla|nexon|tiago/i.test(`${v.fuelType} ${v.make} ${v.model}`),
+        match: (v) => /electric|ev|nexon|tiago/i.test(`${v.fuelType} ${v.make} ${v.model}`),
     },
     {
         id: 'classics',
         label: 'Classics',
         accent: 'orange',
         icon: 'classic',
-        thumb: FALLBACK_IMAGES[3],
-        match: (v) => /mustang|classic/i.test(`${v.make} ${v.model}`) || (Number(v.year) > 0 && Number(v.year) < 2000),
+        thumb: FALLBACK_IMAGES[0],
+        match: (v) => /classic|ambassador|contessa/i.test(`${v.make} ${v.model}`) || (Number(v.year) > 0 && Number(v.year) < 2000),
     },
 ];
 
@@ -155,7 +104,7 @@ export default function RentalsPage() {
     const [category, setCategory] = useState('');
     const [sortBy, setSortBy] = useState('price');
     const [loading, setLoading] = useState(true);
-    const [usingDemo, setUsingDemo] = useState(false);
+    const [loadError, setLoadError] = useState('');
     const [pendingListing, setPendingListing] = useState(null);
     const [termsOpen, setTermsOpen] = useState(false);
     const [termsLoading, setTermsLoading] = useState(false);
@@ -168,23 +117,17 @@ export default function RentalsPage() {
 
     const fetchListings = async () => {
         setLoading(true);
+        setLoadError('');
         try {
             const res = await rentalsApi.getListings({
                 location,
                 startDate,
                 endDate,
             });
-            const rows = res.data.data || [];
-            if (rows.length === 0) {
-                setListings(DEMO_LISTINGS);
-                setUsingDemo(true);
-            } else {
-                setListings(rows);
-                setUsingDemo(false);
-            }
-        } catch {
-            setListings(DEMO_LISTINGS);
-            setUsingDemo(true);
+            setListings(res.data.data || []);
+        } catch (err) {
+            setListings([]);
+            setLoadError(err.response?.data?.message || 'Unable to load rental listings.');
         } finally {
             setLoading(false);
         }
@@ -231,13 +174,9 @@ export default function RentalsPage() {
     };
 
     const completeBooking = async (listing) => {
-        if (listing.isDemo) {
-            toast('This is a sample car. Host a real vehicle from Host dashboard.', { icon: '🚗' });
-            return;
-        }
         try {
             await rentalsApi.book({ listingId: listing.id, startDate, endDate });
-            toast.success(`Booking request sent. Total: ₹${listing.pricePerDay * rentalDays}`);
+            toast.success(`Booking request sent. Total: ₹${Number(listing.pricePerDay * rentalDays).toLocaleString()}`);
         } catch (err) {
             const msg = err.response?.data?.message || 'Booking failed.';
             if (msg.includes('verification') || msg.includes('KYC')) {
@@ -424,9 +363,7 @@ export default function RentalsPage() {
                     </div>
                 </div>
 
-                {usingDemo && (
-                    <p className="cr-demo-note">Showing sample cars — host a vehicle to list a real one.</p>
-                )}
+                {loadError && <p className="cr-demo-note">{loadError}</p>}
 
                 {loading ? (
                     <div className="cr-grid">
@@ -434,9 +371,15 @@ export default function RentalsPage() {
                             <div key={i} className="cr-card cr-skeleton" />
                         ))}
                     </div>
+                ) : listings.length === 0 ? (
+                    <div className="cr-empty">
+                        <h3>No cars listed yet</h3>
+                        <p>Be the first host in this city, or widen your search dates.</p>
+                        <Link to="/host" className="cr-book">List your car</Link>
+                    </div>
                 ) : filtered.length === 0 ? (
                     <div className="cr-empty">
-                        <h3>No cars in this filter</h3>
+                        <h3>No cars match these filters</h3>
                         <p>Clear the category or widen the price range.</p>
                         <button type="button" className="cr-book" onClick={() => { setCategory(''); setPriceMin(50); setPriceMax(500); }}>
                             Reset filters
@@ -449,7 +392,6 @@ export default function RentalsPage() {
                             const image = v.images?.[0] || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
                             const glow = index % 3 === 0 ? 'glow-teal' : 'glow-orange';
                             const title = `${v.make} ${v.model}`.toUpperCase();
-                            const pricePrefix = listing.isDemo || Number(listing.pricePerDay) < 1000 ? '$' : '₹';
                             return (
                                 <article key={listing.id} className={`cr-card ${glow}`}>
                                     <div className="cr-card-media">
@@ -468,21 +410,15 @@ export default function RentalsPage() {
                                                 : <div className="cr-avatar fallback">{listing.host?.name?.[0] || '?'}</div>
                                             }
                                             <span>{listing.host?.name || 'Host'}</span>
-                                            <strong className="cr-price">{pricePrefix}{Number(listing.pricePerDay).toLocaleString()}/day</strong>
+                                            <strong className="cr-price">₹{Number(listing.pricePerDay).toLocaleString()}/day</strong>
                                         </div>
                                         <div className="cr-actions">
                                             <button type="button" className="cr-book" onClick={() => handleBook(listing)}>
                                                 Book Now
                                             </button>
-                                            {listing.isDemo ? (
-                                                <button type="button" className="cr-host-btn" onClick={() => toast('Sample host profile')}>
-                                                    Host Profile
-                                                </button>
-                                            ) : (
-                                                <Link to={`/profile/${listing.host?.id}`} className="cr-host-btn">
-                                                    Host Profile
-                                                </Link>
-                                            )}
+                                            <Link to={`/profile/${listing.host?.id}`} className="cr-host-btn">
+                                                Host Profile
+                                            </Link>
                                         </div>
                                     </div>
                                 </article>

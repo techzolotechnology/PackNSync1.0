@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
+import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
 import './TripsPage.css';
 
@@ -11,6 +12,7 @@ const STATUS_LABELS = {
     IN_PROGRESS: 'Ongoing',
     COMPLETED: 'Closed',
     DRAFT: 'Draft',
+    CANCELLED: 'Cancelled',
 };
 
 const COVER_FALLBACKS = [
@@ -36,19 +38,22 @@ function Avatar({ user, className = '' }) {
     );
 }
 
-function TripCard({ trip, index }) {
+function TripCard({ trip, index, isMine, myRole }) {
     const startDate = trip.startDate ? format(new Date(trip.startDate), 'MMM d') : '';
     const endDate = trip.endDate ? format(new Date(trip.endDate), 'MMM d, yyyy') : '';
     const statusKey = (trip.status || 'OPEN').toLowerCase();
     const statusLabel = STATUS_LABELS[trip.status] || trip.status;
     const members = trip.members || [];
     const glow = index % 3 === 0 ? 'glow-teal' : 'glow-orange';
+    const role = myRole || (isMine ? 'ORGANIZER' : null);
 
     return (
         <article className={`tt-card ${glow}`}>
             <div className="tt-card-media">
                 <img src={coverFor(trip, index)} alt={trip.title} loading="lazy" />
                 <span className={`tt-status tt-status-${statusKey}`}>{statusLabel}</span>
+                {role === 'ORGANIZER' && <span className="tt-yours-badge">Yours</span>}
+                {role === 'MEMBER' && <span className="tt-yours-badge tt-joined-badge">Joined</span>}
             </div>
             <div className="tt-card-body">
                 <h3 className="tt-card-title">{trip.title}</h3>
@@ -76,6 +81,11 @@ function TripCard({ trip, index }) {
 }
 
 export default function TripsPage() {
+    const user = useAuthStore((s) => s.user);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tab = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
+
     const [trips, setTrips] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -83,20 +93,47 @@ export default function TripsPage() {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
 
+    const setTab = (next) => {
+        if (next === 'mine') {
+            if (!user) {
+                navigate('/login');
+                return;
+            }
+            setSearchParams({ tab: 'mine' });
+        } else {
+            setSearchParams({});
+        }
+        setPage(1);
+    };
+
     const fetchTrips = useCallback(async () => {
+        if (tab === 'mine' && !user) {
+            setTrips([]);
+            setPagination(null);
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         try {
-            const res = await tripsApi.getAll({ search, status, page, limit: 12 });
+            const params = { search, status, page, limit: 12 };
+            const res = tab === 'mine'
+                ? await tripsApi.getMine(params)
+                : await tripsApi.getAll(params);
             setTrips(res.data.data);
             setPagination(res.data.pagination);
         } catch (err) {
             console.error(err);
+            setTrips([]);
         } finally {
             setIsLoading(false);
         }
-    }, [search, status, page]);
+    }, [search, status, page, tab, user]);
 
     useEffect(() => { fetchTrips(); }, [fetchTrips]);
+
+    useEffect(() => {
+        if (tab === 'mine' && !user) navigate('/login');
+    }, [tab, user, navigate]);
 
     return (
         <div className="tt-page page-enter">
@@ -115,8 +152,12 @@ export default function TripsPage() {
                 </div>
                 <div className="container tt-hero-inner">
                     <div className="tt-hero-copy">
-                        <h1>Travel Together</h1>
-                        <p>Browse trips others posted — join them and split the money with the group.</p>
+                        <h1>{tab === 'mine' ? 'My trips' : 'Travel Together'}</h1>
+                        <p>
+                            {tab === 'mine'
+                                ? 'Trips you organize or have joined — open one to chat, split costs, and plan.'
+                                : 'Browse trips others posted — join them and split the money with the group.'}
+                        </p>
                     </div>
                     <Link to="/trips/create" className="tt-post-btn">
                         <span className="tt-post-plus">+</span>
@@ -126,6 +167,25 @@ export default function TripsPage() {
             </section>
 
             <div className="container tt-main">
+                <div className="tt-tabs">
+                    <button
+                        type="button"
+                        className={tab === 'all' ? 'active' : ''}
+                        onClick={() => setTab('all')}
+                    >
+                        Discover
+                    </button>
+                    {user && (
+                        <button
+                            type="button"
+                            className={tab === 'mine' ? 'active' : ''}
+                            onClick={() => setTab('mine')}
+                        >
+                            My trips
+                        </button>
+                    )}
+                </div>
+
                 <div className="tt-toolbar">
                     <label className="tt-search">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -145,7 +205,10 @@ export default function TripsPage() {
                         </svg>
                         <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
                             <option value="">All Statuses</option>
-                            {STATUSES.filter(Boolean).map((s) => (
+                            {(tab === 'mine'
+                                ? ['OPEN', 'DRAFT', 'FULL', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+                                : STATUSES.filter(Boolean)
+                            ).map((s) => (
                                 <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                             ))}
                         </select>
@@ -167,14 +230,24 @@ export default function TripsPage() {
                     </div>
                 ) : trips.length === 0 ? (
                     <div className="tt-empty">
-                        <h3>No trips found</h3>
-                        <p>Try another search or be the first to post.</p>
+                        <h3>{tab === 'mine' ? 'No trips yet' : 'No trips found'}</h3>
+                        <p>
+                            {tab === 'mine'
+                                ? 'Join a trip from Discover, or post your own and invite others.'
+                                : 'Try another search or be the first to post.'}
+                        </p>
                         <Link to="/trips/create" className="tt-post-btn">+ Post a Trip</Link>
                     </div>
                 ) : (
                     <div className="tt-grid">
                         {trips.map((trip, index) => (
-                            <TripCard key={trip.id} trip={trip} index={index} />
+                            <TripCard
+                                key={trip.id}
+                                trip={trip}
+                                index={index}
+                                isMine={Boolean(user && trip.organizerId === user.id)}
+                                myRole={trip.myRole || (user && trip.organizerId === user.id ? 'ORGANIZER' : null)}
+                            />
                         ))}
                     </div>
                 )}

@@ -14,19 +14,19 @@ notificationRouter.get('/', authenticate, async (req, res) => {
     res.json({ success: true, data: notifications });
 });
 
-// PUT /api/notifications/:id/read
-notificationRouter.put('/:id/read', authenticate, async (req, res) => {
-    await prisma.notification.update({
-        where: { id: req.params.id },
+// PUT /api/notifications/read-all
+notificationRouter.put('/read-all', authenticate, async (req, res) => {
+    await prisma.notification.updateMany({
+        where: { userId: req.user.id, isRead: false },
         data: { isRead: true },
     });
     res.json({ success: true });
 });
 
-// PUT /api/notifications/read-all
-notificationRouter.put('/read-all', authenticate, async (req, res) => {
+// PUT /api/notifications/:id/read
+notificationRouter.put('/:id/read', authenticate, async (req, res) => {
     await prisma.notification.updateMany({
-        where: { userId: req.user.id, isRead: false },
+        where: { id: req.params.id, userId: req.user.id },
         data: { isRead: true },
     });
     res.json({ success: true });

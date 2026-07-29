@@ -24,6 +24,7 @@ import { vehicleRouter } from './routes/vehicle.routes.js';
 import { rentalRouter } from './routes/rental.routes.js';
 import { rideRouter } from './routes/ride.routes.js';
 import { verificationRouter } from './routes/verification.routes.js';
+import { exploreRouter } from './routes/explore.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { registerSocketHandlers } from './socket/index.js';
@@ -125,6 +126,7 @@ app.use('/api/vehicles', vehicleRouter);
 app.use('/api/rentals', rentalRouter);
 app.use('/api/rides', rideRouter);
 app.use('/api/verifications', verificationRouter);
+app.use('/api/explore', exploreRouter);
 
 // Error handling
 app.use(notFound);

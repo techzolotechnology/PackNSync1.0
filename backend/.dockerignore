@@ -1,0 +1,8 @@
+# Ignore local env & build output (keep Docker/CI clean)
+.env
+.env.local
+*.log
+node_modules
+dist
+coverage
+.DS_Store

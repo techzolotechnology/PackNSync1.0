@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
+import CoverImagePicker from '../components/CoverImagePicker.jsx';
+import TripCarSuggestions from '../components/TripCarSuggestions.jsx';
 import './CreateTripPage.css';
 
 const STEPS = [
@@ -80,6 +82,7 @@ export default function CreateTripPage() {
         title: '',
         description: '',
         destination: '',
+        coverImageUrl: '',
         startDate: '',
         endDate: '',
         maxParticipants: 6,
@@ -150,6 +153,7 @@ export default function CreateTripPage() {
                 maxParticipants: Number(form.maxParticipants) || 6,
                 budgetEstimate: form.budgetEstimate ? Number(form.budgetEstimate) : null,
                 isPublic: form.isPublic,
+                coverImageUrl: form.coverImageUrl || null,
             });
             toast.success('Trip posted — others can join and split costs.');
             navigate(`/trips/${res.data.data.id}`);
@@ -216,10 +220,15 @@ export default function CreateTripPage() {
                                     <LocationAutocomplete
                                         placeholder="Search city or place (e.g. Kolkata)"
                                         value={form.destination}
-                                        onChange={(val) => setForm((f) => ({ ...f, destination: val }))}
+                                        onChange={(val) => setForm((f) => ({
+                                            ...f,
+                                            destination: val,
+                                            coverImageUrl: '',
+                                        }))}
                                         onSelect={(loc) => setForm((f) => ({
                                             ...f,
                                             destination: loc.label || f.destination,
+                                            coverImageUrl: '',
                                         }))}
                                         icon={(
                                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -229,6 +238,13 @@ export default function CreateTripPage() {
                                         )}
                                     />
                                 </label>
+                                <div className="create-field">
+                                    <CoverImagePicker
+                                        place={form.destination}
+                                        value={form.coverImageUrl}
+                                        onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))}
+                                    />
+                                </div>
                                 <label className="create-field">
                                     Description
                                     <textarea
@@ -389,6 +405,15 @@ export default function CreateTripPage() {
                                 <p className="create-note">
                                     Budget is a guide for joiners. Exact shared costs are split later on the trip Expenses tab.
                                 </p>
+
+                                <TripCarSuggestions
+                                    destination={form.destination}
+                                    startDate={form.startDate}
+                                    endDate={form.endDate}
+                                    seats={Number(form.maxParticipants) || 4}
+                                    title="Suggested cars for this trip"
+                                    compact
+                                />
                             </div>
                         </div>
                     )}
@@ -401,6 +426,11 @@ export default function CreateTripPage() {
                             </div>
 
                             <div className="create-review">
+                                {form.coverImageUrl && (
+                                    <div className="create-review-cover">
+                                        <img src={form.coverImageUrl} alt="Selected cover" />
+                                    </div>
+                                )}
                                 <div className="create-review-hero">
                                     <p className="create-review-dest">{form.destination || 'Destination'}</p>
                                     <h3 className="font-display">{form.title || 'Untitled trip'}</h3>
@@ -431,6 +461,14 @@ export default function CreateTripPage() {
                                     )}
                                 </dl>
                             </div>
+
+                            <TripCarSuggestions
+                                destination={form.destination}
+                                startDate={form.startDate}
+                                endDate={form.endDate}
+                                seats={Number(form.maxParticipants) || 4}
+                                title="Need a car for this trip?"
+                            />
                         </div>
                     )}
 

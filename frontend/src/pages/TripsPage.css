@@ -197,6 +197,31 @@
     padding: 1.75rem 0 4rem;
 }
 
+.tt-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.1rem;
+}
+
+.tt-tabs button {
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: #111316;
+    color: #94a3b8;
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.tt-tabs button.active {
+    background: rgba(45, 212, 191, 0.14);
+    border-color: rgba(45, 212, 191, 0.45);
+    color: #5eead4;
+}
+
 .tt-toolbar {
     display: flex;
     gap: 0.85rem;
@@ -320,6 +345,25 @@
     font-weight: 700;
     letter-spacing: 0.02em;
     backdrop-filter: blur(8px);
+}
+
+.tt-yours-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(242, 113, 33, 0.92);
+    color: #fff7ed;
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+}
+
+.tt-joined-badge {
+    background: rgba(13, 148, 136, 0.92);
+    color: #ecfdf5;
 }
 
 .tt-status-open {

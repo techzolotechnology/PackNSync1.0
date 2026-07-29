@@ -17,9 +17,7 @@ datasource db {
 
 enum Role {
   USER
-  ORGANIZER
   ADMIN
-  HOST
 }
 
 enum TripStatus {
@@ -78,6 +76,8 @@ model User {
   drivingYears      Int?
   travelStyle       String?
   role              Role      @default(USER)
+  isBanned          Boolean   @default(false)
+  banReason         String?
   refreshToken      String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -99,6 +99,8 @@ model User {
   verifications    Verification[]
   policyAcceptances PolicyAcceptance[]
   linkedAccounts   LinkedAccount[]
+  tripChatReads    TripChatRead[]
+  explorePlans     ExplorePlan[]
 
   @@map("users")
 }
@@ -128,8 +130,22 @@ model Trip {
   polls            Poll[]
   announcements    Announcement[]
   payments         Payment[]
+  chatReads        TripChatRead[]
 
   @@map("trips")
+}
+
+model TripChatRead {
+  id         String   @id @default(uuid())
+  tripId     String
+  userId     String
+  lastReadAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@map("trip_chat_reads")
 }
 
 model TripMember {
@@ -404,4 +420,69 @@ model LinkedAccount {
 
   @@unique([userId, provider])
   @@map("linked_accounts")
+}
+
+enum ExplorePlanStatus {
+  DRAFT
+  SAVED
+}
+
+model ExplorePlan {
+  id            String            @id @default(uuid())
+  userId        String
+  title         String
+  destination   String
+  startDate     DateTime
+  endDate       DateTime
+  pace          String            // relaxed | balanced | packed
+  budget        String            // budget | mid | luxury
+  travelerType  String            // solo | couple | family | friends | work | backpacker
+  interests     String[]          @default([])
+  notes         String?
+  summary       String?
+  status        ExplorePlanStatus @default(DRAFT)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days ExplorePlanDay[]
+
+  @@index([userId, updatedAt])
+  @@map("explore_plans")
+}
+
+model ExplorePlanDay {
+  id        String @id @default(uuid())
+  planId    String
+  dayNumber Int
+  title     String
+  theme     String?
+  summary   String?
+
+  plan  ExplorePlan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  stops ExplorePlanStop[]
+
+  @@unique([planId, dayNumber])
+  @@map("explore_plan_days")
+}
+
+model ExplorePlanStop {
+  id        String  @id @default(uuid())
+  dayId     String
+  sortOrder Int     @default(0)
+  name      String
+  address   String?
+  lat       Float?
+  lng       Float?
+  startTime String?
+  endTime   String?
+  category  String?
+  reason    String?
+  energy    String? // low | medium | high
+  notes     String?
+
+  day ExplorePlanDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@index([dayId, sortOrder])
+  @@map("explore_plan_stops")
 }

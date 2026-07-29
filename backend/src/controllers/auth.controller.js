@@ -43,8 +43,9 @@ export const requestOtp = async (req, res) => {
 
     res.json({
         success: true,
+        channel,
         message: channel === 'console'
-            ? 'OTP generated. Check server logs (API keys not configured).'
+            ? 'OTP printed in the backend terminal (email/SMS provider cannot deliver to this address).'
             : `OTP sent to your ${isEmail ? 'email' : 'phone'}.`,
     });
 };
@@ -59,6 +60,12 @@ export const verifyOtp = async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: query });
     if (!user) throw new AppError('Invalid request.', 401);
+    if (user.isBanned) {
+        throw new AppError(
+            user.banReason ? `Account suspended: ${user.banReason}` : 'Your account has been suspended.',
+            403
+        );
+    }
 
     if (user.otpCode !== otpCode || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
         throw new AppError('Invalid or expired OTP.', 401);
@@ -103,6 +110,13 @@ export const refreshAccessToken = async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { id: decoded.sub } });
     if (!user || user.refreshToken !== token) throw new AppError('Invalid refresh token.', 401);
+    if (user.isBanned) {
+        clearCookies(res);
+        throw new AppError(
+            user.banReason ? `Account suspended: ${user.banReason}` : 'Your account has been suspended.',
+            403
+        );
+    }
 
     const accessToken = signAccessToken(user.id);
     const newRefreshToken = signRefreshToken(user.id);

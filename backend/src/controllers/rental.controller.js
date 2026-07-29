@@ -9,6 +9,22 @@ import {
     sendBookingConfirmationEmail,
     rentalBookingEmailHtml,
 } from '../utils/bookingEmail.js';
+import { notifyUser } from '../utils/notify.js';
+import { findSuggestedCars } from '../utils/carSuggestions.js';
+
+// GET /api/rentals/suggestions — cars matched to trip dates / destination / seats
+export const getCarSuggestions = async (req, res) => {
+    const { destination, startDate, endDate, seats, limit } = req.query;
+    const result = await findSuggestedCars(prisma, {
+        destination,
+        startDate,
+        endDate,
+        seats,
+        limit,
+        excludeHostId: req.user?.id || null,
+    });
+    res.json({ success: true, data: result.suggestions, meta: result.meta });
+};
 
 // POST /api/rentals/listings
 export const createListing = async (req, res) => {
@@ -191,7 +207,156 @@ export const bookRental = async (req, res) => {
         console.error('[Rental booking email]', err.message);
     }
 
+    await notifyUser({
+        userId: listing.hostId,
+        type: 'SYSTEM',
+        title: 'New rental booking request',
+        body: `${req.user.name} requested ${vehicleLabel} (${dateFmt(start)} – ${dateFmt(end)}).`,
+        data: { bookingId: booking.id, listingId: listing.id },
+    });
+    await notifyUser({
+        userId: req.user.id,
+        type: 'SYSTEM',
+        title: 'Booking request sent',
+        body: `Your request for ${vehicleLabel} is pending host confirmation.`,
+        data: { bookingId: booking.id },
+    });
+
     res.status(201).json({ success: true, data: booking });
+};
+
+// PATCH /api/rentals/bookings/:id/cancel — renter cancels
+export const cancelBooking = async (req, res) => {
+    const booking = await prisma.rentalBooking.findUnique({
+        where: { id: req.params.id },
+        include: {
+            listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
+        },
+    });
+    if (!booking) throw new AppError('Booking not found.', 404);
+    if (booking.renterId !== req.user.id) throw new AppError('Only the renter can cancel this booking.', 403);
+    if (!['PENDING', 'CONFIRMED'].includes(booking.status)) {
+        throw new AppError(`Cannot cancel a booking with status ${booking.status}.`, 400);
+    }
+
+    const updated = await prisma.rentalBooking.update({
+        where: { id: booking.id },
+        data: { status: 'CANCELLED' },
+        include: {
+            listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
+        },
+    });
+
+    const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    await notifyUser({
+        userId: booking.listing.hostId,
+        type: 'SYSTEM',
+        title: 'Booking cancelled',
+        body: `${req.user.name} cancelled their request for ${label}.`,
+        data: { bookingId: booking.id },
+    });
+    await notifyUser({
+        userId: req.user.id,
+        type: 'SYSTEM',
+        title: 'Booking cancelled',
+        body: `You cancelled ${label}.`,
+        data: { bookingId: booking.id },
+    });
+
+    res.json({ success: true, data: updated });
+};
+
+// PATCH /api/rentals/bookings/:id/respond — host confirm/reject
+export const respondToBooking = async (req, res) => {
+    const { status } = req.body; // CONFIRMED | REJECTED
+    if (!['CONFIRMED', 'REJECTED'].includes(status)) {
+        throw new AppError('Status must be CONFIRMED or REJECTED.', 400);
+    }
+
+    const booking = await prisma.rentalBooking.findUnique({
+        where: { id: req.params.id },
+        include: { listing: { include: { vehicle: true } } },
+    });
+    if (!booking) throw new AppError('Booking not found.', 404);
+    if (booking.listing.hostId !== req.user.id && req.user.role !== 'ADMIN') {
+        throw new AppError('Only the host can respond to this booking.', 403);
+    }
+    if (booking.status !== 'PENDING') {
+        throw new AppError('Only pending bookings can be confirmed or rejected.', 400);
+    }
+
+    const updated = await prisma.rentalBooking.update({
+        where: { id: booking.id },
+        data: { status },
+        include: {
+            listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
+            renter: { select: { id: true, name: true } },
+        },
+    });
+
+    const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    await notifyUser({
+        userId: booking.renterId,
+        type: status === 'CONFIRMED' ? 'REQUEST_APPROVED' : 'REQUEST_REJECTED',
+        title: status === 'CONFIRMED' ? 'Booking confirmed' : 'Booking declined',
+        body: status === 'CONFIRMED'
+            ? `Host confirmed ${label}. You can pay now from My Bookings.`
+            : `Host declined your request for ${label}.`,
+        data: { bookingId: booking.id },
+    });
+
+    res.json({ success: true, data: updated });
+};
+
+// POST /api/rentals/bookings/:id/pay — traveler settles rental payment
+export const payBooking = async (req, res) => {
+    const booking = await prisma.rentalBooking.findUnique({
+        where: { id: req.params.id },
+        include: { listing: { include: { vehicle: true } } },
+    });
+    if (!booking) throw new AppError('Booking not found.', 404);
+    if (booking.renterId !== req.user.id) throw new AppError('Only the renter can pay for this booking.', 403);
+    if (booking.status !== 'CONFIRMED') {
+        throw new AppError('Pay after the host confirms your booking.', 400);
+    }
+
+    const stripePaymentId = `local_pay_${booking.id}_${Date.now()}`;
+
+    await prisma.payment.create({
+        data: {
+            userId: req.user.id,
+            stripePaymentId,
+            amount: Number(booking.totalPrice),
+            currency: 'inr',
+            status: 'succeeded',
+        },
+    });
+
+    const updated = await prisma.rentalBooking.update({
+        where: { id: booking.id },
+        data: { status: 'PAID' },
+        include: {
+            listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
+        },
+    });
+
+    const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    await notifyUser({
+        userId: booking.listing.hostId,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Rental payment received',
+        body: `${req.user.name} paid ₹${Number(booking.totalPrice).toLocaleString()} for ${label}.`,
+        data: { bookingId: booking.id },
+    });
+    await notifyUser({
+        userId: req.user.id,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment successful',
+        body: `You paid ₹${Number(booking.totalPrice).toLocaleString()} for ${label}.`,
+        data: { bookingId: booking.id },
+    });
+
+    res.json({ success: true, data: updated, paid: true });
 };
 
 // GET /api/rentals/bookings/my
@@ -200,7 +365,7 @@ export const getMyBookings = async (req, res) => {
         where: { renterId: req.user.id },
         include: {
             listing: {
-                include: { vehicle: true, host: { select: { name: true } } },
+                include: { vehicle: true, host: { select: { id: true, name: true } } },
             },
         },
         orderBy: { createdAt: 'desc' },

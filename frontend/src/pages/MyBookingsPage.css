@@ -12,6 +12,28 @@
     margin-bottom: 1.5rem;
 }
 
+.bookings-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.booking-trip-main {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.booking-trip-thumb {
+    width: 4.5rem;
+    height: 3.4rem;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    background: var(--clr-bg-700);
+}
+
 .bookings-header h1 {
     margin: 0 0 0.35rem;
     font-size: 2rem;
@@ -79,6 +101,24 @@
 .booking-side {
     text-align: right;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+}
+
+.booking-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: flex-end;
+    margin-top: 0.35rem;
+}
+
+.booking-hint {
+    margin-top: 0.45rem !important;
+    font-size: 0.82rem !important;
+    color: var(--clr-text-muted, var(--clr-text-secondary)) !important;
 }
 
 .booking-status {
@@ -135,5 +175,10 @@
 
     .booking-side {
         text-align: left;
+        align-items: flex-start;
+    }
+
+    .booking-actions {
+        justify-content: flex-start;
     }
 }
