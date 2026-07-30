@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import { wakeApi } from '../utils/apiResilience.js';
+import OtpCodeInput from '../components/OtpCodeInput.jsx';
 import toast from 'react-hot-toast';
 import './AuthPages.css';
 
 const VISUAL = '/images/auth-green-road.png';
+const RESEND_SECONDS = 60;
+const MAX_RESENDS = 3;
 
 export default function RegisterPage() {
     const { requestOtp, verifyOtp, isLoading } = useAuthStore();
@@ -13,16 +16,31 @@ export default function RegisterPage() {
     const [step, setStep] = useState(1);
     const [form, setForm] = useState({ name: '', contact: '', otpCode: '' });
     const [error, setError] = useState('');
+    const [otpChannel, setOtpChannel] = useState(null);
+    const [resendLeft, setResendLeft] = useState(0);
+    const [resendAttempts, setResendAttempts] = useState(0);
+    const [successMsg, setSuccessMsg] = useState('');
 
     useEffect(() => { wakeApi(); }, []);
+
+    useEffect(() => {
+        if (step !== 2 || resendLeft <= 0) return undefined;
+        const timer = setTimeout(() => setResendLeft((s) => Math.max(0, s - 1)), 1000);
+        return () => clearTimeout(timer);
+    }, [step, resendLeft]);
 
     const handleRequestOtp = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMsg('');
         if (!form.name || !form.contact) return setError('Name and Contact are required');
 
         const result = await requestOtp({ name: form.name, contact: form.contact, isRegister: true });
         if (result.success) {
+            setOtpChannel(result.channel || null);
+            setResendLeft(RESEND_SECONDS);
+            setResendAttempts(0);
+            setSuccessMsg('Verification code sent. Please enter the 6-digit OTP.');
             toast.success(
                 result.channel === 'console'
                     ? 'OTP is in the backend terminal — paste it below.'
@@ -34,9 +52,26 @@ export default function RegisterPage() {
         }
     };
 
+    const handleResendOtp = async () => {
+        setError('');
+        setSuccessMsg('');
+        if (!form.name || !form.contact || resendLeft > 0 || resendAttempts >= MAX_RESENDS) return;
+        const result = await requestOtp({ name: form.name, contact: form.contact, isRegister: true });
+        if (result.success) {
+            setOtpChannel(result.channel || null);
+            setResendLeft(RESEND_SECONDS);
+            setResendAttempts((n) => n + 1);
+            setSuccessMsg('New OTP sent successfully.');
+            toast.success(result.message || 'A new OTP has been sent.');
+        } else {
+            setError(result.message);
+        }
+    };
+
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMsg('');
         if (!form.otpCode || form.otpCode.length !== 6) return setError('Enter a valid 6-digit OTP');
 
         const result = await verifyOtp({ contact: form.contact, otpCode: form.otpCode });
@@ -121,22 +156,17 @@ export default function RegisterPage() {
                     ) : (
                         <form onSubmit={handleVerifyOtp} className="auth-form">
                             <p className="auth-hint">
-                                We sent a 6-digit code to <strong>{form.contact}</strong>
+                                Enter the 6-digit code sent to <strong>{form.contact}</strong>.
+                                {otpChannel === 'console' ? ' OTP is printed in the backend terminal for this environment.' : ''}
                             </p>
+                            {successMsg && <p className="form-success">{successMsg}</p>}
 
                             <div className="form-group">
                                 <label className="form-label" htmlFor="otpCode">6-Digit OTP</label>
-                                <input
-                                    id="otpCode"
-                                    name="otpCode"
-                                    type="text"
-                                    className="form-input auth-otp-input"
-                                    placeholder="123456"
+                                <OtpCodeInput
                                     value={form.otpCode}
-                                    maxLength="6"
-                                    onChange={handleChange}
-                                    required
-                                    autoComplete="one-time-code"
+                                    onChange={(otpCode) => setForm((f) => ({ ...f, otpCode: otpCode.replace(/\D/g, '').slice(0, 6) }))}
+                                    disabled={isLoading}
                                 />
                             </div>
 
@@ -145,6 +175,19 @@ export default function RegisterPage() {
                             <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
                                 {isLoading ? 'Verifying…' : 'Create Account'}
                             </button>
+
+                            <div className="auth-otp-row">
+                                <button
+                                    type="button"
+                                    className="auth-link-btn"
+                                    onClick={handleResendOtp}
+                                    disabled={isLoading || resendLeft > 0 || resendAttempts >= MAX_RESENDS}
+                                >
+                                    {resendAttempts >= MAX_RESENDS
+                                        ? 'Resend limit reached'
+                                        : (resendLeft > 0 ? `Resend OTP in ${resendLeft}s` : 'Resend OTP')}
+                                </button>
+                            </div>
 
                             <button type="button" className="btn btn-ghost w-full" onClick={() => setStep(1)}>
                                 Back
