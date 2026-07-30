@@ -173,9 +173,17 @@ export const rentalsApi = {
     getHostBookings: () => api.get('/rentals/bookings/host'),
     cancelBooking: (id) => api.patch(`/rentals/bookings/${id}/cancel`),
     respondToBooking: (id, status) => api.patch(`/rentals/bookings/${id}/respond`, { status }),
-    payBooking: (id) => api.post(`/rentals/bookings/${id}/pay`),
+    payBooking: (id, data = { method: 'wallet' }) => api.post(`/rentals/bookings/${id}/pay`, data),
     reviewDriver: (id, data) => api.post(`/rentals/bookings/${id}/driver-review`, data),
     getDriverReviews: (userId) => api.get(`/rentals/drivers/${userId}/reviews`),
+};
+
+export const walletApi = {
+    get: () => api.get('/wallet'),
+    transactions: (params) => api.get('/wallet/transactions', { params }),
+    topup: (amount) => api.post('/wallet/topup', { amount }),
+    verifyTopup: (orderId) => api.post('/wallet/topup/verify', { orderId }),
+    withdraw: (data) => api.post('/wallet/withdraw', data),
 };
 
 export const vehiclesApi = {

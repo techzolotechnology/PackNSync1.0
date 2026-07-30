@@ -371,9 +371,9 @@ export default function CreateTripPage() {
                                                 </defs>
                                                 <rect width="640" height="220" fill="url(#createDots)" />
                                                 <path d="M40 140c40-50 90-70 140-40s90 20 140-20 100-10 140 30 90 40 140 10" fill="none" stroke="rgba(38,198,218,0.25)" strokeWidth="2" strokeDasharray="6 8" />
-                                                <circle cx="180" cy="100" r="8" fill="#26c6da" opacity="0.9" />
-                                                <circle cx="320" cy="80" r="6" fill="#f27121" opacity="0.85" />
-                                                <circle cx="460" cy="120" r="7" fill="#26c6da" opacity="0.75" />
+                                                <circle cx="180" cy="100" r="8" fill="#5C5C99" opacity="0.9" />
+                                                <circle cx="320" cy="80" r="6" fill="#292966" opacity="0.85" />
+                                                <circle cx="460" cy="120" r="7" fill="#A3A3CC" opacity="0.75" />
                                             </svg>
                                         </div>
                                         <div className="create-map-body">

@@ -198,6 +198,11 @@ export default function Navbar() {
                             </Link>
                         )}
                         {user && (
+                            <Link to="/wallet" className={`nav-link ${isActive('/wallet') ? 'active' : ''}`}>
+                                Wallet
+                            </Link>
+                        )}
+                        {user && (
                             <div className="nav-dropdown" ref={hostRef}>
                                 <button
                                     type="button"
@@ -282,6 +287,14 @@ export default function Navbar() {
                                             {!isAdmin && (
                                                 <>
                                                     <Link
+                                                        to="/wallet"
+                                                        className="nav-dropdown-item"
+                                                        onClick={() => setProfileOpen(false)}
+                                                    >
+                                                        <strong>Wallet</strong>
+                                                        <small>Add money, pay &amp; withdraw</small>
+                                                    </Link>
+                                                    <Link
                                                         to={`/profile/${user.id}`}
                                                         className="nav-dropdown-item"
                                                         onClick={() => setProfileOpen(false)}
@@ -340,6 +353,7 @@ export default function Navbar() {
                             <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Car on Rent</Link>
                             <Link to="/explore" onClick={() => setMenuOpen(false)} className="mobile-link">Explore</Link>
                             {user && <Link to="/bookings" onClick={() => setMenuOpen(false)} className="mobile-link">My Bookings</Link>}
+                            {user && <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link">Wallet</Link>}
                             {user && (
                                 <div className="mobile-section">
                                     <p className="mobile-section-label">Host</p>
@@ -356,6 +370,7 @@ export default function Navbar() {
                                 <p className="mobile-section-label">Account</p>
                                 {!isAdmin && (
                                     <>
+                                        <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link">Wallet</Link>
                                         <Link to={`/profile/${user.id}`} onClick={() => setMenuOpen(false)} className="mobile-link">Profile</Link>
                                         <Link to="/verify" onClick={() => setMenuOpen(false)} className="mobile-link">Verify ID</Link>
                                     </>

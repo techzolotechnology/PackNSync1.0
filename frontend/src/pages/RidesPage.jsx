@@ -216,7 +216,7 @@ export default function RidesPage() {
                             type="button"
                             onClick={handleGPS}
                             disabled={gpsLoading}
-                            style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.8rem', cursor: 'pointer' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--clr-primary-500)', fontSize: '0.8rem', cursor: 'pointer' }}
                         >
                             {gpsLoading ? 'Locating…' : '📍 Current'}
                         </button>
@@ -257,7 +257,7 @@ export default function RidesPage() {
                     </p>
                 )}
                 {coordsReady && !linkedProviders.includes('UBER') && providers.find((p) => p.provider === 'UBER')?.isConfigured && (
-                    <p style={{ fontSize: '0.85rem', color: '#6366f1', marginBottom: '0.5rem' }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--clr-primary-500)', marginBottom: '0.5rem' }}>
                         Locations ready — connect Uber for live Uber fares.
                     </p>
                 )}

@@ -12,7 +12,7 @@
     left: 0.95rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #64748b;
+    color: var(--clr-text-muted);
     display: grid;
     place-items: center;
     pointer-events: none;
@@ -22,10 +22,10 @@
 .location-autocomplete-input {
     width: 100%;
     padding: 0.9rem 1.05rem;
-    background: #0f1114;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--clr-bg-700);
+    border: 1px solid var(--clr-border);
     border-radius: 14px;
-    color: #e2e8f0;
+    color: var(--clr-text-primary);
     font: inherit;
     font-size: 0.98rem;
     font-weight: 500;
@@ -34,12 +34,12 @@
 }
 
 .location-autocomplete-input::placeholder {
-    color: #64748b;
+    color: var(--clr-text-muted);
 }
 
 .location-autocomplete-input:focus {
-    border-color: rgba(38, 198, 218, 0.55);
-    box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.12);
+    border-color: var(--clr-primary-500);
+    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.18);
 }
 
 .location-autocomplete-loading {
@@ -50,8 +50,8 @@
     height: 14px;
     margin-top: -7px;
     border-radius: 50%;
-    border: 2px solid rgba(38, 198, 218, 0.25);
-    border-top-color: #26c6da;
+    border: 2px solid rgba(92, 92, 153, 0.25);
+    border-top-color: var(--clr-primary-500);
     animation: loc-spin 0.7s linear infinite;
 }
 
@@ -64,14 +64,14 @@
     top: calc(100% + 0.4rem);
     left: 0;
     right: 0;
-    background: #15171b;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid var(--clr-border);
     border-radius: 14px;
     list-style: none;
     padding: 0.35rem;
     margin: 0;
     z-index: 40;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--shadow-md);
     max-height: 260px;
     overflow-y: auto;
 }
@@ -89,7 +89,7 @@
     border: none;
     border-radius: 10px;
     background: transparent;
-    color: #e2e8f0;
+    color: var(--clr-text-primary);
     font: inherit;
     font-size: 0.92rem;
     line-height: 1.4;
@@ -100,11 +100,11 @@
 .location-suggestion-item svg {
     flex-shrink: 0;
     margin-top: 0.12rem;
-    color: #26c6da;
+    color: var(--clr-primary-500);
 }
 
 .location-suggestion-item:hover,
 .location-suggestion-item:focus {
-    background: rgba(38, 198, 218, 0.1);
+    background: rgba(92, 92, 153, 0.08);
     outline: none;
 }

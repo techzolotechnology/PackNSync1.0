@@ -1,7 +1,7 @@
 .terms-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(41, 41, 102, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,14 +13,19 @@
     max-width: 480px;
     width: 100%;
     padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
 }
 
 .terms-modal h2 {
     margin-bottom: 0.75rem;
+    color: var(--clr-text-primary);
 }
 
 .terms-modal p {
-    color: #64748b;
+    color: var(--clr-text-secondary);
     line-height: 1.6;
     margin-bottom: 1rem;
 }
@@ -32,6 +37,7 @@
     margin-bottom: 1.25rem;
     font-size: 0.95rem;
     line-height: 1.5;
+    color: var(--clr-text-primary);
 }
 
 .terms-modal-actions {

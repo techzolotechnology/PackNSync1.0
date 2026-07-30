@@ -17,6 +17,7 @@ import VerificationPage from './pages/VerificationPage.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 import TermsPage from './pages/TermsPage.jsx';
 import ExplorePage from './pages/ExplorePage.jsx';
+import WalletPage from './pages/WalletPage.jsx';
 import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 
@@ -84,7 +85,7 @@ export default function App() {
             <AuthModal />
             <AuthQueryBridge />
             <ChatUnreadBridge />
-            <main style={{ flex: 1 }}>
+            <main className="app-page" style={{ flex: 1 }}>
                 <Routes>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
@@ -98,6 +99,7 @@ export default function App() {
                     <Route path="/rentals" element={<BlockAdminFromApp><RentalsPage /></BlockAdminFromApp>} />
                     <Route path="/explore" element={<BlockAdminFromApp><ExplorePage /></BlockAdminFromApp>} />
                     <Route path="/bookings" element={<BlockAdminFromApp><PrivateRoute><MyBookingsPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/wallet" element={<BlockAdminFromApp><PrivateRoute><WalletPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/host" element={<BlockAdminFromApp><PrivateRoute><HostDashboard /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/verify" element={<BlockAdminFromApp><PrivateRoute><VerificationPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/terms/:type" element={<TermsPage />} />

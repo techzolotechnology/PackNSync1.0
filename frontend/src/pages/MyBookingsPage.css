@@ -64,7 +64,7 @@
 .bookings-tabs button.active {
     background: var(--clr-primary-500);
     border-color: var(--clr-primary-500);
-    color: #fff;
+    color: #ffffff;
 }
 
 .bookings-list {
@@ -184,7 +184,7 @@
 }
 
 .booking-review-done {
-    color: var(--clr-primary-400, #f0a04b);
+    color: var(--clr-primary-400);
 }
 
 .driver-review-form {
@@ -192,7 +192,7 @@
     padding: 0.75rem;
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-md);
-    background: var(--clr-bg-900, rgba(0, 0, 0, 0.2));
+    background: var(--clr-bg-900);
     max-width: 28rem;
 }
 

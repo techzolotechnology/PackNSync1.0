@@ -1,5 +1,9 @@
 .terms-page {
     padding: 2rem 0 4rem;
+    background:
+        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.45), transparent 55%),
+        var(--clr-bg-800);
+    color: var(--clr-text-primary);
 }
 
 .terms-container {
@@ -11,7 +15,7 @@
 }
 
 .terms-header p {
-    color: #64748b;
+    color: var(--clr-text-secondary);
     margin-bottom: 1rem;
 }
 
@@ -25,16 +29,17 @@
 .terms-nav a {
     padding: 0.4rem 0.9rem;
     border-radius: 999px;
-    border: 1px solid #e2e8f0;
-    color: #475569;
+    border: 1px solid var(--clr-border);
+    color: var(--clr-text-secondary);
     text-decoration: none;
     font-size: 0.9rem;
+    background: #ffffff;
 }
 
 .terms-nav a.active {
-    background: #6366f1;
-    border-color: #6366f1;
-    color: #fff;
+    background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
+    border-color: var(--clr-primary-500);
+    color: #ffffff;
 }
 
 .terms-content section {
@@ -47,6 +52,6 @@
 }
 
 .terms-content p {
-    color: #475569;
+    color: var(--clr-text-secondary);
     line-height: 1.7;
 }

@@ -17,7 +17,7 @@
 }
 
 .explore-planner.locked p {
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
     font-size: 0.9rem;
     line-height: 1.45;
 }
@@ -32,18 +32,18 @@
     flex: 1;
     padding: 0.45rem 0.5rem;
     border-radius: 0.55rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.03);
-    color: #94a3b8;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    color: var(--clr-text-secondary);
     font-size: 0.78rem;
     font-weight: 650;
     cursor: pointer;
 }
 
 .explore-planner-tabs button.active {
-    color: #fff;
-    border-color: rgba(249, 115, 22, 0.45);
-    background: rgba(249, 115, 22, 0.16);
+    color: #ffffff;
+    border-color: var(--clr-primary-500);
+    background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
 }
 
 .explore-planner-form,
@@ -68,7 +68,7 @@
 .explore-planner-lead,
 .muted {
     margin: 0;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
     font-size: 0.84rem;
     line-height: 1.4;
 }
@@ -79,7 +79,7 @@
     gap: 0.35rem;
     font-size: 0.78rem;
     font-weight: 650;
-    color: #cbd5e1;
+    color: var(--clr-text-secondary);
 }
 
 .explore-planner-form input,
@@ -89,10 +89,19 @@
     width: 100%;
     padding: 0.6rem 0.75rem;
     border-radius: 0.55rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: #0a0c0f;
-    color: #f8fafc;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    color: var(--clr-text-primary);
     font: inherit;
+}
+
+.explore-planner-form input:focus,
+.explore-planner-form select:focus,
+.explore-planner-form textarea:focus,
+.explore-stop-edit input:focus {
+    outline: none;
+    border-color: var(--clr-primary-500);
+    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.18);
 }
 
 .explore-planner-row {
@@ -106,7 +115,7 @@
     margin-bottom: 0.4rem;
     font-size: 0.78rem;
     font-weight: 650;
-    color: #cbd5e1;
+    color: var(--clr-text-secondary);
 }
 
 .explore-planner-interests div {
@@ -118,17 +127,17 @@
 .explore-planner-interests button {
     padding: 0.28rem 0.55rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: transparent;
-    color: #94a3b8;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    color: var(--clr-text-secondary);
     font-size: 0.72rem;
     cursor: pointer;
 }
 
 .explore-planner-interests button.on {
-    color: #fdba74;
-    border-color: rgba(249, 115, 22, 0.5);
-    background: rgba(249, 115, 22, 0.12);
+    color: var(--clr-primary-700);
+    border-color: rgba(92, 92, 153, 0.5);
+    background: rgba(92, 92, 153, 0.12);
 }
 
 .explore-planner-actions {
@@ -146,18 +155,18 @@
 .explore-day-tabs button {
     padding: 0.35rem 0.65rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: transparent;
-    color: #94a3b8;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    color: var(--clr-text-secondary);
     font-size: 0.75rem;
     font-weight: 650;
     cursor: pointer;
 }
 
 .explore-day-tabs button.active {
-    color: #fff;
-    background: rgba(45, 212, 191, 0.18);
-    border-color: rgba(45, 212, 191, 0.4);
+    color: #ffffff;
+    background: var(--clr-primary-500);
+    border-color: var(--clr-primary-500);
 }
 
 .explore-day-panel-head {
@@ -182,14 +191,15 @@
 }
 
 .explore-stop-list li {
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--clr-border);
     border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: #ffffff;
     padding: 0.55rem;
 }
 
 .explore-stop-list li.selected {
-    border-color: rgba(249, 115, 22, 0.5);
+    border-color: rgba(92, 92, 153, 0.5);
+    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.15);
 }
 
 .explore-stop-main {
@@ -209,7 +219,7 @@
 .explore-stop-time {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #fdba74;
+    color: var(--clr-primary-500);
 }
 
 .explore-stop-body {
@@ -226,16 +236,16 @@
 .explore-stop-body em {
     font-style: normal;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
 }
 
 .explore-stop-body em.reason {
-    color: #cbd5e1;
+    color: var(--clr-text-secondary);
 }
 
 .explore-stop-meta {
     font-size: 0.68rem;
-    color: #64748b;
+    color: var(--clr-text-muted);
     text-transform: capitalize;
 }
 
@@ -249,7 +259,7 @@
 .explore-stop-actions button {
     background: none;
     border: none;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
     font-size: 0.72rem;
     cursor: pointer;
     text-decoration: underline;
@@ -272,17 +282,17 @@
     text-align: left;
     padding: 0.7rem 0.8rem;
     border-radius: 0.7rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-    color: #f8fafc;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    color: var(--clr-text-primary);
     cursor: pointer;
 }
 
 .explore-plan-row:hover {
-    border-color: rgba(249, 115, 22, 0.4);
+    border-color: rgba(92, 92, 153, 0.4);
 }
 
 .explore-plan-row span {
     font-size: 0.78rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
 }

@@ -81,12 +81,12 @@
 }
 
 .view-toggle button.active {
-    background: var(--clr-primary-500, #6366f1);
-    color: #fff;
+    background: var(--clr-primary-500, var(--clr-primary-500));
+    color: var(--clr-text-primary);
 }
 
 .rental-card.selected {
-    outline: 2px solid var(--clr-primary-500, #6366f1);
+    outline: 2px solid var(--clr-primary-500, var(--clr-primary-500));
     outline-offset: 2px;
 }
 

@@ -114,6 +114,7 @@ export default function MyBookingsPage() {
                     <p>Trips you joined, rental requests, and bookings you host.</p>
                 </div>
                 <div className="bookings-header-actions">
+                    <Link to="/wallet" className="btn btn-ghost btn-sm">Wallet</Link>
                     <Link to="/trips" className="btn btn-ghost btn-sm">Browse trips</Link>
                     <Link to="/rentals" className="btn btn-primary btn-sm">Browse rentals</Link>
                 </div>
@@ -270,9 +271,13 @@ export default function MyBookingsPage() {
                                                     type="button"
                                                     className="btn btn-primary btn-sm"
                                                     disabled={busyId === b.id}
-                                                    onClick={() => runAction(b.id, () => rentalsApi.payBooking(b.id), 'Payment successful.')}
+                                                    onClick={() => runAction(
+                                                        b.id,
+                                                        () => rentalsApi.payBooking(b.id, { method: 'wallet' }),
+                                                        'Paid from wallet.',
+                                                    )}
                                                 >
-                                                    {busyId === b.id ? 'Paying…' : 'Pay now'}
+                                                    {busyId === b.id ? 'Paying…' : 'Pay with wallet'}
                                                 </button>
                                             )}
                                             {canReview && !draft?.open && (

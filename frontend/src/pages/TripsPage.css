@@ -1,7 +1,7 @@
 .tt-page {
     min-height: calc(100vh - 68px);
-    background: #050607;
-    color: #f5f5f5;
+    background: var(--clr-bg-800);
+    color: var(--clr-text-primary);
 }
 
 /* ── Hero ── */
@@ -16,10 +16,10 @@
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 55% 70% at 78% 42%, rgba(251, 146, 60, 0.28), transparent 58%),
-        radial-gradient(ellipse 40% 55% at 88% 55%, rgba(245, 158, 11, 0.2), transparent 55%),
-        radial-gradient(ellipse 50% 60% at 18% 55%, rgba(20, 184, 166, 0.14), transparent 60%),
-        linear-gradient(180deg, #0a0b0e 0%, #050607 72%, #050607 100%);
+        radial-gradient(ellipse 55% 70% at 78% 42%, rgba(163, 163, 204, 0.28), transparent 58%),
+        radial-gradient(ellipse 40% 55% at 88% 55%, rgba(92, 92, 153, 0.2), transparent 55%),
+        radial-gradient(ellipse 50% 60% at 18% 55%, rgba(163, 163, 204, 0.14), transparent 60%),
+        linear-gradient(180deg, var(--clr-bg-800) 0%, var(--clr-bg-800) 72%, var(--clr-bg-800) 100%);
 }
 
 .tt-waves {
@@ -38,28 +38,28 @@
 }
 
 .tt-wave-1 {
-    stroke: rgba(45, 212, 191, 0.55);
+    stroke: rgba(92, 92, 153, 0.55);
     stroke-width: 1.6;
-    filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.55));
+    filter: drop-shadow(0 0 6px rgba(92, 92, 153, 0.55));
     animation: tt-wave-drift 10s ease-in-out infinite alternate;
 }
 
 .tt-wave-2 {
-    stroke: rgba(45, 212, 191, 0.32);
+    stroke: rgba(92, 92, 153, 0.32);
     stroke-width: 1.2;
-    filter: drop-shadow(0 0 5px rgba(45, 212, 191, 0.35));
+    filter: drop-shadow(0 0 5px rgba(92, 92, 153, 0.35));
     animation: tt-wave-drift 12s ease-in-out infinite alternate-reverse;
 }
 
 .tt-wave-3 {
-    stroke: rgba(94, 234, 212, 0.4);
+    stroke: rgba(163, 163, 204, 0.4);
     stroke-width: 1;
-    filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.4));
+    filter: drop-shadow(0 0 4px rgba(92, 92, 153, 0.4));
     animation: tt-wave-drift 9s ease-in-out infinite alternate;
 }
 
 .tt-wave-4 {
-    stroke: rgba(20, 184, 166, 0.22);
+    stroke: rgba(163, 163, 204, 0.22);
     stroke-width: 1.4;
     animation: tt-wave-drift 14s ease-in-out infinite alternate-reverse;
 }
@@ -81,7 +81,7 @@
 .tt-bokeh span {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(253, 224, 71, 0.95) 0%, rgba(249, 115, 22, 0.55) 35%, transparent 70%);
+    background: radial-gradient(circle, rgba(204, 204, 255, 0.95) 0%, rgba(92, 92, 153, 0.55) 35%, transparent 70%);
     filter: blur(0.5px);
     animation: tt-bokeh-float 7s ease-in-out infinite alternate;
 }
@@ -126,8 +126,8 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.02;
-    color: #fff;
-    text-shadow: 0 2px 40px rgba(0, 0, 0, 0.45);
+    color: var(--clr-text-primary);
+    text-shadow: 0 2px 40px rgba(41, 41, 102, 0.18);
 }
 
 .tt-hero-copy p {
@@ -136,7 +136,7 @@
     font-family: 'Manrope', system-ui, sans-serif;
     font-size: 1.05rem;
     line-height: 1.65;
-    color: rgba(226, 232, 240, 0.78);
+    color: var(--clr-text-secondary);
 }
 
 /* Exact glowing capsule from mock */
@@ -148,17 +148,16 @@
     gap: 0.45rem;
     padding: 0.95rem 1.55rem;
     border-radius: 999px;
-    background: linear-gradient(180deg, #1a1d22 0%, #0e1013 100%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
+    color: #ffffff;
     font-family: 'Manrope', system-ui, sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
-    border: 1.5px solid #f59e0b;
+    border: 1.5px solid var(--clr-primary-600);
     box-shadow:
-        0 0 0 1px rgba(245, 158, 11, 0.35),
-        0 0 18px rgba(245, 158, 11, 0.65),
-        0 0 42px rgba(249, 115, 22, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 0 0 1px rgba(92, 92, 153, 0.2),
+        0 8px 24px rgba(92, 92, 153, 0.35),
+        0 0 32px rgba(163, 163, 204, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
@@ -170,7 +169,7 @@
     position: absolute;
     inset: -10px;
     border-radius: 999px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(92, 92, 153, 0.35) 0%, transparent 70%);
     z-index: -1;
     filter: blur(8px);
 }
@@ -179,17 +178,16 @@
     font-size: 1.15rem;
     font-weight: 500;
     line-height: 1;
-    color: #fbbf24;
+    color: var(--clr-primary-200);
 }
 
 .tt-post-btn:hover {
     transform: translateY(-2px);
-    border-color: #fbbf24;
+    border-color: var(--clr-primary-500);
     box-shadow:
-        0 0 0 1px rgba(251, 191, 36, 0.45),
-        0 0 24px rgba(245, 158, 11, 0.8),
-        0 0 52px rgba(249, 115, 22, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 0 0 1px rgba(92, 92, 153, 0.3),
+        0 12px 28px rgba(41, 41, 102, 0.4),
+        0 0 40px rgba(163, 163, 204, 0.35);
 }
 
 /* ── Toolbar ── */
@@ -206,10 +204,10 @@
 
 .tt-tabs button {
     padding: 0.5rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--clr-border);
     border-radius: 999px;
-    background: #111316;
-    color: #94a3b8;
+    background: var(--clr-bg-600);
+    color: var(--clr-text-secondary);
     font-family: 'Manrope', system-ui, sans-serif;
     font-size: 0.9rem;
     font-weight: 650;
@@ -217,9 +215,9 @@
 }
 
 .tt-tabs button.active {
-    background: rgba(45, 212, 191, 0.14);
-    border-color: rgba(45, 212, 191, 0.45);
-    color: #5eead4;
+    background: rgba(92, 92, 153, 0.14);
+    border-color: rgba(92, 92, 153, 0.45);
+    color: var(--clr-primary-500);
 }
 
 .tt-toolbar {
@@ -236,22 +234,22 @@
     gap: 0.65rem;
     padding: 0.75rem 1rem;
     border-radius: 999px;
-    background: #111316;
-    color: #94a3b8;
+    background: var(--clr-bg-600);
+    color: var(--clr-text-secondary);
 }
 
 .tt-search {
     flex: 1;
     min-width: 240px;
-    border: 1.5px solid rgba(45, 212, 191, 0.65);
+    border: 1.5px solid rgba(92, 92, 153, 0.65);
     box-shadow:
-        0 0 0 1px rgba(45, 212, 191, 0.12),
-        0 0 18px rgba(45, 212, 191, 0.22);
+        0 0 0 1px rgba(92, 92, 153, 0.12),
+        0 0 18px rgba(92, 92, 153, 0.22);
 }
 
 .tt-filter {
-    border: 1.5px solid rgba(45, 212, 191, 0.45);
-    box-shadow: 0 0 14px rgba(45, 212, 191, 0.12);
+    border: 1.5px solid rgba(92, 92, 153, 0.45);
+    box-shadow: 0 0 14px rgba(92, 92, 153, 0.12);
     min-width: 180px;
 }
 
@@ -261,13 +259,13 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #f1f5f9;
+    color: var(--clr-text-primary);
     font-family: 'Manrope', system-ui, sans-serif;
     font-size: 0.95rem;
 }
 
 .tt-search input::placeholder {
-    color: #64748b;
+    color: var(--clr-text-muted);
 }
 
 .tt-filter select {
@@ -288,17 +286,17 @@
     flex-direction: column;
     border-radius: 18px;
     overflow: hidden;
-    background: #121418;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--clr-bg-700);
+    border: 1px solid var(--clr-border);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .tt-card.glow-orange {
-    box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.18), 0 0 24px rgba(249, 115, 22, 0.12);
+    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.18), 0 0 24px rgba(92, 92, 153, 0.12);
 }
 
 .tt-card.glow-teal {
-    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.28), 0 0 26px rgba(45, 212, 191, 0.16);
+    box-shadow: 0 0 0 1px rgba(163, 163, 204, 0.4), 0 0 26px rgba(163, 163, 204, 0.18);
 }
 
 .tt-card:hover {
@@ -306,20 +304,20 @@
 }
 
 .tt-card.glow-orange:hover {
-    border-color: rgba(249, 115, 22, 0.45);
-    box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.35), 0 0 34px rgba(249, 115, 22, 0.28);
+    border-color: rgba(92, 92, 153, 0.45);
+    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.35), 0 0 34px rgba(92, 92, 153, 0.28);
 }
 
 .tt-card.glow-teal:hover {
-    border-color: rgba(45, 212, 191, 0.5);
-    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.4), 0 0 34px rgba(45, 212, 191, 0.28);
+    border-color: rgba(163, 163, 204, 0.55);
+    box-shadow: 0 0 0 1px rgba(163, 163, 204, 0.4), 0 0 34px rgba(163, 163, 204, 0.28);
 }
 
 .tt-card-media {
     position: relative;
     aspect-ratio: 16 / 11;
     overflow: hidden;
-    background: #1a1d22;
+    background: var(--clr-bg-600);
 }
 
 .tt-card-media img {
@@ -353,8 +351,8 @@
     left: 0.75rem;
     padding: 0.28rem 0.65rem;
     border-radius: 999px;
-    background: rgba(242, 113, 33, 0.92);
-    color: #fff7ed;
+    background: rgba(92, 92, 153, 0.92);
+    color: #ffffff;
     font-family: 'Manrope', system-ui, sans-serif;
     font-size: 0.7rem;
     font-weight: 750;
@@ -372,8 +370,8 @@
 }
 
 .tt-status-full {
-    background: rgba(234, 88, 12, 0.92);
-    color: #fff7ed;
+    background: rgba(72, 72, 122, 0.92);
+    color: var(--clr-text-primary);
 }
 
 .tt-status-in_progress,
@@ -405,13 +403,13 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     line-height: 1.3;
-    color: #fff;
+    color: var(--clr-text-primary);
 }
 
 .tt-card-dates {
     margin: 0;
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
 }
 
 .tt-card-host {
@@ -419,7 +417,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.82rem;
-    color: #cbd5e1;
+    color: var(--clr-text-secondary);
 }
 
 .tt-card-footer {
@@ -441,7 +439,7 @@
     height: 28px;
     border-radius: 999px;
     object-fit: cover;
-    border: 2px solid #121418;
+    border: 2px solid var(--clr-bg-700);
     margin-left: -8px;
 }
 
@@ -453,15 +451,15 @@
 .tt-avatar-more {
     display: grid;
     place-items: center;
-    background: #2a3038;
-    color: #e2e8f0;
+    background: var(--clr-primary-500);
+    color: var(--clr-text-primary);
     font-size: 0.7rem;
     font-weight: 700;
 }
 
 .tt-avatar-more {
-    background: #1f2937;
-    color: #94a3b8;
+    background: var(--clr-bg-600);
+    color: var(--clr-text-secondary);
 }
 
 .tt-card-host .tt-avatar {
@@ -473,9 +471,9 @@
 .tt-view-btn {
     padding: 0.45rem 0.85rem;
     border-radius: 999px;
-    border: 1px solid rgba(226, 232, 240, 0.28);
-    background: #0d1014;
-    color: #e2e8f0;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-700);
+    color: var(--clr-text-primary);
     font-size: 0.75rem;
     font-weight: 700;
     text-decoration: none;
@@ -484,16 +482,16 @@
 }
 
 .tt-view-btn:hover {
-    border-color: rgba(45, 212, 191, 0.6);
-    color: #2dd4bf;
+    border-color: rgba(92, 92, 153, 0.6);
+    color: var(--clr-primary-500);
 }
 
 .tt-empty {
     text-align: center;
     padding: 4rem 1rem;
-    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border: 1px dashed var(--clr-border);
     border-radius: 18px;
-    background: #101316;
+    background: var(--clr-bg-700);
 }
 
 .tt-empty h3 {
@@ -503,7 +501,7 @@
 
 .tt-empty p {
     margin: 0 0 1.25rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
 }
 
 .tt-pagination {
@@ -512,16 +510,16 @@
     align-items: center;
     gap: 1rem;
     margin-top: 2rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
     font-family: 'Manrope', system-ui, sans-serif;
 }
 
 .tt-pagination button {
     padding: 0.45rem 0.9rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: #121418;
-    color: #e2e8f0;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-700);
+    color: var(--clr-text-primary);
 }
 
 .tt-pagination button:disabled {

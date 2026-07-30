@@ -508,6 +508,16 @@ h1 {
   border: 1px solid var(--clr-border);
 }
 
+/* Shared light page shell (lavender atmosphere) */
+.app-page {
+  min-height: 60vh;
+  background:
+    radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.55), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 100% 10%, rgba(163, 163, 204, 0.2), transparent 50%),
+    var(--clr-bg-800);
+  color: var(--clr-text-primary);
+}
+
 /* 17. Responsive utilities */
 @media (max-width: 768px) {
   .container {

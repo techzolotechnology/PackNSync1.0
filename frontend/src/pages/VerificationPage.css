@@ -11,8 +11,8 @@
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 55% 40% at 10% 0%, rgba(249, 115, 22, 0.16), transparent 55%),
-        radial-gradient(ellipse 40% 35% at 95% 30%, rgba(20, 184, 166, 0.1), transparent 50%);
+        radial-gradient(ellipse 55% 40% at 10% 0%, rgba(92, 92, 153, 0.16), transparent 55%),
+        radial-gradient(ellipse 40% 35% at 95% 30%, rgba(163, 163, 204, 0.1), transparent 50%);
 }
 
 .verify-shell {
@@ -75,25 +75,25 @@
 }
 
 .tone-ok {
-    background: rgba(34, 197, 94, 0.14);
-    color: #86efac;
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
     border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .tone-warn {
-    background: rgba(245, 158, 11, 0.14);
-    color: #fcd34d;
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
     border: 1px solid rgba(245, 158, 11, 0.28);
 }
 
 .tone-bad {
-    background: rgba(239, 68, 68, 0.14);
-    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
     border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
 .tone-mute {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(92, 92, 153, 0.06);
     color: var(--clr-text-secondary);
     border: 1px solid var(--clr-border);
 }
@@ -113,7 +113,7 @@
 .verify-progress-track {
     height: 6px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--clr-bg-600);
     overflow: hidden;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .verify-panel {
-    background: rgba(18, 22, 28, 0.92);
+    background: var(--clr-bg-glass);
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-2xl);
     padding: var(--space-6);
@@ -135,7 +135,7 @@
 }
 
 .verify-panel-secondary {
-    background: rgba(18, 22, 28, 0.7);
+    background: rgba(255, 255, 255, 0.72);
 }
 
 .verify-panel-head h2 {
@@ -169,7 +169,7 @@
     padding: 0.95rem 1rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--clr-border);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.72);
 }
 
 .verify-row.tone-ok {
@@ -178,8 +178,8 @@
 }
 
 .verify-row.tone-warn {
-    border-color: rgba(245, 158, 11, 0.28);
-    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(92, 92, 153, 0.28);
+    background: rgba(92, 92, 153, 0.05);
 }
 
 .verify-row-mark {
@@ -196,12 +196,12 @@
 
 .verify-row.tone-ok .verify-row-mark {
     background: rgba(34, 197, 94, 0.2);
-    color: #86efac;
+    color: #15803d;
 }
 
 .verify-row.tone-warn .verify-row-mark {
     background: rgba(245, 158, 11, 0.2);
-    color: #fcd34d;
+    color: #b45309;
 }
 
 .verify-row-copy {
@@ -234,7 +234,7 @@
     border-radius: var(--radius-lg);
     background: rgba(34, 197, 94, 0.12);
     border: 1px solid rgba(34, 197, 94, 0.28);
-    color: #bbf7d0;
+    color: #166534;
     font-size: 0.92rem;
     line-height: 1.5;
 }
@@ -313,8 +313,8 @@
 }
 
 .ocr-result.warn {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(92, 92, 153, 0.1);
+    border: 1px solid rgba(92, 92, 153, 0.25);
 }
 
 .ocr-result strong {

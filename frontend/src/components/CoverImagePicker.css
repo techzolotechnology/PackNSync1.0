@@ -13,23 +13,23 @@
 .cover-picker-head span {
     font-size: 0.85rem;
     font-weight: 650;
-    color: var(--clr-text-secondary, #94a3b8);
+    color: var(--clr-text-secondary);
 }
 
 .cover-picker-head small {
     font-size: 0.78rem;
-    color: var(--clr-text-secondary, #64748b);
+    color: var(--clr-text-muted);
 }
 
 .cover-picker-hint,
 .cover-picker-error {
     margin: 0;
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: var(--clr-text-secondary);
 }
 
 .cover-picker-error {
-    color: #f87171;
+    color: var(--clr-danger);
 }
 
 .cover-picker-grid {
@@ -45,7 +45,7 @@
     border: 2px solid transparent;
     border-radius: 0.65rem;
     overflow: hidden;
-    background: #111316;
+    background: var(--clr-bg-600);
     cursor: pointer;
 }
 
@@ -57,12 +57,12 @@
 }
 
 .cover-picker-option:hover {
-    border-color: rgba(45, 212, 191, 0.45);
+    border-color: rgba(92, 92, 153, 0.45);
 }
 
 .cover-picker-option.selected {
-    border-color: #2dd4bf;
-    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.35);
+    border-color: var(--clr-primary-500);
+    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.35);
 }
 
 .cover-picker-check {
@@ -71,8 +71,8 @@
     bottom: 0.4rem;
     padding: 0.15rem 0.45rem;
     border-radius: 999px;
-    background: rgba(15, 20, 25, 0.88);
-    color: #5eead4;
+    background: rgba(41, 41, 102, 0.85);
+    color: #ffffff;
     font-size: 0.65rem;
     font-weight: 750;
     letter-spacing: 0.02em;

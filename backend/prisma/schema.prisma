@@ -103,6 +103,7 @@ model User {
   explorePlans     ExplorePlan[]
   driverReviewsGiven    DriverReview[] @relation("DriverReviewer")
   driverReviewsReceived DriverReview[] @relation("DriverReviewee")
+  wallet                Wallet?
 
   @@map("users")
 }
@@ -299,6 +300,58 @@ model Payment {
   trip Trip? @relation(fields: [tripId], references: [id])
 
   @@map("payments")
+}
+
+/// In-app PackAndSync wallet (INR). Top up via Cashfree; spend in-app; withdraw outside.
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Float    @default(0)
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+enum WalletTxType {
+  TOPUP
+  SPEND
+  REFUND
+  WITHDRAW
+  ADJUST
+}
+
+enum WalletTxStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+model WalletTransaction {
+  id              String         @id @default(uuid())
+  walletId        String
+  type            WalletTxType
+  status          WalletTxStatus @default(PENDING)
+  amount          Float
+  balanceAfter    Float?
+  description     String?
+  /// Cashfree order id / payout id / rental booking id
+  referenceId     String?
+  provider        String?        // CASHFREE | INTERNAL
+  metadata        Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([referenceId])
+  @@map("wallet_transactions")
 }
 
 model Vehicle {

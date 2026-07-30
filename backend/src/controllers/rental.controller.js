@@ -336,6 +336,7 @@ export const respondToBooking = async (req, res) => {
 };
 
 // POST /api/rentals/bookings/:id/pay — traveler settles rental payment
+// body.method: 'wallet' (default) | 'local' (dev card stub)
 export const payBooking = async (req, res) => {
     const booking = await prisma.rentalBooking.findUnique({
         where: { id: req.params.id },
@@ -347,17 +348,45 @@ export const payBooking = async (req, res) => {
         throw new AppError('Pay after the host confirms your booking.', 400);
     }
 
-    const stripePaymentId = `local_pay_${booking.id}_${Date.now()}`;
+    const amount = Number(booking.totalPrice);
+    const method = String(req.body?.method || 'wallet').toLowerCase();
+    const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    let paymentRef;
 
-    await prisma.payment.create({
-        data: {
+    if (method === 'wallet') {
+        const { debitWallet } = await import('../utils/wallet.js');
+        const spend = await debitWallet({
             userId: req.user.id,
-            stripePaymentId,
-            amount: Number(booking.totalPrice),
-            currency: 'inr',
-            status: 'succeeded',
-        },
-    });
+            amount,
+            type: 'SPEND',
+            status: 'SUCCESS',
+            referenceId: `rental_${booking.id}`,
+            description: `Rental: ${label}`,
+            provider: 'INTERNAL',
+            metadata: { bookingId: booking.id },
+        });
+        paymentRef = `wallet_${spend.transaction.id}`;
+        await prisma.payment.create({
+            data: {
+                userId: req.user.id,
+                stripePaymentId: paymentRef,
+                amount,
+                currency: 'inr',
+                status: 'succeeded',
+            },
+        });
+    } else {
+        paymentRef = `local_pay_${booking.id}_${Date.now()}`;
+        await prisma.payment.create({
+            data: {
+                userId: req.user.id,
+                stripePaymentId: paymentRef,
+                amount,
+                currency: 'inr',
+                status: 'succeeded',
+            },
+        });
+    }
 
     const updated = await prisma.rentalBooking.update({
         where: { id: booking.id },
@@ -367,23 +396,22 @@ export const payBooking = async (req, res) => {
         },
     });
 
-    const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
     await notifyUser({
         userId: booking.listing.hostId,
         type: 'PAYMENT_RECEIVED',
         title: 'Rental payment received',
-        body: `${req.user.name} paid ₹${Number(booking.totalPrice).toLocaleString()} for ${label}.`,
+        body: `${req.user.name} paid ₹${amount.toLocaleString()} for ${label}${method === 'wallet' ? ' (wallet)' : ''}.`,
         data: { bookingId: booking.id },
     });
     await notifyUser({
         userId: req.user.id,
         type: 'PAYMENT_RECEIVED',
         title: 'Payment successful',
-        body: `You paid ₹${Number(booking.totalPrice).toLocaleString()} for ${label}.`,
+        body: `You paid ₹${amount.toLocaleString()} for ${label}${method === 'wallet' ? ' from your wallet' : ''}.`,
         data: { bookingId: booking.id },
     });
 
-    res.json({ success: true, data: updated, paid: true });
+    res.json({ success: true, data: updated, paid: true, method });
 };
 
 // GET /api/rentals/bookings/my

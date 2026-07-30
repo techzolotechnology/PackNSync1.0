@@ -1,7 +1,9 @@
 .privacy-page {
     padding: var(--space-16) 0;
-    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
-        radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.05), transparent);
+    background:
+        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.55), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 100% 10%, rgba(163, 163, 204, 0.2), transparent 50%),
+        var(--clr-bg-800);
 }
 
 .privacy-header {

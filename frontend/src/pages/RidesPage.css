@@ -3,6 +3,7 @@
     margin: 0 auto;
     padding: var(--space-10) var(--space-6) var(--space-16);
     font-family: var(--font-sans);
+    color: var(--clr-text-primary);
 }
 
 .rides-header {
@@ -200,8 +201,8 @@
 .provider-message {
     margin: 0 0 var(--space-8);
     padding: var(--space-4);
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(92, 92, 153, 0.1);
+    border: 1px solid rgba(92, 92, 153, 0.25);
     border-radius: var(--radius-md);
     color: var(--clr-warning);
     line-height: 1.5;

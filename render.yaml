@@ -48,6 +48,18 @@ services:
         sync: false
       - key: EMAIL_FROM
         value: PackAndSync <noreply@pickandsync.com>
+      - key: CASHFREE_CLIENT_ID
+        sync: false
+      - key: CASHFREE_CLIENT_SECRET
+        sync: false
+      - key: CASHFREE_ENV
+        value: sandbox
+      - key: CASHFREE_PAYOUT_CLIENT_ID
+        sync: false
+      - key: CASHFREE_PAYOUT_CLIENT_SECRET
+        sync: false
+      - key: API_PUBLIC_URL
+        sync: false
 
 databases:
   - name: packandsync-db
