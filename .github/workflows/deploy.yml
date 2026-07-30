@@ -53,6 +53,9 @@ jobs:
       - name: SPA fallback (404 → index)
         run: cp frontend/dist/index.html frontend/dist/404.html
 
+      - name: Write SPA route folders for GitHub Pages
+        run: node scripts/write-spa-fallbacks.mjs frontend/dist
+
       - name: Ensure Pages domain + no Jekyll
         run: |
           printf 'pickandsync.com\n' > frontend/dist/CNAME
