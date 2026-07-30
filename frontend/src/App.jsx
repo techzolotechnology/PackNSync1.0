@@ -80,12 +80,12 @@ export default function App() {
     }, [fetchMe]);
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="app-shell">
             <Navbar />
             <AuthModal />
             <AuthQueryBridge />
             <ChatUnreadBridge />
-            <main className="app-page" style={{ flex: 1 }}>
+            <main className="app-page">
                 <Routes>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />

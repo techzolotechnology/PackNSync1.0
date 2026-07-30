@@ -1,6 +1,6 @@
 .cr-page {
     min-height: calc(100vh - 68px);
-    background: var(--clr-bg-800);
+    background: transparent;
     color: var(--clr-text-primary);
     font-family: 'Manrope', system-ui, sans-serif;
 }

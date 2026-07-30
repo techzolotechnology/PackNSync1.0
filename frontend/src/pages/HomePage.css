@@ -1,6 +1,6 @@
 .home {
     overflow-x: hidden;
-    background: var(--clr-bg-800);
+    background: transparent;
 }
 
 .home-welcome {

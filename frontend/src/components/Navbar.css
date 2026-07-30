@@ -2,7 +2,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255, 255, 255, 0.86);
+    background: rgba(244, 244, 255, 0.88);
     backdrop-filter: blur(18px) saturate(1.15);
     border-bottom: 1px solid var(--clr-border);
 }
@@ -75,7 +75,7 @@
     letter-spacing: 0.02em;
     border-radius: 999px !important;
     background: #292966 !important;
-    color: var(--clr-text-primary) !important;
+    color: #ffffff !important;
     box-shadow: 0 8px 18px rgba(41, 41, 102, 0.28) !important;
 }
 

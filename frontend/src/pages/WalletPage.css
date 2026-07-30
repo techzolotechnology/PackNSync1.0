@@ -1,7 +1,9 @@
 .wallet-page {
     max-width: 920px;
+    width: 100%;
     margin: 0 auto;
     padding: var(--space-10) var(--space-6) var(--space-16);
+    background: transparent;
 }
 
 .wallet-header {
