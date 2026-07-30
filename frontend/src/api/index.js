@@ -4,6 +4,8 @@ const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://127.0.0.1:3001/api' : '/api'),
     withCredentials: true,
     headers: { 'Content-Type': 'application/json' },
+    // Prevent login UI from hanging forever when the API/SMTP stalls
+    timeout: 20000,
 });
 
 // Request interceptor: attach access token from localStorage

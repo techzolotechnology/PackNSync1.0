@@ -67,8 +67,14 @@ async function sendEmailOtp(email, otpCode) {
         });
         return 'email';
     } catch (err) {
-        console.error('[ZeptoMail/SMTP] falling back to console OTP:', err.message || err);
-        logDevOtp('Email (SMTP failed)', email, otpCode);
+        console.error('[Email] delivery failed:', err.message || err);
+        if (process.env.NODE_ENV === 'production' && process.env.OTP_CONSOLE_FALLBACK !== 'true') {
+            throw new AppError(
+                'Could not send the OTP email right now. Please try again in a moment.',
+                502,
+            );
+        }
+        logDevOtp('Email (delivery failed)', email, otpCode);
         return 'console';
     }
 }

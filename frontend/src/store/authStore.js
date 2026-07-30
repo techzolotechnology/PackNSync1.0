@@ -18,15 +18,23 @@ export const useAuthStore = create(
                 set({ isLoading: true });
                 try {
                     const res = await authApi.requestOtp(data);
-                    set({ isLoading: false });
                     return {
                         success: true,
                         message: res.data?.message,
                         channel: res.data?.channel,
                     };
                 } catch (err) {
+                    const timedOut = err.code === 'ECONNABORTED' || /timeout/i.test(err.message || '');
+                    return {
+                        success: false,
+                        message:
+                            err.response?.data?.message ||
+                            (timedOut
+                                ? 'OTP request timed out. Please try again in a moment.'
+                                : 'Failed to request OTP.'),
+                    };
+                } finally {
                     set({ isLoading: false });
-                    return { success: false, message: err.response?.data?.message || 'Failed to request OTP.' };
                 }
             },
 
@@ -36,11 +44,12 @@ export const useAuthStore = create(
                     const res = await authApi.verifyOtp(data);
                     const { user, accessToken } = res.data;
                     localStorage.setItem('access_token', accessToken);
-                    set({ user, accessToken, isLoading: false });
+                    set({ user, accessToken });
                     return { success: true };
                 } catch (err) {
-                    set({ isLoading: false });
                     return { success: false, message: err.response?.data?.message || 'Invalid OTP.' };
+                } finally {
+                    set({ isLoading: false });
                 }
             },
 
