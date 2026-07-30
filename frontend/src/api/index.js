@@ -1,11 +1,13 @@
 import axios from 'axios';
 
+import { withNetworkRetry } from '../utils/apiResilience.js';
+
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://127.0.0.1:3001/api' : '/api'),
     withCredentials: true,
     headers: { 'Content-Type': 'application/json' },
-    // Prevent login UI from hanging forever when the API/SMTP stalls
-    timeout: 20000,
+    // OTP + Render cold start can exceed 20s; still fail eventually
+    timeout: 45000,
 });
 
 // Request interceptor: attach access token from localStorage
@@ -82,8 +84,15 @@ export default api;
 // ── Helper functions ──────────────────────────────────────────────
 
 export const authApi = {
-    requestOtp: (data) => api.post('/auth/request-otp', data),
-    verifyOtp: (data) => api.post('/auth/verify-otp', data),
+    // Auto-retry only on network blips (ERR_NETWORK_CHANGED), not on 4xx/5xx
+    requestOtp: (data) => withNetworkRetry(
+        () => api.post('/auth/request-otp', data, { timeout: 45000 }),
+        { retries: 2, delayMs: 1000 },
+    ),
+    verifyOtp: (data) => withNetworkRetry(
+        () => api.post('/auth/verify-otp', data, { timeout: 45000 }),
+        { retries: 1, delayMs: 800 },
+    ),
     logout: () => api.post('/auth/logout'),
     refresh: () => api.post('/auth/refresh'),
     me: () => api.get('/auth/me'),

@@ -1,0 +1,28 @@
+# Keep Render free-tier API awake (reduces cold-start OTP delays)
+name: Keepalive
+
+on:
+  schedule:
+    # ~every 12 minutes (Render free sleeps after ~15m idle)
+    - cron: '*/12 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-api:
+    name: Ping API /health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check
+        env:
+          # Prefer socket base URL secret (no /api suffix), e.g. https://packandsync-api.onrender.com
+          BASE: ${{ secrets.VITE_SOCKET_URL }}
+        run: |
+          if [ -z "$BASE" ]; then
+            BASE="https://packandsync-api.onrender.com"
+            echo "VITE_SOCKET_URL secret missing — using default $BASE"
+          fi
+          BASE="${BASE%/}"
+          echo "Pinging $BASE/health"
+          curl -fsS --retry 3 --retry-delay 2 --max-time 60 "$BASE/health"
+          echo
+          echo "OK"

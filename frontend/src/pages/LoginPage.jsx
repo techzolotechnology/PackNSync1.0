@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import { wakeApi } from '../utils/apiResilience.js';
 import toast from 'react-hot-toast';
 import './AuthPages.css';
 
@@ -12,6 +13,9 @@ export default function LoginPage() {
     const [step, setStep] = useState(1);
     const [form, setForm] = useState({ contact: '', otpCode: '' });
     const [error, setError] = useState('');
+
+    // Wake Render free tier before the user hits Get OTP
+    useEffect(() => { wakeApi(); }, []);
 
     const handleRequestOtp = async (e) => {
         e.preventDefault();

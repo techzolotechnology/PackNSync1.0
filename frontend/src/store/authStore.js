@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi } from '../api/index.js';
+import { isTransientNetworkError } from '../utils/apiResilience.js';
 
 export const useAuthStore = create(
     persist(
@@ -25,13 +26,16 @@ export const useAuthStore = create(
                     };
                 } catch (err) {
                     const timedOut = err.code === 'ECONNABORTED' || /timeout/i.test(err.message || '');
+                    const network = isTransientNetworkError(err);
                     return {
                         success: false,
                         message:
                             err.response?.data?.message ||
                             (timedOut
                                 ? 'OTP request timed out. Please try again in a moment.'
-                                : 'Failed to request OTP.'),
+                                : network
+                                    ? 'Network blip — connection changed. Please try Get OTP again.'
+                                    : 'Failed to request OTP.'),
                     };
                 } finally {
                     set({ isLoading: false });
