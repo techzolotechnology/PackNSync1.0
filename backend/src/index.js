@@ -36,17 +36,40 @@ const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173,http://127.0.0.1:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://pickandsync.com',
+  'https://www.pickandsync.com',
+];
+
+function parseOrigins(...values) {
+  return values
+    .flatMap((value) => String(value || '').split(','))
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+}
+
+// Merge env + production site origins so custom-domain logins never get CORS-blocked
+// when Render FRONTEND_URL still points at an old github.io URL.
+const allowedOrigins = [...new Set([
+  ...DEFAULT_ORIGINS,
+  ...parseOrigins(process.env.FRONTEND_URLS, process.env.FRONTEND_URL),
+])];
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error(`CORS blocked origin: ${origin}`));
+    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`[CORS] blocked origin: ${origin}`);
+    // Do not throw — throwing omits ACAO headers and browsers report a generic CORS failure
+    return callback(null, false);
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
 };
 
 // Socket.IO
@@ -63,8 +86,9 @@ app.set('io', io);
 registerSocketHandlers(io);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

@@ -92,7 +92,7 @@ If you only use `https://<org>.github.io/<repo>/` with **no** custom domain, cha
 
 | Problem | Fix |
 |---------|-----|
-| Pages site loads but API fails / CORS | Set `FRONTEND_URL` / `FRONTEND_URLS` on Render to the exact Pages origin |
+| Pages site loads but API fails / CORS | Set `FRONTEND_URLS` on Render to include `https://pickandsync.com` (and `https://www.pickandsync.com`). The API also allows these by default after the CORS fix. |
 | Blank page / JS+CSS 404 on custom domain | Rebuild with `VITE_BASE=/` (already set for pickandsync.com) |
 | Blank page on `github.io/Repo/` only | Set `VITE_BASE` to `/RepoName/` in deploy.yml |
 | Deploy job skips backend | Add `RENDER_DEPLOY_HOOK_URL` secret |
