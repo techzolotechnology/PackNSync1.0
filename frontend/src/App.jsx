@@ -1,10 +1,10 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './store/authStore.js';
+import { useAuthUiStore } from './store/authUiStore.js';
 import Navbar from './components/Navbar.jsx';
+import AuthModal from './components/AuthModal.jsx';
 import HomePage from './pages/HomePage.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
 import TripsPage from './pages/TripsPage.jsx';
 import TripDetailPage from './pages/TripDetailPage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
@@ -20,22 +20,49 @@ import ExplorePage from './pages/ExplorePage.jsx';
 import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 
-const AUTH_SHELL_PATHS = new Set(['/login', '/register']);
-const HIDE_FOOTER_PATHS = new Set(['/login', '/register', '/explore']);
+const HIDE_FOOTER_PATHS = new Set(['/explore']);
+
+/** Old /login and /register URLs → home + open auth modal */
+function AuthRouteRedirect({ mode }) {
+    const openAuth = useAuthUiStore((s) => s.openAuth);
+    useEffect(() => {
+        openAuth(mode);
+    }, [mode, openAuth]);
+    return <Navigate to="/" replace />;
+}
+
+/** ?auth=login | ?auth=register on any page opens the modal once */
+function AuthQueryBridge() {
+    const [params, setParams] = useSearchParams();
+    const openAuth = useAuthUiStore((s) => s.openAuth);
+    useEffect(() => {
+        const auth = params.get('auth');
+        if (auth === 'login' || auth === 'register') {
+            openAuth(auth);
+            const next = new URLSearchParams(params);
+            next.delete('auth');
+            setParams(next, { replace: true });
+        }
+    }, [params, setParams, openAuth]);
+    return null;
+}
 
 const PrivateRoute = ({ children }) => {
     const user = useAuthStore((s) => s.user);
-    return user ? children : <Navigate to="/login" replace />;
+    const openAuth = useAuthUiStore((s) => s.openAuth);
+    useEffect(() => {
+        if (!user) openAuth('login');
+    }, [user, openAuth]);
+    return user ? children : <Navigate to="/?auth=login" replace />;
 };
 
 const AdminRoute = ({ children }) => {
     const user = useAuthStore((s) => s.user);
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) return <Navigate to="/?auth=login" replace />;
     if (user.role !== 'ADMIN') return <Navigate to="/" replace />;
     return children;
 };
 
-/** Admins stay in the control room — no traveler/host product UI. */
 const BlockAdminFromApp = ({ children }) => {
     const user = useAuthStore((s) => s.user);
     if (user?.role === 'ADMIN') return <Navigate to="/admin" replace />;
@@ -46,7 +73,6 @@ export default function App() {
     const user = useAuthStore((s) => s.user);
     const fetchMe = useAuthStore((s) => s.fetchMe);
     const { pathname } = useLocation();
-    const isAuthShell = AUTH_SHELL_PATHS.has(pathname);
 
     useEffect(() => {
         fetchMe();
@@ -54,13 +80,15 @@ export default function App() {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {!isAuthShell && <Navbar />}
+            <Navbar />
+            <AuthModal />
+            <AuthQueryBridge />
             <ChatUnreadBridge />
             <main style={{ flex: 1 }}>
                 <Routes>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
-                    <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <LoginPage />} />
-                    <Route path="/register" element={<BlockAdminFromApp><RegisterPage /></BlockAdminFromApp>} />
+                    <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
+                    <Route path="/register" element={<BlockAdminFromApp><AuthRouteRedirect mode="register" /></BlockAdminFromApp>} />
                     <Route path="/trips" element={<BlockAdminFromApp><TripsPage /></BlockAdminFromApp>} />
                     <Route path="/trips/create" element={<BlockAdminFromApp><PrivateRoute><CreateTripPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/trips/:id" element={<BlockAdminFromApp><TripDetailPage /></BlockAdminFromApp>} />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import { useAuthUiStore } from '../store/authUiStore.js';
 import './HomePage.css';
 
 const STEPS = [
@@ -44,22 +45,57 @@ const MODULES = {
         to: '/trips',
         title: 'Group Adventure Hub',
         cta: 'Browse trips →',
-        image: 'https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?auto=format&fit=crop&w=1400&q=80',
+        // Friends on the road — no yellow van
+        image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1400&q=80',
     },
     rentals: {
         to: '/rentals',
         title: 'Select from the Best Community Cars',
         cta: 'Find a car →',
-        image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80',
+        // Clean SUV for rentals
+        image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1400&q=80',
     },
 };
 
 export default function HomePage() {
     const user = useAuthStore((s) => s.user);
+    const logout = useAuthStore((s) => s.logout);
+    const openAuth = useAuthUiStore((s) => s.openAuth);
     const [mode, setMode] = useState('trips');
+
+    const handleLogout = async () => {
+        await logout();
+    };
 
     return (
         <div className="home page-enter">
+            <section className="home-welcome">
+                <div className="container home-welcome-inner">
+                    <div className="home-welcome-copy">
+                        <p className="home-welcome-kicker">PackAndSync</p>
+                        <h1 className="font-display">Travel together. Rent when you need wheels.</h1>
+                        <p>
+                            Join group trips, split costs, and book community cars — all in one place.
+                        </p>
+                    </div>
+                    <div className="home-welcome-actions">
+                        {user ? (
+                            <>
+                                <Link to="/trips" className="home-btn primary">Browse trips</Link>
+                                <Link to="/bookings" className="home-btn soft">My bookings</Link>
+                                <button type="button" className="home-btn ghost" onClick={handleLogout}>
+                                    Sync Out
+                                </button>
+                            </>
+                        ) : (
+                            <button type="button" className="home-btn primary home-btn-sync" onClick={() => openAuth('login')}>
+                                Sync In
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </section>
+
             <section className="home-modules">
                 <div className="container">
                     <div className="home-mode-switch" role="tablist" aria-label="Choose experience">
@@ -132,11 +168,22 @@ export default function HomePage() {
                             </p>
                         </div>
                         <div className="home-cta-actions">
-                            <Link to={user ? '/trips/create' : '/register'} className="home-btn primary">
-                                {user ? 'Post a Trip' : 'Get started free'}
-                            </Link>
-                            <Link to="/rentals" className="home-btn soft">Browse cars</Link>
-                            <Link to="/host" className="home-btn ghost">Host a car</Link>
+                            {user ? (
+                                <>
+                                    <Link to="/trips/create" className="home-btn primary">Post a Trip</Link>
+                                    <Link to="/rentals" className="home-btn soft">Browse cars</Link>
+                                    <button type="button" className="home-btn ghost" onClick={handleLogout}>
+                                        Sync Out
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button type="button" className="home-btn primary home-btn-sync" onClick={() => openAuth('login')}>
+                                        Sync In
+                                    </button>
+                                    <Link to="/rentals" className="home-btn ghost">Browse cars</Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

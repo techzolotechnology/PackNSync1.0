@@ -1,0 +1,182 @@
+.auth-modal-root {
+    --auth-navy: #292966;
+    --auth-slate: #5c5c99;
+    --auth-mist: #a3a3cc;
+
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.auth-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(41, 41, 102, 0.45);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+}
+
+.auth-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 440px);
+    max-height: min(92dvh, 720px);
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid rgba(163, 163, 204, 0.4);
+    border-radius: 1.35rem;
+    box-shadow: 0 24px 48px rgba(41, 41, 102, 0.22);
+    padding: 1.5rem 1.5rem 1.65rem;
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.85rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--auth-slate);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.auth-modal-close:hover {
+    background: #f4f4ff;
+    color: var(--auth-navy);
+}
+
+.auth-modal-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+    padding: 0.3rem;
+    margin-bottom: 1.25rem;
+    border-radius: 999px;
+    background: #f3f3fb;
+    border: 1px solid rgba(163, 163, 204, 0.35);
+}
+
+.auth-modal-tabs button {
+    border: 0;
+    border-radius: 999px;
+    padding: 0.65rem 0.75rem;
+    background: transparent;
+    color: var(--auth-slate);
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+}
+
+.auth-modal-tabs button.active {
+    background: var(--auth-navy);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(41, 41, 102, 0.25);
+}
+
+.auth-modal-header h2 {
+    margin: 0 0 0.45rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.65rem, 4vw, 2rem);
+    color: var(--auth-navy);
+    line-height: 1.15;
+}
+
+.auth-modal-header p {
+    margin: 0 0 1.25rem;
+    color: var(--auth-slate);
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.auth-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-modal-form .form-label {
+    color: var(--auth-slate);
+    font-weight: 600;
+}
+
+.auth-modal-form .form-input {
+    background: #fff;
+    border: 1px solid rgba(163, 163, 204, 0.55);
+    border-radius: 0.85rem;
+    color: var(--auth-navy);
+    min-height: 2.9rem;
+}
+
+.auth-modal-form .form-input:focus {
+    border-color: var(--auth-slate);
+    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.18);
+}
+
+.auth-modal-hint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--auth-slate);
+    line-height: 1.45;
+}
+
+.auth-modal-hint strong {
+    color: var(--auth-navy);
+}
+
+.auth-modal-main {
+    min-height: 2.95rem;
+    border-radius: 9999px !important;
+    background: var(--auth-navy) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(41, 41, 102, 0.28) !important;
+}
+
+.auth-modal-secondary {
+    min-height: 2.75rem;
+    border-radius: 9999px !important;
+    border: 1.5px solid rgba(163, 163, 204, 0.85) !important;
+    background: #fff !important;
+    color: var(--auth-navy) !important;
+    font-weight: 700 !important;
+}
+
+.auth-modal-otp-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.auth-modal-link {
+    border: 0;
+    background: transparent;
+    color: var(--auth-slate);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.auth-modal-link:disabled {
+    color: var(--auth-mist);
+    cursor: not-allowed;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.form-success {
+    margin: 0;
+    color: #16a34a;
+    font-size: 0.9rem;
+    font-weight: 600;
+}

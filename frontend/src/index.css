@@ -6,40 +6,40 @@
 
 /* 2. CSS Custom Properties (Design Tokens) */
 :root {
-  /* Colors */
-  --clr-primary-50: #fff7ed;
-  --clr-primary-100: #ffedd5;
-  --clr-primary-200: #fed7aa;
-  --clr-primary-400: #fb923c;
-  --clr-primary-500: #f97316;
-  --clr-primary-600: #ea580c;
-  --clr-primary-700: #c2410c;
+  /* Colors: lavender → navy (#CCCCFF / #A3A3CC / #5C5C99 / #292966) */
+  --clr-primary-50: #f4f4ff;
+  --clr-primary-100: #e8e8ff;
+  --clr-primary-200: #ccccff;
+  --clr-primary-400: #a3a3cc;
+  --clr-primary-500: #5c5c99;
+  --clr-primary-600: #48487a;
+  --clr-primary-700: #292966;
 
-  --clr-accent-400: #5eead4;
-  --clr-accent-500: #14b8a6;
-  --clr-accent-600: #0d9488;
+  --clr-accent-400: #ccccff;
+  --clr-accent-500: #a3a3cc;
+  --clr-accent-600: #5c5c99;
 
   --clr-success: #22c55e;
   --clr-warning: #f59e0b;
   --clr-danger: #ef4444;
-  --clr-info: #38bdf8;
+  --clr-info: #a3a3cc;
 
-  /* Dark background palette — deep ink with warm undertone */
-  --clr-bg-900: #0a0c0f;
-  --clr-bg-800: #12161c;
-  --clr-bg-700: #1a2029;
-  --clr-bg-600: #232b36;
-  --clr-bg-500: #2c3644;
-  --clr-bg-glass: rgba(255, 255, 255, 0.045);
-  --clr-bg-glass-hover: rgba(255, 255, 255, 0.08);
+  /* Soft lavender light UI */
+  --clr-bg-900: #e8e8ff;
+  --clr-bg-800: #f4f4ff;
+  --clr-bg-700: #ffffff;
+  --clr-bg-600: #e0e0f5;
+  --clr-bg-500: #ccccff;
+  --clr-bg-glass: rgba(255, 255, 255, 0.78);
+  --clr-bg-glass-hover: rgba(255, 255, 255, 0.94);
 
-  --clr-border: rgba(255, 255, 255, 0.09);
-  --clr-border-bright: rgba(255, 255, 255, 0.16);
+  --clr-border: rgba(92, 92, 153, 0.22);
+  --clr-border-bright: rgba(92, 92, 153, 0.4);
 
   /* Text */
-  --clr-text-primary: #f4f1ea;
-  --clr-text-secondary: #a8b0bc;
-  --clr-text-muted: #6b7583;
+  --clr-text-primary: #292966;
+  --clr-text-secondary: #5c5c99;
+  --clr-text-muted: #a3a3cc;
 
   /* Typography */
   --font-sans: 'Manrope', system-ui, sans-serif;
@@ -67,11 +67,11 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 24px rgba(249, 115, 22, 0.28);
-  --shadow-glow-accent: 0 0 24px rgba(20, 184, 166, 0.22);
+  --shadow-sm: 0 1px 2px rgba(41, 41, 102, 0.08);
+  --shadow-md: 0 8px 24px rgba(92, 92, 153, 0.14);
+  --shadow-lg: 0 20px 40px rgba(41, 41, 102, 0.16);
+  --shadow-glow: 0 0 24px rgba(92, 92, 153, 0.28);
+  --shadow-glow-accent: 0 0 24px rgba(163, 163, 204, 0.28);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -265,25 +265,25 @@ h1 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-600));
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+  background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(92, 92, 153, 0.35);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--clr-primary-400), var(--clr-primary-500));
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+  background: linear-gradient(135deg, var(--clr-primary-600), var(--clr-primary-700));
+  box-shadow: 0 10px 28px rgba(41, 41, 102, 0.4);
   transform: translateY(-1px);
 }
 
 .btn-accent {
   background: linear-gradient(135deg, var(--clr-accent-500), var(--clr-accent-600));
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(163, 163, 204, 0.35);
 }
 
 .btn-accent:hover {
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 10px 28px rgba(92, 92, 153, 0.4);
   transform: translateY(-1px);
 }
 
@@ -350,7 +350,7 @@ h1 {
 .form-input:focus {
   outline: none;
   border-color: var(--clr-primary-500);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.2);
 }
 
 .form-input::placeholder {
@@ -463,7 +463,7 @@ h1 {
 
 /* 14. Gradient text */
 .gradient-text {
-  background: linear-gradient(120deg, #fdba74 0%, #f97316 45%, #14b8a6 100%);
+  background: linear-gradient(120deg, var(--clr-primary-700) 0%, var(--clr-primary-500) 55%, var(--clr-primary-200) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

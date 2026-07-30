@@ -1,14 +1,60 @@
 .home {
     overflow-x: hidden;
-    background: #0a0b0d;
+    background: var(--clr-bg-800);
+}
+
+.home-welcome {
+    padding: clamp(1.75rem, 5vw, 3rem) 0 1rem;
+    background:
+        radial-gradient(ellipse 55% 45% at 10% 0%, rgba(204, 204, 255, 0.7), transparent 58%),
+        radial-gradient(ellipse 40% 35% at 95% 20%, rgba(163, 163, 204, 0.25), transparent 55%),
+        var(--clr-bg-800);
+}
+
+.home-welcome-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.home-welcome-copy {
+    max-width: 36rem;
+}
+
+.home-welcome-kicker {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--clr-primary-500);
+}
+
+.home-welcome-copy h1 {
+    margin: 0 0 0.7rem;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    line-height: 1.08;
+    color: var(--clr-text-primary);
+}
+
+.home-welcome-copy > p {
+    margin: 0;
+    color: var(--clr-text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.home-welcome-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
 }
 
 .home-modules {
     padding: 1.75rem 0 2.5rem;
-    background:
-        radial-gradient(ellipse 50% 40% at 20% 0%, rgba(242, 113, 33, 0.1), transparent 55%),
-        radial-gradient(ellipse 40% 35% at 90% 10%, rgba(38, 198, 218, 0.06), transparent 50%),
-        #0a0b0d;
+    background: transparent;
 }
 
 .home-mode-switch {
@@ -17,8 +63,9 @@
     padding: 0.3rem;
     margin-bottom: 1.35rem;
     border-radius: 999px;
-    background: #14161a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid rgba(92, 92, 153, 0.28);
+    box-shadow: 0 4px 16px rgba(41, 41, 102, 0.06);
 }
 
 .home-mode-switch button {
@@ -26,7 +73,7 @@
     border: none;
     border-radius: 999px;
     background: transparent;
-    color: #94a3b8;
+    color: #5c5c99;
     font-weight: 700;
     font-size: 0.92rem;
     cursor: pointer;
@@ -34,13 +81,13 @@
 }
 
 .home-mode-switch button:hover {
-    color: #e2e8f0;
+    color: #292966;
 }
 
 .home-mode-switch button.active {
-    background: #f27121;
-    color: #0a0b0d;
-    box-shadow: 0 0 22px rgba(242, 113, 33, 0.35);
+    background: #292966;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(41, 41, 102, 0.28);
 }
 
 .home-card-grid {
@@ -56,8 +103,8 @@
     border-radius: 22px;
     overflow: hidden;
     text-decoration: none;
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid rgba(92, 92, 153, 0.22);
     isolation: isolate;
     transition: transform 0.35s ease, border-color 0.25s ease, box-shadow 0.35s ease, opacity 0.25s ease;
 }
@@ -65,12 +112,12 @@
 .home-mod-card:hover,
 .home-mod-card.focused {
     transform: translateY(-4px);
-    border-color: rgba(242, 113, 33, 0.4);
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.35);
+    border-color: rgba(92, 92, 153, 0.55);
+    box-shadow: 0 24px 50px rgba(41, 41, 102, 0.2);
 }
 
 .home-mod-card:not(.focused) {
-    opacity: 0.88;
+    opacity: 0.94;
 }
 
 .home-mod-media {
@@ -94,7 +141,7 @@
     inset: 0;
     z-index: 1;
     background:
-        linear-gradient(180deg, rgba(8, 9, 11, 0.15) 0%, rgba(8, 9, 11, 0.35) 45%, rgba(8, 9, 11, 0.88) 100%);
+        linear-gradient(180deg, rgba(41, 41, 102, 0.15) 0%, rgba(20, 20, 50, 0.45) 42%, rgba(12, 12, 36, 0.92) 100%);
 }
 
 .home-mod-content {
@@ -116,26 +163,27 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
-    max-width: 14ch;
-    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    max-width: 16ch;
+    color: #ffffff !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 .home-mod-cta {
     font-weight: 700;
     font-size: 0.95rem;
-    color: #fdba74;
+    color: #ccccff;
     transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .home-mod-card:hover .home-mod-cta {
-    color: #f27121;
+    color: #ffffff;
     transform: translateX(3px);
 }
 
 /* How it works */
 .home-steps {
     padding: 3.5rem 0 3rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(92, 92, 153, 0.16);
 }
 
 .home-steps-title {
@@ -144,14 +192,14 @@
     font-family: 'Playfair Display', Georgia, serif;
     font-size: clamp(1.9rem, 4vw, 2.6rem);
     font-weight: 700;
-    color: #fff;
+    color: #292966;
     letter-spacing: -0.02em;
 }
 
 .home-steps-sub {
     margin: 0 0 2.5rem;
     text-align: center;
-    color: #94a3b8;
+    color: #5c5c99;
     font-size: 1.02rem;
 }
 
@@ -177,11 +225,10 @@
     line-height: 1;
     letter-spacing: -0.04em;
     margin-bottom: 0.85rem;
-    background: linear-gradient(180deg, #fda96a 0%, #c2410c 70%, #7c2d12 100%);
+    background: linear-gradient(180deg, #a3a3cc 0%, #5c5c99 55%, #292966 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
 }
 
 .home-step-icon {
@@ -191,21 +238,21 @@
     display: grid;
     place-items: center;
     margin-bottom: 0.85rem;
-    color: #f27121;
-    background: rgba(242, 113, 33, 0.1);
-    border: 1px solid rgba(242, 113, 33, 0.25);
+    color: #292966;
+    background: rgba(204, 204, 255, 0.45);
+    border: 1px solid rgba(92, 92, 153, 0.28);
 }
 
 .home-step h3 {
     margin: 0 0 0.45rem;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #fff;
+    color: #292966;
 }
 
 .home-step p {
     margin: 0;
-    color: #94a3b8;
+    color: #5c5c99;
     font-size: 0.95rem;
     line-height: 1.65;
     max-width: 28ch;
@@ -225,10 +272,10 @@
     gap: 1.75rem;
     padding: 2.4rem 2.2rem;
     border-radius: 24px;
-    border: 1px solid rgba(242, 113, 33, 0.28);
+    border: 1px solid rgba(92, 92, 153, 0.28);
     background:
-        linear-gradient(115deg, rgba(242, 113, 33, 0.18) 0%, rgba(20, 24, 30, 0.95) 42%, rgba(15, 23, 32, 0.98) 100%),
-        #121418;
+        linear-gradient(115deg, rgba(204, 204, 255, 0.55) 0%, rgba(255, 255, 255, 0.96) 45%, #ffffff 100%);
+    box-shadow: 0 16px 40px rgba(41, 41, 102, 0.1);
 }
 
 .home-cta-glow {
@@ -239,7 +286,7 @@
     top: 50%;
     transform: translateY(-50%);
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(38, 198, 218, 0.22), transparent 68%);
+    background: radial-gradient(circle, rgba(163, 163, 204, 0.35), transparent 68%);
     pointer-events: none;
 }
 
@@ -255,7 +302,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #fdba74;
+    color: #5c5c99;
 }
 
 .home-cta-copy h2 {
@@ -264,13 +311,13 @@
     font-size: clamp(1.9rem, 3.4vw, 2.55rem);
     line-height: 1.1;
     letter-spacing: -0.03em;
-    color: #fff;
+    color: #292966;
 }
 
 .home-cta-copy > p {
     margin: 0;
     max-width: 36rem;
-    color: #cbd5e1;
+    color: #5c5c99;
     font-size: 1.02rem;
     line-height: 1.65;
 }
@@ -285,18 +332,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.95rem 1.35rem;
-    border-radius: 14px;
+    padding: 0.95rem 1.45rem;
+    border-radius: 999px;
     font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
     transition: filter 0.15s ease, border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
 .home-btn.primary {
-    background: #f27121;
-    color: #0a0b0d;
-    box-shadow: 0 10px 28px rgba(242, 113, 33, 0.35);
+    background: #292966;
+    color: #ffffff;
+    box-shadow: 0 10px 28px rgba(41, 41, 102, 0.28);
 }
 
 .home-btn.primary:hover {
@@ -305,25 +355,31 @@
 }
 
 .home-btn.soft {
-    background: rgba(38, 198, 218, 0.12);
-    color: #67e8f9;
-    border: 1px solid rgba(38, 198, 218, 0.35);
+    background: #ffffff;
+    color: #292966;
+    border: 1.5px solid rgba(92, 92, 153, 0.45);
 }
 
 .home-btn.soft:hover {
-    background: rgba(38, 198, 218, 0.18);
-    color: #a5f3fc;
+    background: #f8f8ff;
+    border-color: #5c5c99;
 }
 
 .home-btn.ghost {
-    background: rgba(255, 255, 255, 0.03);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: transparent;
+    color: #5c5c99;
+    border: 1.5px solid rgba(163, 163, 204, 0.7);
 }
 
 .home-btn.ghost:hover {
-    border-color: rgba(255, 255, 255, 0.28);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.7);
+    color: #292966;
+}
+
+.home-btn-sync {
+    min-width: 9.5rem;
+    letter-spacing: 0.03em;
+    font-weight: 800;
 }
 
 @media (max-width: 900px) {

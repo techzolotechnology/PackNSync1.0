@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../store/authStore.js';
+import { useAuthUiStore } from '../store/authUiStore.js';
 import { notificationsApi } from '../api/index.js';
 import { useChatUnreadStore } from '../store/chatUnreadStore.js';
 import toast from 'react-hot-toast';
@@ -19,6 +20,7 @@ function timeAgo(dateStr) {
 
 export default function Navbar() {
     const { user, logout } = useAuthStore();
+    const openAuth = useAuthUiStore((s) => s.openAuth);
     const chatUnreadTotal = useChatUnreadStore((s) => s.total);
     const navigate = useNavigate();
     const location = useLocation();
@@ -298,16 +300,24 @@ export default function Navbar() {
                                                 </>
                                             )}
                                             <button type="button" className="nav-dropdown-item danger" onClick={handleLogout}>
-                                                <strong>Logout</strong>
+                                                <strong>Sync Out</strong>
                                             </button>
                                         </div>
                                     )}
                                 </div>
+                                <button type="button" className="btn btn-ghost btn-sm nav-auth-logout" onClick={handleLogout}>
+                                    Sync Out
+                                </button>
                             </div>
                         ) : (
-                            <div className="flex gap-3">
-                                <Link to="/login" className="btn btn-ghost btn-sm">Log in</Link>
-                                <Link to="/register" className="btn btn-primary btn-sm">Sign up</Link>
+                            <div className="nav-auth-actions">
+                                <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm nav-auth-sync"
+                                    onClick={() => openAuth('login')}
+                                >
+                                    Sync In
+                                </button>
                             </div>
                         )}
                     </div>
@@ -350,14 +360,19 @@ export default function Navbar() {
                                         <Link to="/verify" onClick={() => setMenuOpen(false)} className="mobile-link">Verify ID</Link>
                                     </>
                                 )}
-                                <button onClick={handleLogout} className="mobile-link" style={{ textAlign: 'left', color: 'var(--clr-danger)' }}>Logout</button>
+                                <button onClick={handleLogout} className="mobile-link" style={{ textAlign: 'left', color: 'var(--clr-danger)' }}>Sync Out</button>
                             </div>
                         )
                         : (
-                            <>
-                                <Link to="/login" onClick={() => setMenuOpen(false)} className="mobile-link">Log in</Link>
-                                <Link to="/register" onClick={() => setMenuOpen(false)} className="mobile-link">Sign up</Link>
-                            </>
+                            <div className="mobile-auth-actions">
+                                <button
+                                    type="button"
+                                    className="btn btn-primary w-full nav-auth-sync"
+                                    onClick={() => { setMenuOpen(false); openAuth('login'); }}
+                                >
+                                    Sync In
+                                </button>
+                            </div>
                         )}
                 </div>
             )}
