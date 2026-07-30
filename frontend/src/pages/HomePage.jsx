@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
-import { useAuthUiStore } from '../store/authUiStore.js';
 import './HomePage.css';
 
 const STEPS = [
@@ -60,7 +59,6 @@ const MODULES = {
 export default function HomePage() {
     const user = useAuthStore((s) => s.user);
     const logout = useAuthStore((s) => s.logout);
-    const openAuth = useAuthUiStore((s) => s.openAuth);
     const [mode, setMode] = useState('trips');
 
     const handleLogout = async () => {
@@ -88,9 +86,10 @@ export default function HomePage() {
                                 </button>
                             </>
                         ) : (
-                            <button type="button" className="home-btn primary home-btn-sync" onClick={() => openAuth('login')}>
-                                Sync In
-                            </button>
+                            <>
+                                <Link to="/trips" className="home-btn primary">Browse trips</Link>
+                                <Link to="/rentals" className="home-btn soft">Browse cars</Link>
+                            </>
                         )}
                     </div>
                 </div>
@@ -178,9 +177,7 @@ export default function HomePage() {
                                 </>
                             ) : (
                                 <>
-                                    <button type="button" className="home-btn primary home-btn-sync" onClick={() => openAuth('login')}>
-                                        Sync In
-                                    </button>
+                                    <Link to="/trips" className="home-btn primary">Browse trips</Link>
                                     <Link to="/rentals" className="home-btn ghost">Browse cars</Link>
                                 </>
                             )}

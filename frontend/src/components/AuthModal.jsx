@@ -192,12 +192,12 @@ export default function AuthModal() {
                 ) : (
                     <form onSubmit={handleVerifyOtp} className="auth-modal-form">
                         <p className="auth-modal-hint">
-                            Enter the 6-digit code for <strong>{form.contact}</strong>.
-                            {otpChannel === 'console' ? ' OTP is printed in the backend terminal for this environment.' : ''}
+                            Code sent to <strong>{form.contact}</strong>
+                            {otpChannel === 'console' ? ' (check backend terminal in this environment)' : ''}.
                         </p>
                         {successMsg && <p className="form-success">{successMsg}</p>}
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="otpCode">6-Digit OTP</label>
+                        <div className="form-group auth-modal-otp-group">
+                            <label className="form-label" htmlFor="otpCode">Enter 6-digit OTP</label>
                             <OtpCodeInput
                                 value={form.otpCode}
                                 onChange={(otpCode) => setForm((f) => ({ ...f, otpCode: otpCode.replace(/\D/g, '').slice(0, 6) }))}
@@ -205,7 +205,7 @@ export default function AuthModal() {
                             />
                         </div>
                         {error && <p className="form-error">{error}</p>}
-                        <button type="submit" className="btn btn-primary w-full auth-modal-main" disabled={isLoading}>
+                        <button type="submit" className="btn btn-primary w-full auth-modal-main" disabled={isLoading || form.otpCode.length !== 6}>
                             {isLoading ? 'Verifying…' : (isRegister ? 'Create Account' : 'Log In')}
                         </button>
                         <div className="auth-modal-otp-row">
@@ -217,15 +217,15 @@ export default function AuthModal() {
                             >
                                 {resendAttempts >= MAX_RESENDS
                                     ? 'Resend limit reached'
-                                    : (resendLeft > 0 ? `Resend OTP in ${resendLeft}s` : 'Resend OTP')}
+                                    : (resendLeft > 0 ? `Resend in ${resendLeft}s` : 'Resend code')}
                             </button>
                         </div>
                         <button
                             type="button"
                             className="btn btn-ghost w-full auth-modal-secondary"
-                            onClick={() => { setStep(1); setForm((f) => ({ ...f, otpCode: '' })); setError(''); }}
+                            onClick={() => { setStep(1); setForm((f) => ({ ...f, otpCode: '' })); setError(''); setSuccessMsg(''); }}
                         >
-                            Back
+                            Use a different email / phone
                         </button>
                     </form>
                 )}
