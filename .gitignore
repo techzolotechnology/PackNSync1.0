@@ -17,3 +17,7 @@ desktop/release/
 coverage/
 .nyc_output/
 backend/uploads/
+
+# Nested accidental clone (was a broken gitlink/submodule)
+/PickAndSync/
+
