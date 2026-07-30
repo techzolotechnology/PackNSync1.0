@@ -409,7 +409,15 @@ export default function RentalsPage() {
                                                 ? <img src={listing.host.avatarUrl} alt={listing.host.name} className="cr-avatar" />
                                                 : <div className="cr-avatar fallback">{listing.host?.name?.[0] || '?'}</div>
                                             }
-                                            <span>{listing.host?.name || 'Host'}</span>
+                                            <span>
+                                                {listing.host?.name || 'Host'}
+                                                {listing.host?.averageRating != null && (
+                                                    <em className="cr-host-rating">
+                                                        {' '}★ {listing.host.averageRating}
+                                                        {listing.host.reviewCount ? ` (${listing.host.reviewCount})` : ''}
+                                                    </em>
+                                                )}
+                                            </span>
                                             <strong className="cr-price">₹{Number(listing.pricePerDay).toLocaleString()}/day</strong>
                                         </div>
                                         <div className="cr-actions">

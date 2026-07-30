@@ -101,6 +101,8 @@ model User {
   linkedAccounts   LinkedAccount[]
   tripChatReads    TripChatRead[]
   explorePlans     ExplorePlan[]
+  driverReviewsGiven    DriverReview[] @relation("DriverReviewer")
+  driverReviewsReceived DriverReview[] @relation("DriverReviewee")
 
   @@map("users")
 }
@@ -355,8 +357,27 @@ model RentalBooking {
 
   listing         RentalListing @relation(fields: [listingId], references: [id])
   renter          User          @relation("Renter", fields: [renterId], references: [id])
+  driverReview    DriverReview?
 
   @@map("rental_bookings")
+}
+
+/// Renter rates the car host / driver after a paid rental booking.
+model DriverReview {
+  id              String   @id @default(uuid())
+  reviewerId      String
+  driverId        String
+  rentalBookingId String   @unique
+  rating          Int
+  comment         String?
+  createdAt       DateTime @default(now())
+
+  reviewer      User          @relation("DriverReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  driver        User          @relation("DriverReviewee", fields: [driverId], references: [id], onDelete: Cascade)
+  rentalBooking RentalBooking @relation(fields: [rentalBookingId], references: [id], onDelete: Cascade)
+
+  @@index([driverId, createdAt])
+  @@map("driver_reviews")
 }
 
 model RideBooking {

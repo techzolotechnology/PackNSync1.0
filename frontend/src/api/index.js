@@ -174,6 +174,8 @@ export const rentalsApi = {
     cancelBooking: (id) => api.patch(`/rentals/bookings/${id}/cancel`),
     respondToBooking: (id, status) => api.patch(`/rentals/bookings/${id}/respond`, { status }),
     payBooking: (id) => api.post(`/rentals/bookings/${id}/pay`),
+    reviewDriver: (id, data) => api.post(`/rentals/bookings/${id}/driver-review`, data),
+    getDriverReviews: (userId) => api.get(`/rentals/drivers/${userId}/reviews`),
 };
 
 export const vehiclesApi = {

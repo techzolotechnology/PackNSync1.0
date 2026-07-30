@@ -531,6 +531,13 @@
     font-size: 0.82rem;
 }
 
+.cr-host-rating {
+    font-style: normal;
+    color: #e8a317;
+    font-weight: 600;
+    margin-left: 0.2rem;
+}
+
 .cr-avatar {
     width: 28px;
     height: 28px;

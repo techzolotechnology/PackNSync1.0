@@ -182,3 +182,49 @@
         justify-content: flex-start;
     }
 }
+
+.booking-review-done {
+    color: var(--clr-primary-400, #f0a04b);
+}
+
+.driver-review-form {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    background: var(--clr-bg-900, rgba(0, 0, 0, 0.2));
+    max-width: 28rem;
+}
+
+.driver-review-stars {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0.35rem 0 0.6rem;
+}
+
+.driver-review-stars button {
+    border: none;
+    background: transparent;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #5c5c5c;
+    padding: 0;
+}
+
+.driver-review-stars button.on {
+    color: #e8a317;
+}
+
+.driver-review-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0.6rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-800);
+    color: var(--clr-text-primary);
+    resize: vertical;
+    font: inherit;
+}

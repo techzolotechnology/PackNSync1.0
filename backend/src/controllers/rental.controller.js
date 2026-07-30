@@ -11,6 +11,7 @@ import {
 } from '../utils/bookingEmail.js';
 import { notifyUser } from '../utils/notify.js';
 import { findSuggestedCars } from '../utils/carSuggestions.js';
+import { averageRating } from './driverReview.controller.js';
 
 // GET /api/rentals/suggestions — cars matched to trip dates / destination / seats
 export const getCarSuggestions = async (req, res) => {
@@ -93,7 +94,33 @@ export const getListings = async (req, res) => {
         orderBy: { pricePerDay: 'asc' },
     });
 
-    res.json({ success: true, data: listings });
+    const hostIds = [...new Set(listings.map((l) => l.hostId))];
+    const reviews = hostIds.length
+        ? await prisma.driverReview.findMany({
+            where: { driverId: { in: hostIds } },
+            select: { driverId: true, rating: true },
+        })
+        : [];
+
+    const byHost = new Map();
+    for (const r of reviews) {
+        if (!byHost.has(r.driverId)) byHost.set(r.driverId, []);
+        byHost.get(r.driverId).push(r);
+    }
+
+    const data = listings.map((listing) => {
+        const hostReviews = byHost.get(listing.hostId) || [];
+        return {
+            ...listing,
+            host: {
+                ...listing.host,
+                averageRating: averageRating(hostReviews),
+                reviewCount: hostReviews.length,
+            },
+        };
+    });
+
+    res.json({ success: true, data });
 };
 
 // GET /api/rentals/listings/:id
@@ -367,6 +394,7 @@ export const getMyBookings = async (req, res) => {
             listing: {
                 include: { vehicle: true, host: { select: { id: true, name: true } } },
             },
+            driverReview: true,
         },
         orderBy: { createdAt: 'desc' },
     });

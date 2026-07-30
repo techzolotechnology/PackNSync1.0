@@ -23,6 +23,7 @@ export default function MyBookingsPage() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [busyId, setBusyId] = useState(null);
+    const [reviewDraft, setReviewDraft] = useState({}); // bookingId -> { rating, comment, open }
 
     useEffect(() => {
         if (!user) return;
@@ -56,6 +57,42 @@ export default function MyBookingsPage() {
             await fetchAll();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const openReview = (bookingId) => {
+        setReviewDraft((d) => ({
+            ...d,
+            [bookingId]: { open: true, rating: d[bookingId]?.rating || 5, comment: d[bookingId]?.comment || '' },
+        }));
+    };
+
+    const setReviewField = (bookingId, field, value) => {
+        setReviewDraft((d) => ({
+            ...d,
+            [bookingId]: { ...(d[bookingId] || { open: true, rating: 5, comment: '' }), [field]: value, open: true },
+        }));
+    };
+
+    const submitReview = async (bookingId) => {
+        const draft = reviewDraft[bookingId] || { rating: 5, comment: '' };
+        setBusyId(bookingId);
+        try {
+            await rentalsApi.reviewDriver(bookingId, {
+                rating: Number(draft.rating) || 5,
+                comment: draft.comment,
+            });
+            toast.success('Thanks — driver review submitted.');
+            setReviewDraft((d) => {
+                const next = { ...d };
+                delete next[bookingId];
+                return next;
+            });
+            await fetchAll();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not submit review.');
         } finally {
             setBusyId(null);
         }
@@ -158,12 +195,14 @@ export default function MyBookingsPage() {
                         {myRentals.map((b) => {
                             const canCancel = ['PENDING', 'CONFIRMED'].includes(b.status);
                             const canPay = b.status === 'CONFIRMED';
+                            const canReview = ['PAID', 'COMPLETED'].includes(b.status) && !b.driverReview;
+                            const draft = reviewDraft[b.id];
                             const hostLabel = displayName(b.listing.host?.name, b.listing.host?.id || b.listing.hostId, user.id, 'Host');
                             return (
                                 <article key={b.id} className="booking-item">
                                     <div>
                                         <h3>{b.listing.vehicle.make} {b.listing.vehicle.model}</h3>
-                                        <p>{b.listing.location} • Host: {hostLabel}</p>
+                                        <p>{b.listing.location} • Host / driver: {hostLabel}</p>
                                         <p className="booking-dates">
                                             {new Date(b.startDate).toLocaleDateString()} → {new Date(b.endDate).toLocaleDateString()}
                                         </p>
@@ -172,6 +211,54 @@ export default function MyBookingsPage() {
                                         )}
                                         {b.status === 'CONFIRMED' && (
                                             <p className="booking-hint">Host confirmed — pay to lock in the booking.</p>
+                                        )}
+                                        {b.driverReview && (
+                                            <p className="booking-hint booking-review-done">
+                                                Your review: {'★'.repeat(b.driverReview.rating)}{'☆'.repeat(5 - b.driverReview.rating)}
+                                                {b.driverReview.comment ? ` — ${b.driverReview.comment}` : ''}
+                                            </p>
+                                        )}
+                                        {draft?.open && (
+                                            <div className="driver-review-form">
+                                                <p className="booking-hint">Rate {hostLabel} as driver / host</p>
+                                                <div className="driver-review-stars" role="group" aria-label="Rating">
+                                                    {[1, 2, 3, 4, 5].map((n) => (
+                                                        <button
+                                                            key={n}
+                                                            type="button"
+                                                            className={n <= (draft.rating || 0) ? 'on' : ''}
+                                                            onClick={() => setReviewField(b.id, 'rating', n)}
+                                                            aria-label={`${n} stars`}
+                                                        >
+                                                            ★
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <textarea
+                                                    rows={2}
+                                                    maxLength={500}
+                                                    placeholder="Optional comment (punctuality, car condition, driving…)"
+                                                    value={draft.comment || ''}
+                                                    onChange={(e) => setReviewField(b.id, 'comment', e.target.value)}
+                                                />
+                                                <div className="booking-actions">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-primary btn-sm"
+                                                        disabled={busyId === b.id}
+                                                        onClick={() => submitReview(b.id)}
+                                                    >
+                                                        {busyId === b.id ? 'Submitting…' : 'Submit review'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-ghost btn-sm"
+                                                        onClick={() => setReviewDraft((d) => ({ ...d, [b.id]: { ...d[b.id], open: false } }))}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                     <div className="booking-side">
@@ -186,6 +273,15 @@ export default function MyBookingsPage() {
                                                     onClick={() => runAction(b.id, () => rentalsApi.payBooking(b.id), 'Payment successful.')}
                                                 >
                                                     {busyId === b.id ? 'Paying…' : 'Pay now'}
+                                                </button>
+                                            )}
+                                            {canReview && !draft?.open && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary btn-sm"
+                                                    onClick={() => openReview(b.id)}
+                                                >
+                                                    Review driver
                                                 </button>
                                             )}
                                             {canCancel && (
