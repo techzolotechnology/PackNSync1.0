@@ -485,9 +485,9 @@ h1 {
   font-family: var(--font-display);
 }
 
-/* 15. Page transitions */
+/* 15. Page transitions — enter handled by framer PageTransition */
 .page-enter {
-  animation: page-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* kept for markup compatibility; motion owned by PageTransition + MotionBridge */
 }
 
 @keyframes rise-in {

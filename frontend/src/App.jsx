@@ -20,6 +20,8 @@ import ExplorePage from './pages/ExplorePage.jsx';
 import WalletPage from './pages/WalletPage.jsx';
 import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
+import PageTransition from './components/motion/PageTransition.jsx';
+import MotionBridge from './components/motion/MotionBridge.jsx';
 
 const HIDE_FOOTER_PATHS = new Set(['/explore']);
 
@@ -73,7 +75,8 @@ const BlockAdminFromApp = ({ children }) => {
 export default function App() {
     const user = useAuthStore((s) => s.user);
     const fetchMe = useAuthStore((s) => s.fetchMe);
-    const { pathname } = useLocation();
+    const location = useLocation();
+    const { pathname } = location;
 
     useEffect(() => {
         fetchMe();
@@ -86,7 +89,9 @@ export default function App() {
             <AuthQueryBridge />
             <ChatUnreadBridge />
             <main className="app-page">
-                <Routes>
+                <MotionBridge />
+                <PageTransition>
+                    <Routes location={location}>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
                     <Route path="/register" element={<BlockAdminFromApp><AuthRouteRedirect mode="register" /></BlockAdminFromApp>} />
@@ -105,7 +110,8 @@ export default function App() {
                     <Route path="/terms/:type" element={<TermsPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
-                </Routes>
+                    </Routes>
+                </PageTransition>
             </main>
             {!HIDE_FOOTER_PATHS.has(pathname) && (!user || user.role !== 'ADMIN') ? <Footer /> : null}
         </div>
