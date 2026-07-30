@@ -53,6 +53,11 @@ jobs:
       - name: SPA fallback (404 → index)
         run: cp frontend/dist/index.html frontend/dist/404.html
 
+      - name: Ensure Pages domain + no Jekyll
+        run: |
+          printf 'pickandsync.com\n' > frontend/dist/CNAME
+          touch frontend/dist/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

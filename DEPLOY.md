@@ -23,7 +23,8 @@ GitHub (push main)
 ### 1) Enable GitHub Pages
 
 1. Repo → **Settings** → **Pages**
-2. **Source**: GitHub Actions
+2. **Source**: **GitHub Actions** (required — do **not** use “Deploy from a branch”, or GitHub will publish the README instead of the React app)
+3. Custom domain: `pickandsync.com` (DNS A/ALIAS + CNAME as GitHub shows)
 
 ### 2) Deploy the API on Render (free)
 
