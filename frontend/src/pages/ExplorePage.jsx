@@ -88,6 +88,7 @@ export default function ExplorePage() {
     const [examples, setExamples] = useState([]);
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [coords, setCoords] = useState(null);
     const threadRef = useRef(null);
     const motionRef = useRef(null);
     useGoFlyMotion(motionRef, [messages, places, planPlaces, mode, loading]);
@@ -98,6 +99,44 @@ export default function ExplorePage() {
         exploreApi.getExamples().then((res) => setExamples(res.data.data || [])).catch(() => {});
         exploreApi.getStatus().then((res) => setStatus(res.data.data)).catch(() => {});
     }, []);
+
+    // Reuse an already-granted location so results are local without re-prompting.
+    useEffect(() => {
+        if (!navigator.geolocation || !navigator.permissions?.query) return;
+        navigator.permissions.query({ name: 'geolocation' })
+            .then((perm) => {
+                if (perm.state !== 'granted') return;
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                    () => {},
+                    { timeout: 8000, maximumAge: 300000 },
+                );
+            })
+            .catch(() => {});
+    }, []);
+
+    const requestLocation = async ({ silent = false } = {}) => {
+        if (!navigator.geolocation) {
+            if (!silent) toast.error('This browser cannot share location.');
+            return null;
+        }
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000,
+                });
+            });
+            const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            setCoords(next);
+            if (!silent) toast.success('Using your location for nearby results.');
+            return next;
+        } catch {
+            if (!silent) toast.error('Allow location access, or name a city like “in Bangalore”.');
+            return null;
+        }
+    };
 
     useEffect(() => {
         if (!sessionId) return;
@@ -141,24 +180,17 @@ export default function ExplorePage() {
         ]);
 
         try {
-            let lat;
-            let lng;
-            if (/\bnear me\b|\bnearby\b/i.test(q) && navigator.geolocation) {
-                try {
-                    const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                        });
-                    });
-                    lat = pos.coords.latitude;
-                    lng = pos.coords.longitude;
-                } catch {
-                    toast.error('Allow location for “near me”, or name a city.');
-                }
+            let origin = coords;
+            if (!origin && /\bnear me\b|\bnearby\b|\baround me\b/i.test(q)) {
+                origin = await requestLocation();
             }
 
-            const res = await exploreApi.chat(q, { sessionId: sessionId || undefined, lat, lng, limit: 5 });
+            const res = await exploreApi.chat(q, {
+                sessionId: sessionId || undefined,
+                lat: origin?.lat,
+                lng: origin?.lng,
+                limit: 5,
+            });
             const data = res.data.data || {};
             const s = data.session;
             if (s?.id) {
@@ -331,6 +363,23 @@ export default function ExplorePage() {
                                 ))}
                             </div>
                         )}
+
+                        <div className="explore-geo-row">
+                            <button
+                                type="button"
+                                className={`explore-geo-btn ${coords ? 'active' : ''}`}
+                                onClick={() => (coords ? setCoords(null) : requestLocation())}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" />
+                                    <circle cx="12" cy="10" r="2.2" fill="currentColor" />
+                                </svg>
+                                {coords ? 'Using your location' : 'Use my location'}
+                            </button>
+                            <span className="explore-geo-hint">
+                                {coords ? 'Tap to turn off' : 'Or name a city in your message'}
+                            </span>
+                        </div>
 
                         <form
                             className="explore-composer"

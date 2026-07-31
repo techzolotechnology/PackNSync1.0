@@ -1,6 +1,7 @@
 import { AppError } from './AppError.js';
 import { enrichPlaceReasons, refineExploreIntent } from './exploreLlm.js';
 import {
+    getExploreDefaultCenter,
     googlePhotoUrl,
     googlePlacesTextSearch,
     isGooglePlacesConfigured,
@@ -9,6 +10,9 @@ import {
 const USER_AGENT = 'PackAndSync/1.0 (explore; contact=dev@packandsync.local)';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
+
+/** Country we geocode bare place names against. */
+export const DEFAULT_COUNTRY = (process.env.EXPLORE_COUNTRY || 'India').trim();
 
 const CITY_ALIASES = {
     bangalore: 'Bengaluru, India',
@@ -125,7 +129,7 @@ export const parseExploreQuery = (raw = '') => {
             const place = m[1].replace(/\b(tonight|today|tomorrow|please|for|me)\b/g, '').trim();
             if (place.length >= 2) {
                 city = place;
-                geocodeQuery = `${place}, India`;
+                geocodeQuery = `${place}, ${DEFAULT_COUNTRY}`;
             }
         }
     }
@@ -356,6 +360,12 @@ export const searchExplorePlaces = async (query, {
         };
     }
 
+    // No GPS and no city in the query — fall back to the configured home area
+    // so results stay local instead of drifting to whatever Google ranks first.
+    if (!center && !parsed.geocodeQuery) {
+        center = getExploreDefaultCenter();
+    }
+
     // Prefer Google Places when key is set
     if (isGooglePlacesConfigured()) {
         if (!center && parsed.geocodeQuery) {
@@ -368,15 +378,18 @@ export const searchExplorePlaces = async (query, {
 
         const textQuery = parsed.searchQuery || parsed.raw;
         try {
+            // Only bias to a point when we actually know one; otherwise the
+            // country-level region bias in googlePlacesTextSearch does the work.
             const googlePlaces = await googlePlacesTextSearch({
                 query: textQuery,
-                lat: center?.lat ?? (lat != null ? Number(lat) : null),
-                lng: center?.lng ?? (lng != null ? Number(lng) : null),
+                lat: center?.lat ?? null,
+                lng: center?.lng ?? null,
                 intents: parsed.intents,
                 limit: Math.max(take, 8),
             });
 
             if (googlePlaces?.length) {
+                const originCenter = center;
                 if (!center && googlePlaces[0]) {
                     center = {
                         lat: googlePlaces[0].lat,
@@ -387,8 +400,10 @@ export const searchExplorePlaces = async (query, {
                 }
 
                 let results = googlePlaces.map((p) => {
-                    const distanceKm = center
-                        ? Math.round(haversineKm(center.lat, center.lng, p.lat, p.lng) * 100) / 100
+                    // Distance is only meaningful from a real origin, not from
+                    // whichever result happened to rank first.
+                    const distanceKm = originCenter
+                        ? Math.round(haversineKm(originCenter.lat, originCenter.lng, p.lat, p.lng) * 100) / 100
                         : null;
                     const withDist = { ...p, distanceKm };
                     let score = 50;
@@ -444,12 +459,12 @@ export const searchExplorePlaces = async (query, {
             400,
         );
     } else if (!center) {
-        center = await nominatimGeocode(`${parsed.raw}, India`);
+        center = await nominatimGeocode(`${parsed.raw}, ${DEFAULT_COUNTRY}`).catch(() => null);
     }
 
     if (!center) {
         throw new AppError(
-            'Could not find that area. Try adding a clear city, e.g. “cafes in Bangalore”.',
+            'Tell me where to look — add a city like “cafes in Bangalore”, or allow location and say “near me”.',
             404,
         );
     }

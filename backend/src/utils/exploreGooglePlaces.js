@@ -15,6 +15,29 @@ export const getGooglePlacesKey = () => {
 
 export const isGooglePlacesConfigured = () => Boolean(getGooglePlacesKey());
 
+/**
+ * Country the app serves. Without this bias a query like "quiet romantic drink"
+ * (no city named) comes back US-centric from Google.
+ */
+export const getExploreRegion = () => (process.env.EXPLORE_REGION || 'in').trim().toLowerCase();
+
+/**
+ * Optional "home city" bias, as "lat,lng" in EXPLORE_DEFAULT_CENTER.
+ * Returns null when unset, in which case only the country bias applies.
+ */
+export const getExploreDefaultCenter = () => {
+    const raw = (process.env.EXPLORE_DEFAULT_CENTER || '').trim();
+    if (!raw) return null;
+    const [lat, lng] = raw.split(',').map((n) => Number(n.trim()));
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return {
+        lat,
+        lng,
+        label: (process.env.EXPLORE_DEFAULT_CENTER_LABEL || '').trim() || 'Default area',
+        city: null,
+    };
+};
+
 const typeForIntents = (intents = []) => {
     if (intents.includes('coffee')) return 'cafe';
     if (intents.includes('drinks')) return 'bar';
@@ -33,6 +56,7 @@ export async function googlePlacesTextSearch({
     lng = null,
     intents = [],
     limit = 8,
+    radiusMeters = 8000,
 }) {
     const key = getGooglePlacesKey();
     if (!key) return null;
@@ -40,11 +64,12 @@ export async function googlePlacesTextSearch({
     const params = new URLSearchParams({
         query,
         key,
+        region: getExploreRegion(),
     });
 
     if (lat != null && lng != null) {
         params.set('location', `${lat},${lng}`);
-        params.set('radius', '8000');
+        params.set('radius', String(radiusMeters));
     }
 
     const type = typeForIntents(intents);

@@ -291,6 +291,46 @@
     color: var(--clr-primary-500);
 }
 
+.explore-geo-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.65rem;
+    margin-bottom: 0.5rem;
+}
+
+.explore-geo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-700);
+    color: var(--clr-text-secondary);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.explore-geo-btn:hover {
+    color: var(--clr-text-primary);
+    border-color: var(--clr-border-bright);
+}
+
+.explore-geo-btn.active {
+    background: var(--clr-primary-100);
+    border-color: var(--clr-primary-500);
+    color: var(--clr-primary-700);
+}
+
+.explore-geo-hint {
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+}
+
 .explore-composer {
     display: grid;
     grid-template-columns: 1fr auto;
