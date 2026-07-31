@@ -29,5 +29,6 @@ ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
 
-# Migrate then start (DATABASE_URL must be set on the host)
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]
+# Migrate, top up showcase content while the platform is still empty, then start.
+# The seed is additive and must never keep the API from booting.
+CMD ["sh", "-c", "npx prisma migrate deploy && { node prisma/seedShowcase.js --only-if-empty || echo 'showcase seed skipped'; } && node src/index.js"]
