@@ -118,45 +118,59 @@ export default function AuthModal() {
         <div className="auth-modal-root" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
             <button type="button" className="auth-modal-backdrop" aria-label="Close" onClick={closeAuth} />
             <div className="auth-modal-card">
+                <div className="auth-modal-glow" aria-hidden="true" />
+
                 <button type="button" className="auth-modal-close" onClick={closeAuth} aria-label="Close">
-                    ×
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
                 </button>
 
-                <div className="auth-modal-tabs" role="tablist">
-                    <button
-                        type="button"
-                        role="tab"
-                        className={!isRegister ? 'active' : ''}
-                        aria-selected={!isRegister}
-                        onClick={() => setMode('login')}
-                    >
-                        Returning
-                    </button>
-                    <button
-                        type="button"
-                        role="tab"
-                        className={isRegister ? 'active' : ''}
-                        aria-selected={isRegister}
-                        onClick={() => setMode('register')}
-                    >
-                        New traveler
-                    </button>
-                </div>
+                <p className="auth-modal-brand">PackAndSync</p>
 
                 <div className="auth-modal-header">
-                    <h2 id="auth-modal-title">{isRegister ? 'Create an account' : 'Welcome back'}</h2>
+                    <h2 id="auth-modal-title" className="font-display">
+                        {step === 2
+                            ? 'Check your inbox'
+                            : (isRegister ? 'Start syncing' : 'Welcome back')}
+                    </h2>
                     <p>
-                        {isRegister
-                            ? 'Join PackAndSync with email or mobile — OTP only, no password.'
-                            : 'Log in with email or mobile. We’ll send a one-time code.'}
+                        {step === 2
+                            ? `We sent a 6-digit code to ${form.contact}${otpChannel === 'console' ? ' — also check the backend terminal' : ''}.`
+                            : (isRegister
+                                ? 'Join with email or mobile. One-time code, no password.'
+                                : 'Sign in with email or mobile. We’ll send a one-time code.')}
                     </p>
                 </div>
+
+                {step === 1 && (
+                    <div className="auth-modal-switch" role="tablist" aria-label="Account type">
+                        <button
+                            type="button"
+                            role="tab"
+                            className={!isRegister ? 'active' : ''}
+                            aria-selected={!isRegister}
+                            onClick={() => setMode('login')}
+                        >
+                            Returning
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            className={isRegister ? 'active' : ''}
+                            aria-selected={isRegister}
+                            onClick={() => setMode('register')}
+                        >
+                            New traveler
+                        </button>
+                    </div>
+                )}
 
                 {step === 1 ? (
                     <form onSubmit={handleRequestOtp} className="auth-modal-form">
                         {isRegister && (
                             <div className="form-group">
-                                <label className="form-label" htmlFor="auth-name">Full Name</label>
+                                <label className="form-label" htmlFor="auth-name">Full name</label>
                                 <input
                                     id="auth-name"
                                     name="name"
@@ -171,13 +185,13 @@ export default function AuthModal() {
                             </div>
                         )}
                         <div className="form-group">
-                            <label className="form-label" htmlFor="auth-contact">Email or Mobile Number</label>
+                            <label className="form-label" htmlFor="auth-contact">Email or mobile</label>
                             <input
                                 id="auth-contact"
                                 name="contact"
                                 type="text"
                                 className="form-input"
-                                placeholder="you@example.com or +919876543210"
+                                placeholder="you@example.com or +91…"
                                 value={form.contact}
                                 onChange={handleChange}
                                 required
@@ -185,19 +199,15 @@ export default function AuthModal() {
                             />
                         </div>
                         {error && <p className="form-error">{error}</p>}
-                        <button type="submit" className="btn btn-primary w-full auth-modal-main" disabled={isLoading}>
-                            {isLoading ? 'Sending OTP…' : 'Get OTP'}
+                        <button type="submit" className="auth-modal-main" disabled={isLoading}>
+                            {isLoading ? 'Sending…' : 'Continue'}
                         </button>
                     </form>
                 ) : (
                     <form onSubmit={handleVerifyOtp} className="auth-modal-form">
-                        <p className="auth-modal-hint">
-                            Code sent to <strong>{form.contact}</strong>
-                            {otpChannel === 'console' ? ' (check backend terminal in this environment)' : ''}.
-                        </p>
                         {successMsg && <p className="form-success">{successMsg}</p>}
                         <div className="form-group auth-modal-otp-group">
-                            <label className="form-label" htmlFor="otpCode">Enter 6-digit OTP</label>
+                            <label className="form-label" htmlFor="otpCode">One-time code</label>
                             <OtpCodeInput
                                 value={form.otpCode}
                                 onChange={(otpCode) => setForm((f) => ({ ...f, otpCode: otpCode.replace(/\D/g, '').slice(0, 6) }))}
@@ -205,8 +215,12 @@ export default function AuthModal() {
                             />
                         </div>
                         {error && <p className="form-error">{error}</p>}
-                        <button type="submit" className="btn btn-primary w-full auth-modal-main" disabled={isLoading || form.otpCode.length !== 6}>
-                            {isLoading ? 'Verifying…' : (isRegister ? 'Create Account' : 'Log In')}
+                        <button
+                            type="submit"
+                            className="auth-modal-main"
+                            disabled={isLoading || form.otpCode.length !== 6}
+                        >
+                            {isLoading ? 'Verifying…' : (isRegister ? 'Create account' : 'Sign in')}
                         </button>
                         <div className="auth-modal-otp-row">
                             <button
@@ -219,14 +233,20 @@ export default function AuthModal() {
                                     ? 'Resend limit reached'
                                     : (resendLeft > 0 ? `Resend in ${resendLeft}s` : 'Resend code')}
                             </button>
+                            <span className="auth-modal-dot" aria-hidden="true">·</span>
+                            <button
+                                type="button"
+                                className="auth-modal-link"
+                                onClick={() => {
+                                    setStep(1);
+                                    setForm((f) => ({ ...f, otpCode: '' }));
+                                    setError('');
+                                    setSuccessMsg('');
+                                }}
+                            >
+                                Change contact
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            className="btn btn-ghost w-full auth-modal-secondary"
-                            onClick={() => { setStep(1); setForm((f) => ({ ...f, otpCode: '' })); setError(''); setSuccessMsg(''); }}
-                        >
-                            Use a different email / phone
-                        </button>
                     </form>
                 )}
             </div>
