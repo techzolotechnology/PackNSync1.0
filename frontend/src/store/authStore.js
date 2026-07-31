@@ -46,8 +46,9 @@ export const useAuthStore = create(
                 set({ isLoading: true });
                 try {
                     const res = await authApi.verifyOtp(data);
-                    const { user, accessToken } = res.data;
+                    const { user, accessToken, refreshToken } = res.data;
                     localStorage.setItem('access_token', accessToken);
+                    if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
                     set({ user, accessToken });
                     return { success: true };
                 } catch (err) {
@@ -60,6 +61,7 @@ export const useAuthStore = create(
             logout: async () => {
                 try { await authApi.logout(); } catch { }
                 localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
                 set({ user: null, accessToken: null });
             },
 
@@ -72,8 +74,13 @@ export const useAuthStore = create(
                 try {
                     const res = await authApi.me();
                     set({ user: res.data.user, accessToken: token });
-                } catch {
+                } catch (err) {
+                    // A cold start or dropped connection is not a sign-out.
+                    const status = err.response?.status;
+                    const authFailed = status === 401 || status === 403;
+                    if (!authFailed && (isTransientNetworkError(err) || !status)) return;
                     localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
                     set({ user: null, accessToken: null });
                 }
             },

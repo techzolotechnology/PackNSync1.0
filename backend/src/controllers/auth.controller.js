@@ -83,7 +83,7 @@ export const verifyOtp = async (req, res) => {
     setCookies(res, accessToken, refreshToken);
 
     const { refreshToken: _, otpCode: __, otpExpiresAt: ___, ...safeUser } = user;
-    res.json({ success: true, user: safeUser, accessToken });
+    res.json({ success: true, user: safeUser, accessToken, refreshToken });
 };
 
 // POST /api/auth/logout
@@ -98,7 +98,9 @@ export const logout = async (req, res) => {
 
 // POST /api/auth/refresh
 export const refreshAccessToken = async (req, res) => {
-    const token = req.cookies?.refresh_token;
+    // Cookie first; the body copy keeps sessions alive for browsers that block
+    // third-party cookies on the cross-domain API.
+    const token = req.cookies?.refresh_token || req.body?.refreshToken;
     if (!token) throw new AppError('No refresh token.', 401);
 
     let decoded;
@@ -124,7 +126,7 @@ export const refreshAccessToken = async (req, res) => {
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: newRefreshToken } });
     setCookies(res, accessToken, newRefreshToken);
 
-    res.json({ success: true, accessToken });
+    res.json({ success: true, accessToken, refreshToken: newRefreshToken });
 };
 
 // GET /api/auth/me

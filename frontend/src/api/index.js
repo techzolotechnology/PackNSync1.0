@@ -54,20 +54,30 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const res = await api.post('/auth/refresh');
-                const { accessToken } = res.data;
+                // Send the stored copy too: the refresh cookie is cross-site and
+                // may be blocked, in which case the cookie alone would 401.
+                const storedRefresh = localStorage.getItem('refresh_token');
+                const res = await api.post(
+                    '/auth/refresh',
+                    storedRefresh ? { refreshToken: storedRefresh } : {},
+                );
+                const { accessToken, refreshToken } = res.data;
                 localStorage.setItem('access_token', accessToken);
+                if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
                 processQueue(null, accessToken);
                 originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
                 try {
                     localStorage.removeItem('auth-storage');
                 } catch { /* ignore */ }
-                if (!window.location.pathname.startsWith('/login')) {
-                    window.location.href = '/login';
+                // Land straight on the home page with the auth modal open
+                // instead of bouncing through the legacy /login redirect.
+                if (!window.location.search.includes('auth=login')) {
+                    window.location.href = '/?auth=login';
                 }
                 return Promise.reject(refreshError);
             } finally {
@@ -212,10 +222,11 @@ export const exploreApi = {
     clearChat: (sessionId) => api.post('/explore/chat/clear', { sessionId }),
     getChat: (sessionId) => api.get(`/explore/chat/${sessionId}`),
     listPlans: () => api.get('/explore/plans'),
-    generatePlan: (data) => api.post('/explore/plans/generate', data),
+    // Itinerary generation chains an LLM call with geocoding lookups
+    generatePlan: (data) => api.post('/explore/plans/generate', data, { timeout: 120000 }),
     getPlan: (id) => api.get(`/explore/plans/${id}`),
     updatePlan: (id, data) => api.put(`/explore/plans/${id}`, data),
-    regeneratePlan: (id, data) => api.post(`/explore/plans/${id}/regenerate`, data),
+    regeneratePlan: (id, data) => api.post(`/explore/plans/${id}/regenerate`, data, { timeout: 120000 }),
     savePlan: (id) => api.post(`/explore/plans/${id}/save`),
     deletePlan: (id) => api.delete(`/explore/plans/${id}`),
     updatePlanStop: (planId, stopId, data) => api.patch(`/explore/plans/${planId}/stops/${stopId}`, data),

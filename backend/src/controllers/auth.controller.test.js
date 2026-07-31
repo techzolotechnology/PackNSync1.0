@@ -163,8 +163,16 @@ describe('Auth Controller Tests', () => {
                 where: { id: 'user_123' },
                 data: { refreshToken: null },
             });
-            expect(mockRes.clearCookie).toHaveBeenCalledWith('access_token');
-            expect(mockRes.clearCookie).toHaveBeenCalledWith('refresh_token');
+            // Cleared with the same attributes they were set with, otherwise
+            // the browser keeps the cookies.
+            expect(mockRes.clearCookie).toHaveBeenCalledWith(
+                'access_token',
+                expect.objectContaining({ httpOnly: true, path: '/' }),
+            );
+            expect(mockRes.clearCookie).toHaveBeenCalledWith(
+                'refresh_token',
+                expect.objectContaining({ httpOnly: true, path: '/' }),
+            );
             expect(mockRes.json).toHaveBeenCalledWith({
                 success: true,
                 message: 'Logged out successfully.',
