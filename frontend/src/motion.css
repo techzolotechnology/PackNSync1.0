@@ -6,24 +6,83 @@
   transform-style: preserve-3d;
 }
 
-/* Scroll reveal */
+/* Scroll reveal.
+   `is-visible` is set by useGoFlyMotion (page-declared markup);
+   `ps-reveal-in` by MotionBridge (pages without explicit motion markup). */
 .ps-reveal {
   opacity: 0;
-  transform: translate3d(0, 28px, 0) rotateX(7deg) scale(0.985);
-  transform-origin: 50% 80%;
-  filter: blur(4px);
+  transform: translate3d(0, 48px, 0);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.85s cubic-bezier(0.2, 0.65, 0.25, 1),
+    transform 0.85s cubic-bezier(0.2, 0.65, 0.25, 1);
   transition-delay: var(--ps-delay, 0ms);
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
+.ps-reveal.ps-left {
+  transform: translate3d(-58px, 0, 0);
+}
+
+.ps-reveal.ps-right {
+  transform: translate3d(58px, 0, 0);
+}
+
+.ps-reveal.ps-scale {
+  transform: scale(0.94);
+}
+
+.ps-reveal.is-visible,
 .ps-reveal.ps-reveal-in {
   opacity: 1;
-  transform: translate3d(0, 0, 0) rotateX(0deg) scale(1);
-  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Media eases out of an overscan as its card arrives */
+.ps-image-reveal {
+  overflow: hidden;
+}
+
+.ps-image-reveal img,
+.ps-image-reveal .home-mod-media {
+  transform: scale(1.1);
+  transition: transform 1.15s cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+
+.ps-image-reveal.is-visible img,
+.ps-image-reveal.is-visible .home-mod-media {
+  transform: scale(1.02);
+}
+
+.ps-image-reveal:hover img,
+.ps-image-reveal.is-visible:hover img {
+  transform: scale(1.08);
+}
+
+.ps-lift {
+  transition: transform 0.38s cubic-bezier(0.2, 0.65, 0.25, 1), box-shadow 0.38s ease;
+}
+
+.ps-lift:hover {
+  transform: translateY(-8px);
+}
+
+.ps-parallax {
+  transform: translate3d(0, var(--ps-parallax-y, 0px), 0) scale(1.06);
+  will-change: transform;
+}
+
+@keyframes ps-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+.ps-float {
+  animation: ps-float 5.5s ease-in-out infinite;
 }
 
 /* 3D tilt cards */
@@ -114,7 +173,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ps-reveal,
+  .ps-reveal.is-visible,
   .ps-reveal.ps-reveal-in,
+  .ps-image-reveal img,
+  .ps-image-reveal .home-mod-media,
+  .ps-lift,
+  .ps-lift:hover,
+  .ps-parallax,
+  .ps-float,
   .ps-tilt,
   .ps-tilt.ps-tilt-active,
   .btn-primary,

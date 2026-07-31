@@ -115,9 +115,9 @@
     box-shadow: 0 24px 50px rgba(41, 41, 102, 0.2);
 }
 
-/* translateY hover deferred to .ps-tilt when MotionBridge is active */
-.home-mod-card:hover:not(.ps-tilt),
-.home-mod-card.focused:not(.ps-tilt) {
+/* translateY hover deferred to .ps-tilt / .ps-lift when the motion layer owns it */
+.home-mod-card:hover:not(.ps-tilt):not(.ps-lift),
+.home-mod-card.focused:not(.ps-tilt):not(.ps-lift) {
     transform: translateY(-4px);
 }
 

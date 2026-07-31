@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
+import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import './TripsPage.css';
 
 const STATUSES = ['', 'OPEN', 'FULL', 'IN_PROGRESS', 'COMPLETED'];
@@ -48,7 +49,7 @@ function TripCard({ trip, index, isMine, myRole }) {
     const role = myRole || (isMine ? 'ORGANIZER' : null);
 
     return (
-        <article className={`tt-card ${glow}`}>
+        <article className={`tt-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
             <div className="tt-card-media">
                 <img src={coverFor(trip, index)} alt={trip.title} loading="lazy" />
                 <span className={`tt-status tt-status-${statusKey}`}>{statusLabel}</span>
@@ -92,6 +93,8 @@ export default function TripsPage() {
     const [status, setStatus] = useState('');
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
+    const motionRef = useRef(null);
+    useGoFlyMotion(motionRef, [trips, isLoading, tab]);
 
     const setTab = (next) => {
         if (next === 'mine') {
@@ -136,9 +139,9 @@ export default function TripsPage() {
     }, [tab, user, navigate]);
 
     return (
-        <div className="tt-page page-enter">
+        <div className="tt-page page-enter" ref={motionRef}>
             <section className="tt-hero">
-                <div className="tt-hero-bg" aria-hidden="true">
+                <div className="tt-hero-bg ps-parallax" aria-hidden="true">
                     <svg className="tt-waves" viewBox="0 0 1440 420" preserveAspectRatio="none">
                         <path className="tt-wave tt-wave-1" d="M-40,260 C180,120 360,340 540,210 C720,80 900,300 1080,190 C1260,80 1380,240 1520,160" />
                         <path className="tt-wave tt-wave-2" d="M-40,300 C200,160 380,360 560,240 C740,120 920,320 1100,220 C1280,120 1400,280 1520,200" />
@@ -151,7 +154,7 @@ export default function TripsPage() {
                     </div>
                 </div>
                 <div className="container tt-hero-inner">
-                    <div className="tt-hero-copy">
+                    <div className="tt-hero-copy ps-reveal ps-left">
                         <h1>{tab === 'mine' ? 'My trips' : 'Travel Together'}</h1>
                         <p>
                             {tab === 'mine'
@@ -159,7 +162,7 @@ export default function TripsPage() {
                                 : 'Browse trips others posted — join them and split the money with the group.'}
                         </p>
                     </div>
-                    <Link to="/trips/create" className="tt-post-btn">
+                    <Link to="/trips/create" className="tt-post-btn ps-reveal ps-right">
                         <span className="tt-post-plus">+</span>
                         Post a Trip
                     </Link>
@@ -167,7 +170,7 @@ export default function TripsPage() {
             </section>
 
             <div className="container tt-main">
-                <div className="tt-tabs">
+                <div className="tt-tabs ps-reveal">
                     <button
                         type="button"
                         className={tab === 'all' ? 'active' : ''}
@@ -186,7 +189,7 @@ export default function TripsPage() {
                     )}
                 </div>
 
-                <div className="tt-toolbar">
+                <div className="tt-toolbar ps-reveal">
                     <label className="tt-search">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />

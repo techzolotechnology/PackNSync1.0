@@ -53,6 +53,8 @@ function prefersReducedMotion() {
 
 function attachTilt(el) {
     if (el.dataset.psTiltBound === '1') return;
+    // Pages that declare their own hover motion keep it
+    if (el.classList.contains('ps-lift')) return;
     el.dataset.psTiltBound = '1';
     el.classList.add('ps-tilt');
 
@@ -112,6 +114,8 @@ export default function MotionBridge() {
         const prep = () => {
             root.querySelectorAll(REVEAL_SELECTORS).forEach((el, i) => {
                 if (el.dataset.psRevealBound === '1') return;
+                // Page declared its own reveal in markup — useGoFlyMotion drives it
+                if (el.classList.contains('ps-reveal')) return;
                 el.dataset.psRevealBound = '1';
                 el.classList.add('ps-reveal');
                 el.style.setProperty('--ps-delay', `${Math.min(i % 6, 5) * 55}ms`);

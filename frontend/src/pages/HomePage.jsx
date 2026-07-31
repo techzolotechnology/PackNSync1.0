@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import './HomePage.css';
 
 const STEPS = [
@@ -60,23 +61,25 @@ export default function HomePage() {
     const user = useAuthStore((s) => s.user);
     const logout = useAuthStore((s) => s.logout);
     const [mode, setMode] = useState('trips');
+    const motionRef = useRef(null);
+    useGoFlyMotion(motionRef, [mode]);
 
     const handleLogout = async () => {
         await logout();
     };
 
     return (
-        <div className="home page-enter">
+        <div className="home page-enter" ref={motionRef}>
             <section className="home-welcome">
                 <div className="container home-welcome-inner">
-                    <div className="home-welcome-copy">
+                    <div className="home-welcome-copy ps-reveal ps-left">
                         <p className="home-welcome-kicker">PackAndSync</p>
                         <h1 className="font-display">Travel together. Rent when you need wheels.</h1>
                         <p>
                             Join group trips, split costs, and book community cars — all in one place.
                         </p>
                     </div>
-                    <div className="home-welcome-actions">
+                    <div className="home-welcome-actions ps-reveal ps-right">
                         {user ? (
                             <>
                                 <Link to="/trips" className="home-btn primary">Browse trips</Link>
@@ -97,7 +100,7 @@ export default function HomePage() {
 
             <section className="home-modules">
                 <div className="container">
-                    <div className="home-mode-switch" role="tablist" aria-label="Choose experience">
+                    <div className="home-mode-switch ps-reveal" role="tablist" aria-label="Choose experience">
                         <button
                             type="button"
                             role="tab"
@@ -123,8 +126,11 @@ export default function HomePage() {
                             <Link
                                 key={key}
                                 to={mod.to}
-                                className={`home-mod-card ${mode === key ? 'focused' : ''}`}
-                                style={{ '--mod-image': `url('${mod.image}')` }}
+                                className={`home-mod-card ps-reveal ps-image-reveal ps-lift ${mode === key ? 'focused' : ''}`}
+                                style={{
+                                    '--mod-image': `url('${mod.image}')`,
+                                    '--ps-delay': `${key === 'rentals' ? 140 : 0}ms`,
+                                }}
                             >
                                 <span className="home-mod-media" aria-hidden="true" />
                                 <span className="home-mod-shade" aria-hidden="true" />
@@ -141,10 +147,10 @@ export default function HomePage() {
             <section className="home-steps">
                 <div className="container">
                     <h2 className="font-display home-steps-title">How Travel Together works</h2>
-                    <p className="home-steps-sub">Built for group trips — not ride price comparison.</p>
+                    <p className="home-steps-sub ps-reveal">Built for group trips — not ride price comparison.</p>
                     <ol className="home-steps-row">
                         {STEPS.map((s) => (
-                            <li key={s.n} className="home-step">
+                            <li key={s.n} className="home-step ps-reveal ps-lift" style={{ '--ps-delay': `${Number(s.n) * 90}ms` }}>
                                 <span className="home-step-n" aria-hidden="true">{s.n}</span>
                                 <div className="home-step-icon">{s.icon}</div>
                                 <h3>{s.title}</h3>
@@ -157,7 +163,7 @@ export default function HomePage() {
 
             <section className="home-cta">
                 <div className="container">
-                    <div className="home-cta-panel">
+                    <div className="home-cta-panel ps-reveal ps-scale">
                         <div className="home-cta-glow" aria-hidden="true" />
                         <div className="home-cta-copy">
                             <p className="home-cta-kicker">Next up</p>

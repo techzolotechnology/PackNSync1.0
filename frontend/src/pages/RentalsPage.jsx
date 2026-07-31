@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { rentalsApi, verificationsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
+import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import './RentalsPage.css';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -108,6 +109,8 @@ export default function RentalsPage() {
     const [pendingListing, setPendingListing] = useState(null);
     const [termsOpen, setTermsOpen] = useState(false);
     const [termsLoading, setTermsLoading] = useState(false);
+    const motionRef = useRef(null);
+    useGoFlyMotion(motionRef, [listings, loading, category]);
 
     const rentalDays = useMemo(() => getDays(startDate, endDate), [startDate, endDate]);
 
@@ -229,9 +232,9 @@ export default function RentalsPage() {
     };
 
     return (
-        <div className="cr-page page-enter">
+        <div className="cr-page page-enter" ref={motionRef}>
             <section className="cr-hero">
-                <div className="cr-hero-media" aria-hidden="true" />
+                <div className="cr-hero-media ps-parallax" aria-hidden="true" />
                 <div className="cr-hero-fx" aria-hidden="true">
                     <svg className="cr-waves" viewBox="0 0 1440 420" preserveAspectRatio="none">
                         <path d="M-40,280 C200,140 380,340 560,220 C740,100 920,300 1100,200 C1280,100 1400,260 1520,180" />
@@ -242,7 +245,7 @@ export default function RentalsPage() {
                     </div>
                 </div>
 
-                <div className="container cr-hero-inner">
+                <div className="container cr-hero-inner ps-reveal ps-left">
                     <h1>Car on Rent</h1>
                     <p>Self-drive cars from community hosts — weekends, outer-city runs, your schedule.</p>
 
@@ -330,13 +333,14 @@ export default function RentalsPage() {
             </section>
 
             <section className="container cr-section">
-                <h2 className="cr-section-title">Explore by Vehicle Type</h2>
+                <h2 className="cr-section-title ps-reveal">Explore by Vehicle Type</h2>
                 <div className="cr-categories">
                     {CATEGORIES.map((cat) => (
                         <button
                             key={cat.id}
                             type="button"
-                            className={`cr-cat ${cat.accent} ${category === cat.id ? 'active' : ''}`}
+                            className={`cr-cat ps-reveal ps-lift ${cat.accent} ${category === cat.id ? 'active' : ''}`}
+                            style={{ '--ps-delay': `${CATEGORIES.indexOf(cat) * 85}ms` }}
                             onClick={() => setCategory((c) => (c === cat.id ? '' : cat.id))}
                         >
                             <span className="cr-cat-icon"><CategoryIcon type={cat.icon} /></span>
@@ -348,7 +352,7 @@ export default function RentalsPage() {
             </section>
 
             <section className="container cr-section cr-available">
-                <div className="cr-available-head">
+                <div className="cr-available-head ps-reveal">
                     <h2 className="cr-section-title">Available Cars</h2>
                     <div className="cr-sorts" role="group" aria-label="Sort filters">
                         <button
@@ -393,7 +397,7 @@ export default function RentalsPage() {
                             const glow = index % 3 === 0 ? 'glow-teal' : 'glow-orange';
                             const title = `${v.make} ${v.model}`.toUpperCase();
                             return (
-                                <article key={listing.id} className={`cr-card ${glow}`}>
+                                <article key={listing.id} className={`cr-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
                                     <div className="cr-card-media">
                                         <img src={image} alt={title} loading="lazy" />
                                     </div>
@@ -436,7 +440,7 @@ export default function RentalsPage() {
                 )}
             </section>
 
-            <div className="container cr-host-cta">
+            <div className="container cr-host-cta ps-reveal ps-scale">
                 <Link to="/host">Become a Host</Link>
             </div>
 

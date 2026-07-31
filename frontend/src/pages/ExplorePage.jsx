@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { exploreApi } from '../api/index.js';
 import ExploreMap from '../components/ExploreMap.jsx';
 import ExplorePlanner from '../components/ExplorePlanner.jsx';
+import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import './ExplorePage.css';
 
 const SESSION_KEY = 'packandsync-explore-session';
@@ -14,7 +15,8 @@ function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
     const img = place.photoUrl || FALLBACK_IMG;
     return (
         <article
-            className={`explore-place-card ${selected ? 'active' : ''}`}
+            className={`explore-place-card ps-reveal ps-image-reveal ps-lift ${selected ? 'active' : ''}`}
+            style={{ '--ps-delay': `${(index % 5) * 70}ms` }}
             onClick={() => onSelect(place)}
             onKeyDown={(e) => e.key === 'Enter' && onSelect(place)}
             role="button"
@@ -87,6 +89,8 @@ export default function ExplorePage() {
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const threadRef = useRef(null);
+    const motionRef = useRef(null);
+    useGoFlyMotion(motionRef, [messages, places, planPlaces, mode, loading]);
 
     const mapPlaces = mode === 'planner' ? planPlaces : places;
 
@@ -211,9 +215,9 @@ export default function ExplorePage() {
     };
 
     return (
-        <div className="explore-page page-enter">
+        <div className="explore-page page-enter" ref={motionRef}>
             <aside className="explore-side">
-                <div className="explore-mode-tabs">
+                <div className="explore-mode-tabs ps-reveal">
                     <button
                         type="button"
                         className={mode === 'chat' ? 'active' : ''}
@@ -238,7 +242,7 @@ export default function ExplorePage() {
                     />
                 ) : (
                     <>
-                        <header className="explore-side-head">
+                        <header className="explore-side-head ps-reveal ps-left">
                             <div className="explore-side-top">
                                 <div>
                                     <p className="explore-kicker">Explore chat</p>
@@ -276,7 +280,7 @@ export default function ExplorePage() {
                             )}
 
                             {messages.map((m) => (
-                                <div key={m.id} className={`explore-bubble ${m.role}`}>
+                                <div key={m.id} className={`explore-bubble ps-reveal ${m.role === 'user' ? 'ps-right' : 'ps-left'} ${m.role}`}>
                                     <p>{m.content}</p>
                                     {m.role === 'assistant' && m.places?.length > 0 && (
                                         <div className="explore-bubble-places">
@@ -370,7 +374,7 @@ export default function ExplorePage() {
                 )}
             </aside>
 
-            <section className="explore-map-pane" aria-label="Map results">
+            <section className="explore-map-pane ps-reveal ps-right" aria-label="Map results">
                 <ExploreMap
                     places={mapPlaces}
                     selectedId={selectedId}
