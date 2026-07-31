@@ -10,6 +10,9 @@ const Footer = () => {
                     <div className="footer-brand">
                         <Link to="/" className="brand-link font-display">PackAndSync</Link>
                         <p>Travel together with shared trips and split costs — or rent a self-drive car from local hosts.</p>
+                        <p className="footer-legal-name">
+                            A product of <strong>TECHZOLO TECHNOLOGIES LLP</strong>
+                        </p>
                     </div>
 
                     <div className="footer-links-group">
@@ -40,7 +43,7 @@ const Footer = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; {new Date().getFullYear()} PackAndSync Inc. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} TECHZOLO TECHNOLOGIES LLP. All rights reserved.</p>
                     <div className="social-links">
                         {/* Placeholder icons or text links */}
                         <a href="#">Twitter</a>

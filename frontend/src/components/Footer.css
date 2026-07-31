@@ -28,6 +28,17 @@
     max-width: 300px;
 }
 
+.footer-brand .footer-legal-name {
+    margin-top: var(--space-3);
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+}
+
+.footer-brand .footer-legal-name strong {
+    color: var(--clr-text-secondary);
+    letter-spacing: 0.01em;
+}
+
 .footer-links-group h4,
 .footer-newsletter h4 {
     font-size: 1rem;

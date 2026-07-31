@@ -14,7 +14,9 @@ const PrivacyPolicy = () => {
                     <section className="privacy-section">
                         <h2>1. Introduction</h2>
                         <p>
-                            Welcome to <strong>PackAndSync</strong>. We are committed to protecting your personal information and your right to privacy.
+                            Welcome to <strong>PackAndSync</strong>, a platform owned and operated by
+                            {' '}<strong>TECHZOLO TECHNOLOGIES LLP</strong> (“we”, “us”, “our”).
+                            We are committed to protecting your personal information and your right to privacy.
                             If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information,
                             please contact us at privacy@packandsync.com.
                         </p>
@@ -78,7 +80,7 @@ const PrivacyPolicy = () => {
                             If you have questions or comments about this notice, you may email us at <strong>privacy@packandsync.com</strong> or by post to:
                         </p>
                         <address className="contact-address">
-                            PackAndSync Inc.<br />
+                            TECHZOLO TECHNOLOGIES LLP<br />
                             190, Gauttam Bahawan<br />
                             Rattakhera, Safidon, Jind<br />
                             Haryana, India - 126112

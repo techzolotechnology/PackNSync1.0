@@ -95,6 +95,15 @@ export default function TermsPage() {
                             <p>{section.body}</p>
                         </section>
                     ))}
+                    <section>
+                        <h2>Operating entity</h2>
+                        <p>
+                            PackAndSync is owned and operated by TECHZOLO TECHNOLOGIES LLP,
+                            registered in Haryana, India. These terms form an agreement between you
+                            and TECHZOLO TECHNOLOGIES LLP. For questions, contact
+                            {' '}<a href="mailto:hello@packandsync.com">hello@packandsync.com</a>.
+                        </p>
+                    </section>
                 </div>
             </div>
         </div>
