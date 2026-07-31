@@ -64,6 +64,20 @@ export const createListing = async (req, res) => {
     res.status(201).json({ success: true, data: listing });
 };
 
+/** Date-only strings (YYYY-MM-DD) from the UI are midnight UTC; listing
+ *  windows are often noon. Compare whole calendar days so "available today"
+ *  is not filtered out of a same-day search. */
+const startOfUtcDay = (value) => {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+};
+const endOfUtcDay = (value) => {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999));
+};
+
 // GET /api/rentals/listings
 export const getListings = async (req, res) => {
     const { location, minPrice, maxPrice, type, startDate, endDate } = req.query;
@@ -79,10 +93,12 @@ export const getListings = async (req, res) => {
         where.vehicle = { type: type.toUpperCase() };
     }
     if (startDate) {
-        where.availableFrom = { lte: new Date(startDate) };
+        const end = endOfUtcDay(startDate);
+        if (end) where.availableFrom = { lte: end };
     }
     if (endDate) {
-        where.availableTo = { gte: new Date(endDate) };
+        const start = startOfUtcDay(endDate);
+        if (start) where.availableTo = { gte: start };
     }
 
     const listings = await prisma.rentalListing.findMany({
@@ -154,7 +170,11 @@ export const bookRental = async (req, res) => {
     const end = new Date(endDate);
     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     if (days <= 0) throw new AppError('End date must be after start date.', 400);
-    if (start < listing.availableFrom || end > listing.availableTo) {
+    // Compare calendar days so a listing available "today at noon" still books for today.
+    if (
+        startOfUtcDay(listing.availableFrom) > startOfUtcDay(start)
+        || startOfUtcDay(listing.availableTo) < startOfUtcDay(end)
+    ) {
         throw new AppError('Selected dates are outside this vehicle availability window.', 400);
     }
     if (listing.hostId === req.user.id) {

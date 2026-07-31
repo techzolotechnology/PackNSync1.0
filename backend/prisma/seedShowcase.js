@@ -21,8 +21,9 @@ const HOST_DOMAIN = '@hosts.packandsync.com';
 
 const daysFromNow = (n) => {
     const d = new Date();
-    d.setHours(12, 0, 0, 0);
-    d.setDate(d.getDate() + n);
+    // Midnight UTC so same-day search filters never miss the window.
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCDate(d.getUTCDate() + n);
     return d;
 };
 
