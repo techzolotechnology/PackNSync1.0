@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import { notificationsApi } from '../api/index.js';
 import { useChatUnreadStore } from '../store/chatUnreadStore.js';
+import { mediaUrl } from '../utils/mediaUrl.js';
 import toast from 'react-hot-toast';
 import './Navbar.css';
 
@@ -274,7 +275,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         {user.avatarUrl
-                                            ? <img src={user.avatarUrl} alt={user.name} className="avatar avatar-sm" />
+                                            ? <img src={mediaUrl(user.avatarUrl)} alt={user.name} className="avatar avatar-sm" />
                                             : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.8rem' }}>{user.name[0].toUpperCase()}</div>
                                         }
                                         <span>{user.name}</span>

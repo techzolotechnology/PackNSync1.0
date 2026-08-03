@@ -10,10 +10,19 @@ const api = axios.create({
     timeout: 45000,
 });
 
-// Request interceptor: attach access token from localStorage
+// Request interceptor: attach access token; let the browser set multipart boundaries
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
+    // Default Content-Type: application/json breaks FormData (multer never sees the file).
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+        if (config.headers && typeof config.headers.delete === 'function') {
+            config.headers.delete('Content-Type');
+        } else if (config.headers) {
+            delete config.headers['Content-Type'];
+            delete config.headers['content-type'];
+        }
+    }
     return config;
 });
 
@@ -152,9 +161,7 @@ export const usersApi = {
     uploadAvatar: (file) => {
         const form = new FormData();
         form.append('image', file);
-        return api.post('/users/avatar', form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        return api.post('/users/avatar', form, { timeout: 90000 });
     },
 };
 
@@ -208,9 +215,7 @@ export const vehiclesApi = {
     uploadImage: (file) => {
         const form = new FormData();
         form.append('image', file);
-        return api.post('/vehicles/upload-image', form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        return api.post('/vehicles/upload-image', form, { timeout: 90000 });
     },
 };
 
@@ -246,9 +251,7 @@ export const verificationsApi = {
         const form = new FormData();
         form.append('licensePlate', licensePlate);
         form.append('rcImage', file);
-        return api.post('/verifications/rc/upload', form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        return api.post('/verifications/rc/upload', form, { timeout: 120000 });
     },
     acceptPolicy: (policyType) => api.post('/verifications/policies/accept', { policyType }),
 };

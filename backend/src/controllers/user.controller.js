@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
+import { publicFileUrl } from '../utils/publicUrl.js';
 import { getUserVerificationState } from '../utils/verificationHelpers.js';
 
 const PROFILE_SELECT = {
@@ -145,7 +146,7 @@ export const updateUser = async (req, res) => {
 export const uploadAvatar = async (req, res) => {
     if (!req.file) throw new AppError('Image file is required.', 400);
 
-    let url = `/uploads/vehicles/${req.file.filename}`;
+    let url = publicFileUrl(req, `/uploads/vehicles/${req.file.filename}`);
     if (isCloudinaryConfigured()) {
         try {
             const uploaded = await cloudinary.uploader.upload(req.file.path, {

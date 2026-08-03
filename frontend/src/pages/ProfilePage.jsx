@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { usersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
+import { mediaUrl } from '../utils/mediaUrl.js';
 import './ProfilePage.css';
 
 const TRIP_FALLBACK =
@@ -77,6 +78,7 @@ export default function ProfilePage() {
                     usersApi.getTrips(id),
                 ]);
                 const data = profileRes.data.data;
+                if (data?.avatarUrl) data.avatarUrl = mediaUrl(data.avatarUrl);
                 setProfile(data);
                 setTrips(tripsRes.data.data || []);
                 setEditForm(toForm(data));
@@ -120,11 +122,18 @@ export default function ProfilePage() {
     const handleAvatar = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Photo must be under 5 MB.');
+            e.target.value = '';
+            return;
+        }
         setUploadingAvatar(true);
         try {
             const res = await usersApi.uploadAvatar(file);
-            setProfile((p) => ({ ...p, ...res.data.data }));
-            if (isOwn) syncAuthUser(res.data.data);
+            const data = res.data.data;
+            if (data?.avatarUrl) data.avatarUrl = mediaUrl(data.avatarUrl);
+            setProfile((p) => ({ ...p, ...data }));
+            if (isOwn) syncAuthUser(data);
             toast.success('Photo updated');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Photo upload failed.');
@@ -176,12 +185,14 @@ export default function ProfilePage() {
             <div className="container pf-inner">
                 <section className={`pf-card ${editing ? 'editing' : ''}`}>
                     <div className="pf-avatar-col">
-                        <div className="pf-avatar">
-                            {profile.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt={profile.name} />
-                            ) : (
-                                <span>{initial}</span>
-                            )}
+                        <div className="pf-avatar-wrap">
+                            <div className="pf-avatar">
+                                {profile.avatarUrl ? (
+                                    <img src={mediaUrl(profile.avatarUrl)} alt={profile.name} />
+                                ) : (
+                                    <span>{initial}</span>
+                                )}
+                            </div>
                             {isOwn && (
                                 <button
                                     type="button"

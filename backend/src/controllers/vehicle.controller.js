@@ -6,6 +6,7 @@ import {
     assertVehicleVerified,
 } from '../utils/verificationHelpers.js';
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
+import { publicFileUrl } from '../utils/publicUrl.js';
 
 // POST /api/vehicles
 export const registerVehicle = async (req, res) => {
@@ -96,7 +97,7 @@ export const updateVehicle = async (req, res) => {
 export const uploadVehicleImage = async (req, res) => {
     if (!req.file) throw new AppError('Image file is required.', 400);
 
-    let url = `/uploads/vehicles/${req.file.filename}`;
+    let url = publicFileUrl(req, `/uploads/vehicles/${req.file.filename}`);
     if (isCloudinaryConfigured()) {
         try {
             const uploaded = await cloudinary.uploader.upload(req.file.path, {
