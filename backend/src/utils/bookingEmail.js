@@ -1,6 +1,11 @@
 import { sendMail, smtpConfigured } from './mailer.js';
+import {
+    rentalBookingRequestEmail,
+    rentalBookingDecisionEmail,
+    rideBookingEmail,
+} from './emailTemplates.js';
 
-export async function sendBookingConfirmationEmail({ to, subject, html }) {
+export async function sendBookingConfirmationEmail({ to, subject, html, text }) {
     if (!to) {
         console.log('[DEV] Booking email skipped — user has no email on file.');
         return false;
@@ -8,11 +13,12 @@ export async function sendBookingConfirmationEmail({ to, subject, html }) {
 
     if (!smtpConfigured()) {
         console.log(`[DEV] Booking email to ${to}: ${subject}`);
+        if (text) console.log(text);
         return false;
     }
 
     try {
-        await sendMail({ to, subject, html });
+        await sendMail({ to, subject, html, text });
         return true;
     } catch (err) {
         console.error('[ZeptoMail/SMTP booking]', err.message || err);
@@ -20,36 +26,27 @@ export async function sendBookingConfirmationEmail({ to, subject, html }) {
     }
 }
 
-export function rentalBookingEmailHtml({ renterName, hostName, vehicleLabel, location, startDate, endDate, totalPrice, isHost }) {
-    const title = isHost ? 'New rental request on your listing' : 'Your rental booking request was sent';
-    const body = isHost
-        ? `<p>Hi ${hostName},</p><p><strong>${renterName}</strong> requested your <strong>${vehicleLabel}</strong> in ${location}.</p>`
-        : `<p>Hi ${renterName},</p><p>Your booking request for <strong>${vehicleLabel}</strong> in ${location} was sent to the host.</p>`;
-
-    return `
-        <h2>PackAndSync — ${title}</h2>
-        ${body}
-        <ul>
-            <li><strong>Dates:</strong> ${startDate} → ${endDate}</li>
-            <li><strong>Total:</strong> ₹${totalPrice}</li>
-            <li><strong>Status:</strong> Pending host confirmation</li>
-        </ul>
-        <p>Open PackAndSync → My Bookings to track this request.</p>
-    `;
+/** @deprecated Prefer rentalBookingRequestEmail from emailTemplates — kept for callers that need html only */
+export function rentalBookingEmailHtml(opts) {
+    return rentalBookingRequestEmail(opts).html;
 }
 
-export function rideBookingEmailHtml({ userName, provider, vehicleType, pickup, dropoff, fare, currency }) {
-    const amount = currency === 'INR' ? `₹${fare}` : `${currency} ${fare}`;
-    return `
-        <h2>PackAndSync — Ride booking requested</h2>
-        <p>Hi ${userName},</p>
-        <p>Your ride request has been recorded:</p>
-        <ul>
-            <li><strong>Provider:</strong> ${provider} ${vehicleType}</li>
-            <li><strong>Pickup:</strong> ${pickup}</li>
-            <li><strong>Dropoff:</strong> ${dropoff}</li>
-            <li><strong>Fare:</strong> ${amount}</li>
-        </ul>
-        <p>Complete the trip in the provider app if live API booking is unavailable.</p>
-    `;
+/** @deprecated Prefer rideBookingEmail from emailTemplates */
+export function rideBookingEmailHtml(opts) {
+    return rideBookingEmail(opts).html;
+}
+
+export async function sendRentalBookingRequestMail({ to, subject, ...fields }) {
+    const { html, text } = rentalBookingRequestEmail(fields);
+    return sendBookingConfirmationEmail({ to, subject, html, text });
+}
+
+export async function sendRentalBookingDecisionMail({ to, subject, ...fields }) {
+    const { html, text } = rentalBookingDecisionEmail(fields);
+    return sendBookingConfirmationEmail({ to, subject, html, text });
+}
+
+export async function sendRideBookingMail({ to, subject, ...fields }) {
+    const { html, text } = rideBookingEmail(fields);
+    return sendBookingConfirmationEmail({ to, subject, html, text });
 }

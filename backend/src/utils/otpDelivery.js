@@ -1,5 +1,6 @@
 import { AppError } from './AppError.js';
 import { sendMail, smtpConfigured } from './mailer.js';
+import { otpEmail } from './emailTemplates.js';
 
 /** Normalize contact for DB lookup/storage */
 export function normalizeContact(contact) {
@@ -51,19 +52,14 @@ async function sendEmailOtp(email, otpCode) {
         return 'console';
     }
 
-    const html = `
-            <h2>PackAndSync</h2>
-            <p>Your verification code is:</p>
-            <p style="font-size:28px;font-weight:bold;letter-spacing:4px">${otpCode}</p>
-            <p>This code expires in 10 minutes. Do not share it with anyone.</p>
-        `;
+    const { html, text } = otpEmail({ otpCode, minutes: 10 });
 
     try {
         await sendMail({
             to: email,
             subject: 'Your PackAndSync verification code',
             html,
-            text: `Your PackAndSync verification code is ${otpCode}. Expires in 10 minutes.`,
+            text,
         });
         return 'email';
     } catch (err) {

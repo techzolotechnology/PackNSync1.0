@@ -3,10 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { assertPolicyAccepted } from '../utils/verificationHelpers.js';
-import {
-    sendBookingConfirmationEmail,
-    rideBookingEmailHtml,
-} from '../utils/bookingEmail.js';
+import { sendRideBookingMail } from '../utils/bookingEmail.js';
 
 const UBER_AUTH_URL = 'https://login.uber.com/oauth/v2/authorize';
 const UBER_TOKEN_URL = 'https://auth.uber.com/oauth/v2/token';
@@ -362,18 +359,16 @@ export const bookRide = async (req, res) => {
             where: { id: req.user.id },
             select: { email: true, name: true },
         });
-        await sendBookingConfirmationEmail({
+        await sendRideBookingMail({
             to: user?.email,
             subject: `Ride booking — ${provider} ${vehicleType || ''}`.trim(),
-            html: rideBookingEmailHtml({
-                userName: user?.name || req.user.name,
-                provider,
-                vehicleType: vehicleType || 'Ride',
-                pickup: pickupLocation,
-                dropoff: dropoffLocation,
-                fare: Number(fare) || 0,
-                currency: currency || 'INR',
-            }),
+            userName: user?.name || req.user.name,
+            provider,
+            vehicleType: vehicleType || 'Ride',
+            pickup: pickupLocation,
+            dropoff: dropoffLocation,
+            fare: Number(fare) || 0,
+            currency: currency || 'INR',
         });
     } catch (err) {
         console.error('[Ride booking email]', err.message);

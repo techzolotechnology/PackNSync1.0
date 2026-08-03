@@ -6,8 +6,8 @@ import {
     assertVehicleVerified,
 } from '../utils/verificationHelpers.js';
 import {
-    sendBookingConfirmationEmail,
-    rentalBookingEmailHtml,
+    sendRentalBookingRequestMail,
+    sendRentalBookingDecisionMail,
 } from '../utils/bookingEmail.js';
 import { notifyUser } from '../utils/notify.js';
 import { findSuggestedCars } from '../utils/carSuggestions.js';
@@ -229,25 +229,21 @@ export const bookRental = async (req, res) => {
         ]);
 
         await Promise.all([
-            sendBookingConfirmationEmail({
+            sendRentalBookingRequestMail({
                 to: renter?.email,
                 subject: `Rental request sent — ${vehicleLabel}`,
-                html: rentalBookingEmailHtml({
-                    ...emailFields,
-                    renterName: renter?.name || req.user.name,
-                    hostName: host?.name || 'Host',
-                    isHost: false,
-                }),
+                ...emailFields,
+                renterName: renter?.name || req.user.name,
+                hostName: host?.name || 'Host',
+                isHost: false,
             }),
-            sendBookingConfirmationEmail({
+            sendRentalBookingRequestMail({
                 to: host?.email,
                 subject: `New rental request — ${vehicleLabel}`,
-                html: rentalBookingEmailHtml({
-                    ...emailFields,
-                    renterName: renter?.name || req.user.name,
-                    hostName: host?.name || 'Host',
-                    isHost: true,
-                }),
+                ...emailFields,
+                renterName: renter?.name || req.user.name,
+                hostName: host?.name || 'Host',
+                isHost: true,
             }),
         ]);
     } catch (err) {
@@ -337,16 +333,37 @@ export const respondToBooking = async (req, res) => {
         data: { status },
         include: {
             listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
-            renter: { select: { id: true, name: true } },
+            renter: { select: { id: true, name: true, email: true } },
         },
     });
 
     const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    const confirmed = status === 'CONFIRMED';
+    const dateFmt = (d) => new Date(d).toLocaleDateString('en-IN');
+
+    try {
+        await sendRentalBookingDecisionMail({
+            to: updated.renter?.email,
+            subject: confirmed
+                ? `Booking confirmed — ${label}`
+                : `Booking declined — ${label}`,
+            renterName: updated.renter?.name || 'there',
+            vehicleLabel: label,
+            location: booking.listing.location,
+            startDate: dateFmt(booking.startDate),
+            endDate: dateFmt(booking.endDate),
+            totalPrice: booking.totalPrice,
+            confirmed,
+        });
+    } catch (err) {
+        console.error('[Rental decision email]', err.message);
+    }
+
     await notifyUser({
         userId: booking.renterId,
-        type: status === 'CONFIRMED' ? 'REQUEST_APPROVED' : 'REQUEST_REJECTED',
-        title: status === 'CONFIRMED' ? 'Booking confirmed' : 'Booking declined',
-        body: status === 'CONFIRMED'
+        type: confirmed ? 'REQUEST_APPROVED' : 'REQUEST_REJECTED',
+        title: confirmed ? 'Booking confirmed' : 'Booking declined',
+        body: confirmed
             ? `Host confirmed ${label}. You can pay now from My Bookings.`
             : `Host declined your request for ${label}.`,
         data: { bookingId: booking.id },

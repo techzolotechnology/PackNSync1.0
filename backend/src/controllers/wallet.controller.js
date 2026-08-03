@@ -17,6 +17,8 @@ import {
     refundDebit,
     markWithdrawSuccess,
 } from '../utils/wallet.js';
+import { sendMail, smtpConfigured } from '../utils/mailer.js';
+import { walletTopupEmail } from '../utils/emailTemplates.js';
 
 const MIN_TOPUP = 10;
 const MAX_TOPUP = 100000;
@@ -96,6 +98,16 @@ export const createTopup = async (req, res) => {
             txId: pending.id,
             metadata: { mock: true },
         });
+        try {
+            await sendWalletTopupEmail({
+                userId: req.user.id,
+                amount,
+                balance: updated.balance,
+                orderId,
+            });
+        } catch (err) {
+            console.error('[wallet top-up email]', err.message || err);
+        }
         return res.json({
             success: true,
             mock: true,
@@ -199,7 +211,49 @@ async function settleTopupIfPaid(orderId, userIdHint) {
         txId: pending.id,
         metadata: { verified: true },
     });
+
+    // Email once when credit actually lands (skip duplicate settles)
+    if (!result.duplicate) {
+        try {
+            await sendWalletTopupEmail({
+                userId,
+                amount: pending.amount,
+                balance: result.wallet.balance,
+                orderId,
+            });
+        } catch (err) {
+            console.error('[wallet top-up email]', err.message || err);
+        }
+    }
+
     return { ok: true, ...result };
+}
+
+async function sendWalletTopupEmail({ userId, amount, balance, orderId }) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+    });
+    if (!user?.email) {
+        console.log('[DEV] Wallet top-up email skipped — user has no email.');
+        return;
+    }
+
+    const { html, text } = walletTopupEmail({
+        userName: user.name,
+        amount,
+        balance,
+        orderId,
+    });
+    const subject = `Wallet topped up — ₹${Number(amount).toLocaleString('en-IN')}`;
+
+    if (!smtpConfigured()) {
+        console.log(`[DEV] Wallet top-up email to ${user.email}: ${subject}`);
+        console.log(text);
+        return;
+    }
+
+    await sendMail({ to: user.email, subject, html, text });
 }
 
 // POST /api/wallet/topup/verify  { orderId }
