@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { useAuthUiStore } from './store/authUiStore.js';
 import Navbar from './components/Navbar.jsx';
@@ -50,17 +50,54 @@ function AuthQueryBridge() {
     return null;
 }
 
+/** Wait for zustand persist — otherwise reload flashes user=null and kicks private pages away. */
+function useAuthHydrated() {
+    const [hydrated, setHydrated] = useState(() => {
+        try {
+            return useAuthStore.persist.hasHydrated();
+        } catch {
+            return true;
+        }
+    });
+    useEffect(() => {
+        try {
+            if (useAuthStore.persist.hasHydrated()) {
+                setHydrated(true);
+                return undefined;
+            }
+            return useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+        } catch {
+            setHydrated(true);
+            return undefined;
+        }
+    }, []);
+    return hydrated;
+}
+
 const PrivateRoute = ({ children }) => {
     const user = useAuthStore((s) => s.user);
+    const hydrated = useAuthHydrated();
+    const location = useLocation();
     const openAuth = useAuthUiStore((s) => s.openAuth);
+
     useEffect(() => {
-        if (!user) openAuth('login');
-    }, [user, openAuth]);
-    return user ? children : <Navigate to="/?auth=login" replace />;
+        if (hydrated && !user) openAuth('login');
+    }, [hydrated, user, openAuth]);
+
+    if (!hydrated) {
+        return <div className="page-auth-pending" aria-busy="true" />;
+    }
+    if (!user) {
+        const next = encodeURIComponent(`${location.pathname}${location.search}`);
+        return <Navigate to={`/?auth=login&next=${next}`} replace />;
+    }
+    return children;
 };
 
 const AdminRoute = ({ children }) => {
     const user = useAuthStore((s) => s.user);
+    const hydrated = useAuthHydrated();
+    if (!hydrated) return <div className="page-auth-pending" aria-busy="true" />;
     if (!user) return <Navigate to="/?auth=login" replace />;
     if (user.role !== 'ADMIN') return <Navigate to="/" replace />;
     return children;

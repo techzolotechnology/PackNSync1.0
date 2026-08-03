@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
@@ -7,11 +7,18 @@ import { wakeApi } from '../utils/apiResilience.js';
 import OtpCodeInput from './OtpCodeInput.jsx';
 import './AuthModal.css';
 
+function safeNextPath(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+    return raw;
+}
+
 const RESEND_SECONDS = 60;
 const MAX_RESENDS = 3;
 
 export default function AuthModal() {
     const navigate = useNavigate();
+    const [params] = useSearchParams();
     const { requestOtp, verifyOtp, isLoading } = useAuthStore();
     const { open, mode, closeAuth, setMode } = useAuthUiStore();
 
@@ -108,7 +115,7 @@ export default function AuthModal() {
         if (result.success) {
             toast.success(isRegister ? 'Account created!' : 'Welcome back!');
             closeAuth();
-            navigate('/trips');
+            navigate(safeNextPath(params.get('next')) || '/trips');
         } else {
             setError(result.message);
         }

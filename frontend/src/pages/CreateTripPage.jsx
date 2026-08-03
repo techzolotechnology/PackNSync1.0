@@ -50,6 +50,28 @@ function loadDraft() {
     }
 }
 
+function draftHasContent(form, step) {
+    if (step > 0) return true;
+    return Object.entries(form).some(([key, value]) => {
+        if (key === 'maxParticipants') return Number(value) !== DEFAULT_FORM.maxParticipants;
+        if (key === 'joinMode') return value !== DEFAULT_FORM.joinMode;
+        if (key === 'isPublic') return false; // derived from joinMode — ignore
+        return String(value ?? '').trim() !== '';
+    });
+}
+
+function saveDraft(step, form) {
+    try {
+        if (!draftHasContent(form, step)) {
+            localStorage.removeItem(DRAFT_KEY);
+            return;
+        }
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, form, savedAt: Date.now() }));
+    } catch {
+        /* quota / private mode */
+    }
+}
+
 function clearDraft() {
     try {
         localStorage.removeItem(DRAFT_KEY);
@@ -121,45 +143,47 @@ function formatRange(start, end) {
 
 export default function CreateTripPage() {
     const navigate = useNavigate();
-    const draft = useMemo(() => loadDraft(), []);
-    const [step, setStep] = useState(() => draft?.step ?? 0);
+    const initial = useMemo(() => loadDraft(), []);
+    const [step, setStep] = useState(() => initial?.step ?? 0);
     const [isLoading, setIsLoading] = useState(false);
-    const [form, setForm] = useState(() => draft?.form ?? { ...DEFAULT_FORM });
+    const [form, setForm] = useState(() => initial?.form ?? { ...DEFAULT_FORM });
+    const [restored] = useState(() => Boolean(initial));
 
     useEffect(() => {
-        if (!draft) return;
+        if (!restored) return;
         toast('Draft restored — pick up where you left off.', { id: 'create-trip-draft', duration: 2800 });
-    }, [draft]);
+    }, [restored]);
 
+    // Persist immediately whenever step/form change (not only after paint).
     useEffect(() => {
-        const hasContent = Object.entries(form).some(([key, value]) => {
-            if (key === 'maxParticipants') return Number(value) !== DEFAULT_FORM.maxParticipants;
-            if (key === 'joinMode') return value !== DEFAULT_FORM.joinMode;
-            if (key === 'isPublic') return value !== DEFAULT_FORM.isPublic;
-            return String(value ?? '').trim() !== '';
-        });
-        if (!hasContent && step === 0) {
-            clearDraft();
-            return;
-        }
-        try {
-            localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, form, savedAt: Date.now() }));
-        } catch {
-            /* quota / private mode */
-        }
+        saveDraft(step, form);
     }, [step, form]);
+
+    const updateForm = (patch) => {
+        setForm((prev) => {
+            const next = typeof patch === 'function' ? patch(prev) : { ...prev, ...patch };
+            // Synchronous write so a hard reload right after typing still restores.
+            saveDraft(step, next);
+            return next;
+        });
+    };
+
+    const goToStep = (nextStep) => {
+        const clamped = Math.min(Math.max(nextStep, 0), STEPS.length - 1);
+        setStep(clamped);
+        saveDraft(clamped, form);
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((f) => ({ ...f, [name]: value }));
+        updateForm({ [name]: value });
     };
 
     const setJoinMode = (id) => {
-        setForm((f) => ({
-            ...f,
+        updateForm({
             joinMode: id,
             isPublic: id !== 'invite',
-        }));
+        });
     };
 
     const canNext = useMemo(() => {
@@ -183,7 +207,7 @@ export default function CreateTripPage() {
             if (step === 1) toast.error('Choose valid start and end dates.');
             return;
         }
-        setStep((s) => Math.min(s + 1, STEPS.length - 1));
+        goToStep(step + 1);
     };
 
     const handleSubmit = async () => {
@@ -241,7 +265,7 @@ export default function CreateTripPage() {
                             key={s.id}
                             type="button"
                             className={`create-step ${i === step ? 'active' : ''} ${i < step ? 'done' : ''}`}
-                            onClick={() => i < step && setStep(i)}
+                            onClick={() => i < step && goToStep(i)}
                             disabled={i > step}
                         >
                             <span className="create-step-index">{i < step ? '✓' : i + 1}</span>
@@ -278,12 +302,11 @@ export default function CreateTripPage() {
                                     <LocationAutocomplete
                                         placeholder="Search city or place (e.g. Kolkata)"
                                         value={form.destination}
-                                        onChange={(val) => setForm((f) => ({
-                                            ...f,
+                                        onChange={(val) => updateForm({
                                             destination: val,
                                             coverImageUrl: '',
-                                        }))}
-                                        onSelect={(loc) => setForm((f) => ({
+                                        })}
+                                        onSelect={(loc) => updateForm((f) => ({
                                             ...f,
                                             destination: loc.label || f.destination,
                                             coverImageUrl: '',
@@ -300,7 +323,7 @@ export default function CreateTripPage() {
                                     <CoverImagePicker
                                         place={form.destination}
                                         value={form.coverImageUrl}
-                                        onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))}
+                                        onChange={(url) => updateForm({ coverImageUrl: url })}
                                     />
                                 </div>
                                 <label className="create-field">
@@ -449,8 +472,8 @@ export default function CreateTripPage() {
                                                 name="meetingPoint"
                                                 placeholder="e.g. Majestic Bus Stand, Bangalore"
                                                 value={form.meetingPoint}
-                                                onChange={(val) => setForm((f) => ({ ...f, meetingPoint: val }))}
-                                                onSelect={(loc) => setForm((f) => ({
+                                                onChange={(val) => updateForm({ meetingPoint: val })}
+                                                onSelect={(loc) => updateForm((f) => ({
                                                     ...f,
                                                     meetingPoint: loc.label || f.meetingPoint,
                                                 }))}
@@ -532,7 +555,7 @@ export default function CreateTripPage() {
 
                     <div className="create-nav">
                         {step > 0 ? (
-                            <button type="button" className="create-btn ghost" onClick={() => setStep((s) => s - 1)}>
+                            <button type="button" className="create-btn ghost" onClick={() => goToStep(step - 1)}>
                                 Back
                             </button>
                         ) : (

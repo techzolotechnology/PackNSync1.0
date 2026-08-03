@@ -77,7 +77,10 @@ api.interceptors.response.use(
                 // Land straight on the home page with the auth modal open
                 // instead of bouncing through the legacy /login redirect.
                 if (!window.location.search.includes('auth=login')) {
-                    window.location.href = '/?auth=login';
+                    const next = encodeURIComponent(
+                        `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                    );
+                    window.location.href = `/?auth=login&next=${next}`;
                 }
                 return Promise.reject(refreshError);
             } finally {
