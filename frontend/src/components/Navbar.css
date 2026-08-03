@@ -98,6 +98,74 @@
     gap: var(--space-3);
 }
 
+.nav-wallet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.55rem 0.25rem 0.4rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-glass);
+    color: var(--clr-text-primary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.nav-wallet:hover {
+    background: var(--clr-bg-glass-hover);
+    border-color: var(--clr-border-bright);
+    color: var(--clr-primary-700);
+}
+
+.nav-wallet.active {
+    border-color: rgba(92, 92, 153, 0.45);
+    background: rgba(92, 92, 153, 0.1);
+    color: var(--clr-primary-700);
+    box-shadow: inset 0 0 0 1px rgba(92, 92, 153, 0.12);
+}
+
+.nav-wallet-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 0.4rem;
+    background: linear-gradient(135deg, rgba(167, 167, 214, 0.45), rgba(92, 92, 153, 0.22));
+    color: var(--clr-primary-700);
+    flex-shrink: 0;
+}
+
+.nav-wallet-balance {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #292966;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.mobile-wallet-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.mobile-wallet-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mobile-wallet-balance {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #292966;
+    white-space: nowrap;
+}
+
 .download-menu {
     position: relative;
 }
@@ -506,6 +574,15 @@
 
     .navbar-actions {
         gap: var(--space-2);
+    }
+
+    .nav-wallet {
+        padding: 0.2rem 0.45rem 0.2rem 0.3rem;
+        gap: 0.3rem;
+    }
+
+    .nav-wallet-balance {
+        font-size: 0.72rem;
     }
 
     .hamburger {

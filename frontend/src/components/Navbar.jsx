@@ -2,9 +2,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
-import { notificationsApi } from '../api/index.js';
+import { notificationsApi, walletApi } from '../api/index.js';
 import { useChatUnreadStore } from '../store/chatUnreadStore.js';
 import { mediaUrl } from '../utils/mediaUrl.js';
+import { formatInrCompact } from '../utils/formatInr.js';
 import toast from 'react-hot-toast';
 import './Navbar.css';
 
@@ -19,6 +20,16 @@ function timeAgo(dateStr) {
     return `${days}d ago`;
 }
 
+function WalletIcon({ size = 18 }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z" />
+            <path d="M3 9h18" />
+            <circle cx="16.5" cy="14" r="1" fill="currentColor" stroke="none" />
+        </svg>
+    );
+}
+
 export default function Navbar() {
     const { user, logout } = useAuthStore();
     const openAuth = useAuthUiStore((s) => s.openAuth);
@@ -31,11 +42,16 @@ export default function Navbar() {
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [notifLoading, setNotifLoading] = useState(false);
+    const [walletBalance, setWalletBalance] = useState(null);
     const notifRef = useRef(null);
     const hostRef = useRef(null);
     const profileRef = useRef(null);
+    const prevPathRef = useRef(location.pathname);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
+    const isAdmin = user?.role === 'ADMIN';
+    const showWallet = Boolean(user) && !isAdmin;
+    const balanceLabel = walletBalance == null ? '…' : formatInrCompact(walletBalance);
 
     const loadNotifications = async () => {
         if (!user) return;
@@ -50,18 +66,52 @@ export default function Navbar() {
         }
     };
 
+    const loadWalletBalance = async () => {
+        if (!user || user.role === 'ADMIN') return;
+        try {
+            const res = await walletApi.get();
+            setWalletBalance(Number(res.data?.data?.balance ?? 0));
+        } catch {
+            /* ignore — leave last known or placeholder */
+        }
+    };
+
     useEffect(() => {
         if (!user) {
             setNotifications([]);
+            setWalletBalance(null);
             setNotifOpen(false);
             setHostOpen(false);
             setProfileOpen(false);
             return;
         }
         loadNotifications();
+        if (user.role !== 'ADMIN') loadWalletBalance();
         const interval = setInterval(loadNotifications, 45000);
         return () => clearInterval(interval);
     }, [user?.id]);
+
+    useEffect(() => {
+        if (!showWallet) return;
+        const onFocus = () => loadWalletBalance();
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') loadWalletBalance();
+        };
+        window.addEventListener('focus', onFocus);
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            window.removeEventListener('focus', onFocus);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, [showWallet, user?.id]);
+
+    useEffect(() => {
+        const prev = prevPathRef.current;
+        prevPathRef.current = location.pathname;
+        if (showWallet && prev === '/wallet' && location.pathname !== '/wallet') {
+            loadWalletBalance();
+        }
+    }, [location.pathname, showWallet]);
 
     useEffect(() => {
         setMenuOpen(false);
@@ -69,7 +119,6 @@ export default function Navbar() {
         setHostOpen(false);
         setProfileOpen(false);
     }, [location.pathname, location.search]);
-
     useEffect(() => {
         const onDoc = (e) => {
             if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
@@ -133,7 +182,20 @@ export default function Navbar() {
     const isActive = (path) => location.pathname === path;
     const isMyTrips = location.pathname === '/trips' && new URLSearchParams(location.search).get('tab') === 'mine';
     const hostActive = isActive('/trips/create') || isActive('/host') || isMyTrips;
-    const isAdmin = user?.role === 'ADMIN';
+
+    const walletChip = showWallet && (
+        <Link
+            to="/wallet"
+            className={`nav-wallet ${isActive('/wallet') ? 'active' : ''}`}
+            aria-label={`Wallet, balance ${balanceLabel}`}
+            title={`Wallet · ${balanceLabel}`}
+        >
+            <span className="nav-wallet-icon">
+                <WalletIcon />
+            </span>
+            <span className="nav-wallet-balance">{balanceLabel}</span>
+        </Link>
+    );
 
     const notifPanel = (
         <div className="notif-panel" role="menu">
@@ -199,11 +261,6 @@ export default function Navbar() {
                             </Link>
                         )}
                         {user && (
-                            <Link to="/wallet" className={`nav-link ${isActive('/wallet') ? 'active' : ''}`}>
-                                Wallet
-                            </Link>
-                        )}
-                        {user && (
                             <div className="nav-dropdown" ref={hostRef}>
                                 <button
                                     type="button"
@@ -242,6 +299,7 @@ export default function Navbar() {
                 )}
 
                 <div className="navbar-actions">
+                    {walletChip}
                     {user && (
                         <div className="notif-wrap" ref={notifRef}>
                             <button
@@ -293,7 +351,11 @@ export default function Navbar() {
                                                         onClick={() => setProfileOpen(false)}
                                                     >
                                                         <strong>Wallet</strong>
-                                                        <small>Add money, pay &amp; withdraw</small>
+                                                        <small>
+                                                            {walletBalance == null
+                                                                ? 'Add money, pay & withdraw'
+                                                                : `${balanceLabel} · Add money, pay & withdraw`}
+                                                        </small>
                                                     </Link>
                                                     <Link
                                                         to={`/profile/${user.id}`}
@@ -354,7 +416,15 @@ export default function Navbar() {
                             <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Cars & Bikes</Link>
                             <Link to="/explore" onClick={() => setMenuOpen(false)} className="mobile-link">Explore</Link>
                             {user && <Link to="/bookings" onClick={() => setMenuOpen(false)} className="mobile-link">My Bookings</Link>}
-                            {user && <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link">Wallet</Link>}
+                            {showWallet && (
+                                <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link mobile-wallet-link">
+                                    <span className="mobile-wallet-row">
+                                        <WalletIcon size={16} />
+                                        <span>Wallet</span>
+                                    </span>
+                                    <span className="mobile-wallet-balance">{balanceLabel}</span>
+                                </Link>
+                            )}
                             {user && (
                                 <div className="mobile-section">
                                     <p className="mobile-section-label">Host</p>
@@ -371,7 +441,6 @@ export default function Navbar() {
                                 <p className="mobile-section-label">Account</p>
                                 {!isAdmin && (
                                     <>
-                                        <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link">Wallet</Link>
                                         <Link to={`/profile/${user.id}`} onClick={() => setMenuOpen(false)} className="mobile-link">Profile</Link>
                                         <Link to="/verify" onClick={() => setMenuOpen(false)} className="mobile-link">Verify ID</Link>
                                     </>
