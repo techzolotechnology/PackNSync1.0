@@ -8,12 +8,31 @@ import {
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
 import { publicFileUrl } from '../utils/publicUrl.js';
 
+const ALLOWED_VEHICLE_TYPES = new Set(['CAR', 'BIKE', 'SCOOTER']);
+const TWO_WHEELER_TYPES = ['BIKE', 'SCOOTER'];
+
+export function normalizeVehicleType(raw) {
+    const type = String(raw || 'CAR').trim().toUpperCase();
+    if (type === 'TWO_WHEELER' || type === 'MOTORCYCLE') return 'BIKE';
+    if (ALLOWED_VEHICLE_TYPES.has(type)) return type;
+    return 'CAR';
+}
+
+export function isTwoWheelerType(type) {
+    return TWO_WHEELER_TYPES.includes(normalizeVehicleType(type));
+}
+
 // POST /api/vehicles
 export const registerVehicle = async (req, res) => {
     await assertFullyVerified(req.user.id);
     await assertPolicyAccepted(req.user.id, 'LISTING_TERMS');
 
     const { make, model, year, type, licensePlate, seats, fuelType, transmission, images, rcUrl } = req.body;
+    const normalizedType = normalizeVehicleType(type);
+    const seatCount = Number(seats);
+    const resolvedSeats = Number.isFinite(seatCount) && seatCount > 0
+        ? seatCount
+        : (isTwoWheelerType(normalizedType) ? 2 : 5);
 
     const existing = await prisma.vehicle.findUnique({ where: { licensePlate } });
     if (existing) throw new AppError('A vehicle with this license plate already exists.', 400);
@@ -24,9 +43,9 @@ export const registerVehicle = async (req, res) => {
             make,
             model,
             year: Number(year),
-            type: type || 'CAR',
+            type: normalizedType,
             licensePlate,
-            seats: Number(seats),
+            seats: resolvedSeats,
             fuelType,
             transmission,
             images: images || [],

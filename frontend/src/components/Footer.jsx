@@ -19,7 +19,7 @@ const Footer = () => {
                         <h4>Platform</h4>
                         <ul>
                             <li><Link to="/trips">Travel Together</Link></li>
-                            <li><Link to="/rentals">Car on Rent</Link></li>
+                            <li><Link to="/rentals">Cars & Bikes</Link></li>
                             <li><Link to="/trips/create">Post a Trip</Link></li>
                         </ul>
                     </div>

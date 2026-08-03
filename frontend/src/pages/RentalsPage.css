@@ -76,6 +76,40 @@
     max-width: 920px;
 }
 
+.cr-kind-toggle {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.28rem;
+    margin-bottom: 1.1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(10px);
+}
+
+.cr-kind-toggle button {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.cr-kind-toggle button.active {
+    background: #ffffff;
+    color: var(--clr-primary-700);
+}
+
+.cr-kind-bike .cr-hero-media {
+    background-image:
+        linear-gradient(120deg, rgba(41, 41, 102, 0.72), rgba(92, 92, 153, 0.45)),
+        url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=2000&q=85');
+}
+
 .cr-hero-inner h1 {
     margin: 0 0 0.75rem;
     font-family: 'Playfair Display', Georgia, serif;
@@ -467,9 +501,33 @@
 }
 
 .cr-card-media {
+    position: relative;
     aspect-ratio: 16 / 11;
     background: var(--clr-bg-600);
     overflow: hidden;
+}
+
+.cr-card-type {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    z-index: 1;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(41, 41, 102, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cr-helmet-note {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+    line-height: 1.4;
 }
 
 .cr-card-media img {

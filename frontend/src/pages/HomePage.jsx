@@ -50,9 +50,8 @@ const MODULES = {
     },
     rentals: {
         to: '/rentals',
-        title: 'Select from the Best Community Cars',
-        cta: 'Find a car →',
-        // Clean SUV for rentals
+        title: 'Community cars & bikes',
+        cta: 'Find wheels →',
         image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1400&q=80',
     },
 };
@@ -76,7 +75,7 @@ export default function HomePage() {
                         <p className="home-welcome-kicker">PackAndSync</p>
                         <h1 className="font-display">Travel together. Rent when you need wheels.</h1>
                         <p>
-                            Join group trips, split costs, and book community cars — all in one place.
+                            Join group trips, split costs, and book community cars or bikes — all in one place.
                         </p>
                     </div>
                     <div className="home-welcome-actions ps-reveal ps-right">
@@ -92,6 +91,7 @@ export default function HomePage() {
                             <>
                                 <Link to="/trips" className="home-btn primary">Browse trips</Link>
                                 <Link to="/rentals" className="home-btn soft">Browse cars</Link>
+                                <Link to="/rentals?kind=bike" className="home-btn ghost">Browse bikes</Link>
                             </>
                         )}
                     </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
                             className={mode === 'rentals' ? 'active' : ''}
                             onClick={() => setMode('rentals')}
                         >
-                            Car on Rent
+                            Cars & Bikes
                         </button>
                     </div>
 
@@ -169,7 +169,7 @@ export default function HomePage() {
                             <p className="home-cta-kicker">Next up</p>
                             <h2 className="font-display">Ready for the next trip?</h2>
                             <p>
-                                Post a route, invite travelers, and split costs clearly — or list your car and earn when someone needs wheels.
+                                Post a route, invite travelers, and split costs clearly — or list your car or bike and earn when someone needs wheels.
                             </p>
                         </div>
                         <div className="home-cta-actions">
@@ -177,6 +177,7 @@ export default function HomePage() {
                                 <>
                                     <Link to="/trips/create" className="home-btn primary">Post a Trip</Link>
                                     <Link to="/rentals" className="home-btn soft">Browse cars</Link>
+                                    <Link to="/rentals?kind=bike" className="home-btn ghost">Browse bikes</Link>
                                     <button type="button" className="home-btn ghost" onClick={handleLogout}>
                                         Sync Out
                                     </button>
@@ -184,7 +185,8 @@ export default function HomePage() {
                             ) : (
                                 <>
                                     <Link to="/trips" className="home-btn primary">Browse trips</Link>
-                                    <Link to="/rentals" className="home-btn ghost">Browse cars</Link>
+                                    <Link to="/rentals" className="home-btn soft">Browse cars</Link>
+                                    <Link to="/rentals?kind=bike" className="home-btn ghost">Browse bikes</Link>
                                 </>
                             )}
                         </div>

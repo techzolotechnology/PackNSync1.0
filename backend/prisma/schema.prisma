@@ -360,6 +360,7 @@ model Vehicle {
   make            String
   model           String
   year            Int
+  /// App convention: CAR | BIKE | SCOOTER
   type            String   @default("CAR")
   licensePlate    String   @unique
   seats           Int

@@ -188,7 +188,7 @@ export default function Navbar() {
                             )}
                         </Link>
                         <Link to="/rentals" className={`nav-link ${isActive('/rentals') ? 'active' : ''}`}>
-                            Car on Rent
+                            Cars & Bikes
                         </Link>
                         <Link to="/explore" className={`nav-link ${isActive('/explore') ? 'active' : ''}`}>
                             Explore
@@ -351,7 +351,7 @@ export default function Navbar() {
                                     <span className="nav-chat-badge inline">{chatUnreadTotal > 99 ? '99+' : chatUnreadTotal}</span>
                                 )}
                             </Link>
-                            <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Car on Rent</Link>
+                            <Link to="/rentals" onClick={() => setMenuOpen(false)} className="mobile-link">Cars & Bikes</Link>
                             <Link to="/explore" onClick={() => setMenuOpen(false)} className="mobile-link">Explore</Link>
                             {user && <Link to="/bookings" onClick={() => setMenuOpen(false)} className="mobile-link">My Bookings</Link>}
                             {user && <Link to="/wallet" onClick={() => setMenuOpen(false)} className="mobile-link">Wallet</Link>}

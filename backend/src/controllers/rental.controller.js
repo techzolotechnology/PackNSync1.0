@@ -80,7 +80,7 @@ const endOfUtcDay = (value) => {
 
 // GET /api/rentals/listings
 export const getListings = async (req, res) => {
-    const { location, minPrice, maxPrice, type, startDate, endDate } = req.query;
+    const { location, minPrice, maxPrice, type, kind, startDate, endDate } = req.query;
 
     const where = { isActive: true };
     if (location) where.location = { contains: location, mode: 'insensitive' };
@@ -89,9 +89,22 @@ export const getListings = async (req, res) => {
         if (minPrice) where.pricePerDay.gte = Number(minPrice);
         if (maxPrice) where.pricePerDay.lte = Number(maxPrice);
     }
-    if (type) {
-        where.vehicle = { type: type.toUpperCase() };
+
+    const kindNorm = String(kind || '').trim().toLowerCase();
+    const typeNorm = String(type || '').trim().toUpperCase();
+    if (kindNorm === 'bike' || kindNorm === 'bikes' || typeNorm === 'TWO_WHEELER') {
+        where.vehicle = { ...(where.vehicle || {}), type: { in: ['BIKE', 'SCOOTER'] } };
+    } else if (kindNorm === 'car' || kindNorm === 'cars') {
+        where.vehicle = { ...(where.vehicle || {}), type: 'CAR' };
+    } else if (typeNorm) {
+        if (typeNorm.includes(',')) {
+            const types = typeNorm.split(',').map((t) => t.trim()).filter(Boolean);
+            where.vehicle = { ...(where.vehicle || {}), type: { in: types } };
+        } else {
+            where.vehicle = { ...(where.vehicle || {}), type: typeNorm };
+        }
     }
+
     if (startDate) {
         const end = endOfUtcDay(startDate);
         if (end) where.availableFrom = { lte: end };

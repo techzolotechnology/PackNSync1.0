@@ -10,6 +10,14 @@ const nextMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10
 
 const FALLBACK_THUMB =
     'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=70';
+const FALLBACK_BIKE_THUMB =
+    'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=400&q=70';
+
+const VEHICLE_TYPES = [
+    { id: 'CAR', label: 'Car', makeHint: 'Toyota', modelHint: 'Innova', seats: 5 },
+    { id: 'BIKE', label: 'Bike', makeHint: 'Royal Enfield', modelHint: 'Classic 350', seats: 2 },
+    { id: 'SCOOTER', label: 'Scooter', makeHint: 'Honda', modelHint: 'Activa 6G', seats: 2 },
+];
 
 const initialVehicleForm = {
     make: '',
@@ -21,6 +29,14 @@ const initialVehicleForm = {
     fuelType: 'Petrol',
     transmission: 'Automatic',
 };
+
+function isTwoWheeler(type) {
+    return type === 'BIKE' || type === 'SCOOTER';
+}
+
+function typeLabel(type) {
+    return VEHICLE_TYPES.find((t) => t.id === type)?.label || type || 'Car';
+}
 
 const initialListingForm = {
     vehicleId: '',
@@ -34,8 +50,7 @@ const initialListingForm = {
 function formatPrice(value) {
     const n = Number(value);
     if (!Number.isFinite(n) || n <= 0) return null;
-    if (n < 1000) return `$${n.toLocaleString()} per day`;
-    return `₹${n.toLocaleString()} per day`;
+    return `₹${n.toLocaleString('en-IN')} per day`;
 }
 
 export default function HostDashboard() {
@@ -106,6 +121,19 @@ export default function HostDashboard() {
         } finally {
             setTermsLoading(false);
         }
+    };
+
+    const setVehicleType = (type) => {
+        const preset = VEHICLE_TYPES.find((t) => t.id === type);
+        setFormData((f) => ({
+            ...f,
+            type,
+            seats: preset?.seats ?? f.seats,
+            transmission: isTwoWheeler(type)
+                ? (f.transmission === 'Diesel' ? 'Automatic' : f.transmission === 'Manual' ? 'Manual' : f.transmission)
+                : f.transmission,
+            fuelType: isTwoWheeler(type) && f.fuelType === 'Diesel' ? 'Petrol' : f.fuelType,
+        }));
     };
 
     const resetAddForm = () => {
@@ -224,10 +252,10 @@ export default function HostDashboard() {
                 <header className="host-header">
                     <div>
                         <h1>Host a Vehicle</h1>
-                        <p>List your car to earn and share the ride with fellow travelers.</p>
+                        <p>List your car, bike, or scooter and earn when travelers need wheels.</p>
                     </div>
                     <button type="button" className="host-add-btn" onClick={() => setShowAddForm(true)}>
-                        Add Your Vehicle
+                        Add vehicle
                     </button>
                 </header>
 
@@ -264,9 +292,9 @@ export default function HostDashboard() {
                     vehicles.length === 0 ? (
                         <div className="host-empty">
                             <h3>No vehicles yet</h3>
-                            <p>Add your first car to start hosting on PackAndSync.</p>
+                            <p>Add your first car, bike, or scooter to start hosting on PackAndSync.</p>
                             <button type="button" className="host-add-btn" onClick={() => setShowAddForm(true)}>
-                                Add Your Vehicle
+                                Add vehicle
                             </button>
                         </div>
                     ) : (
@@ -275,7 +303,8 @@ export default function HostDashboard() {
                                 const listing = vehicle.listings?.[0];
                                 const booked = Boolean(listing?.bookings?.length);
                                 const price = formatPrice(listing?.pricePerDay);
-                                const thumb = vehicle.images?.[0] || FALLBACK_THUMB;
+                                const thumb = vehicle.images?.[0]
+                                    || (isTwoWheeler(vehicle.type) ? FALLBACK_BIKE_THUMB : FALLBACK_THUMB);
                                 const title = `${vehicle.make} ${vehicle.model}`.trim();
                                 const rc = rcLabel(vehicle);
                                 const needsRc = !vehicle.isVerified && !vehicle.rcUrl;
@@ -286,6 +315,7 @@ export default function HostDashboard() {
                                             <img src={thumb} alt={title} className="host-v-thumb" />
                                             <div className="host-v-meta">
                                                 <h3>{title}</h3>
+                                                <span className="host-type-badge">{typeLabel(vehicle.type)}</span>
                                                 <span className={`host-v-status ${booked ? 'booked' : listing ? 'available' : 'idle'}`}>
                                                     {booked ? 'Booked' : listing ? 'Available' : 'Not listed'}
                                                 </span>
@@ -323,7 +353,7 @@ export default function HostDashboard() {
                 ) : upcomingBookings.length === 0 ? (
                     <div className="host-empty">
                         <h3>No upcoming bookings</h3>
-                        <p>When renters request your cars, they will show up here.</p>
+                        <p>When renters request your cars or bikes, they will show up here.</p>
                     </div>
                 ) : (
                     <div className="host-booking-list">
@@ -356,29 +386,60 @@ export default function HostDashboard() {
             {showAddForm && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                        <h3>Add New Vehicle</h3>
+                        <h3>Add {typeLabel(formData.type).toLowerCase()}</h3>
                         <form onSubmit={handleAddVehicle}>
-                            <input type="text" placeholder="Make (e.g. Toyota)" value={formData.make} onChange={(e) => setFormData({ ...formData, make: e.target.value })} required />
-                            <input type="text" placeholder="Model (e.g. Innova)" value={formData.model} onChange={(e) => setFormData({ ...formData, model: e.target.value })} required />
+                            <div className="host-type-chips" role="group" aria-label="Vehicle type">
+                                {VEHICLE_TYPES.map((t) => (
+                                    <button
+                                        key={t.id}
+                                        type="button"
+                                        className={`host-type-chip ${formData.type === t.id ? 'active' : ''}`}
+                                        onClick={() => setVehicleType(t.id)}
+                                    >
+                                        {t.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="text"
+                                placeholder={`Make (e.g. ${VEHICLE_TYPES.find((t) => t.id === formData.type)?.makeHint})`}
+                                value={formData.make}
+                                onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder={`Model (e.g. ${VEHICLE_TYPES.find((t) => t.id === formData.type)?.modelHint})`}
+                                value={formData.model}
+                                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                required
+                            />
                             <input type="number" placeholder="Year" value={formData.year} onChange={(e) => setFormData({ ...formData, year: e.target.value })} required />
                             <input type="text" placeholder="License Plate" value={formData.licensePlate} onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value.toUpperCase() })} required />
-                            <input type="number" placeholder="Seats" value={formData.seats} onChange={(e) => setFormData({ ...formData, seats: e.target.value })} required />
-                            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
-                                <option value="CAR">Car</option>
-                                <option value="BIKE">Bike</option>
-                            </select>
+                            {!isTwoWheeler(formData.type) && (
+                                <input type="number" placeholder="Seats" value={formData.seats} onChange={(e) => setFormData({ ...formData, seats: e.target.value })} required min="1" max="12" />
+                            )}
                             <select value={formData.fuelType} onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}>
                                 <option value="Petrol">Petrol</option>
-                                <option value="Diesel">Diesel</option>
-                                <option value="CNG">CNG</option>
+                                {!isTwoWheeler(formData.type) && <option value="Diesel">Diesel</option>}
+                                {!isTwoWheeler(formData.type) && <option value="CNG">CNG</option>}
                                 <option value="Electric">Electric</option>
                             </select>
                             <select value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })}>
-                                <option value="Automatic">Automatic</option>
-                                <option value="Manual">Manual</option>
+                                {isTwoWheeler(formData.type) ? (
+                                    <>
+                                        <option value="Automatic">Automatic</option>
+                                        <option value="Manual">Geared</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value="Automatic">Automatic</option>
+                                        <option value="Manual">Manual</option>
+                                    </>
+                                )}
                             </select>
                             <label className="vehicle-photo-label">
-                                Vehicle photos (up to 5)
+                                Photos (up to 5)
                                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleVehiclePhoto} disabled={uploadingImage || savingVehicle} />
                             </label>
                             {vehicleImages.length > 0 && (
@@ -389,7 +450,7 @@ export default function HostDashboard() {
                                 </div>
                             )}
                             <label className="vehicle-photo-label">
-                                Vehicle RC photo (required)
+                                RC photo (required)
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
@@ -402,7 +463,7 @@ export default function HostDashboard() {
                             <p className="host-form-hint">We scan the RC against the plate and send it to admin for approval before listing.</p>
                             <div className="modal-btns">
                                 <button type="submit" className="save-btn" disabled={savingVehicle}>
-                                    {savingVehicle ? 'Saving…' : 'Save Vehicle'}
+                                    {savingVehicle ? 'Saving…' : `Save ${typeLabel(formData.type).toLowerCase()}`}
                                 </button>
                                 <button type="button" className="cancel-btn" disabled={savingVehicle} onClick={resetAddForm}>Cancel</button>
                             </div>

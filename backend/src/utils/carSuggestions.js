@@ -83,6 +83,7 @@ export const findSuggestedCars = async (prisma, {
             isActive: true,
             availableFrom: { lte: start },
             availableTo: { gte: end },
+            vehicle: { type: 'CAR' },
             ...(excludeHostId ? { hostId: { not: excludeHostId } } : {}),
         },
         include: {

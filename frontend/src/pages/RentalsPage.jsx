@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { rentalsApi, verificationsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -10,20 +10,27 @@ import './RentalsPage.css';
 const today = new Date().toISOString().slice(0, 10);
 const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
-const FALLBACK_IMAGES = [
+const CAR_FALLBACKS = [
     'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=900&q=80',
 ];
 
-const CATEGORIES = [
+const BIKE_FALLBACKS = [
+    'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=900&q=80',
+];
+
+const CAR_CATEGORIES = [
     {
         id: 'luxury',
         label: 'Luxury Sedans',
         accent: 'teal',
         icon: 'sedan',
-        thumb: FALLBACK_IMAGES[3],
+        thumb: CAR_FALLBACKS[3],
         match: (v) => /bmw|mercedes|audi|jaguar|lexus|city|sedan|honda/i.test(`${v.make} ${v.model}`),
     },
     {
@@ -31,7 +38,7 @@ const CATEGORIES = [
         label: 'SUVs',
         accent: 'orange',
         icon: 'suv',
-        thumb: FALLBACK_IMAGES[1],
+        thumb: CAR_FALLBACKS[1],
         match: (v) => /suv|xuv|fortuner|harrier|scorpio|endeavour|creta|mahindra|toyota|hyundai/i.test(`${v.make} ${v.model} ${v.type || ''}`),
     },
     {
@@ -39,7 +46,7 @@ const CATEGORIES = [
         label: 'Electric Cars',
         accent: 'orange',
         icon: 'ev',
-        thumb: FALLBACK_IMAGES[2],
+        thumb: CAR_FALLBACKS[2],
         match: (v) => /electric|ev|nexon|tiago/i.test(`${v.fuelType} ${v.make} ${v.model}`),
     },
     {
@@ -47,8 +54,45 @@ const CATEGORIES = [
         label: 'Classics',
         accent: 'orange',
         icon: 'classic',
-        thumb: FALLBACK_IMAGES[0],
+        thumb: CAR_FALLBACKS[0],
         match: (v) => /classic|ambassador|contessa/i.test(`${v.make} ${v.model}`) || (Number(v.year) > 0 && Number(v.year) < 2000),
+    },
+];
+
+const BIKE_CATEGORIES = [
+    {
+        id: 'commuter',
+        label: 'Commuter',
+        accent: 'teal',
+        icon: 'commuter',
+        thumb: BIKE_FALLBACKS[0],
+        match: (v) => /splendor|shine|pulsar 150|unicorn|fz-s|commuter|apache 160/i.test(`${v.make} ${v.model}`)
+            || (v.type === 'BIKE' && !/classic|bullet|duke|r15|ktm|ninja|activa|jupiter|access|scooty|ather|ola/i.test(`${v.make} ${v.model}`)),
+    },
+    {
+        id: 'sports',
+        label: 'Sports',
+        accent: 'orange',
+        icon: 'sports',
+        thumb: BIKE_FALLBACKS[1],
+        match: (v) => /duke|r15|ktm|ninja|sports|rs|apache rr|mt-15|gixxer/i.test(`${v.make} ${v.model}`),
+    },
+    {
+        id: 'scooter',
+        label: 'Scooters',
+        accent: 'orange',
+        icon: 'scooter',
+        thumb: BIKE_FALLBACKS[2],
+        match: (v) => v.type === 'SCOOTER'
+            || /activa|jupiter|access|scooty|fascino|ntorq|burgman|dio/i.test(`${v.make} ${v.model}`),
+    },
+    {
+        id: 'electric-bike',
+        label: 'Electric',
+        accent: 'teal',
+        icon: 'ev',
+        thumb: BIKE_FALLBACKS[3],
+        match: (v) => /electric|ev|ather|ola s1|tvsiq|chetak/i.test(`${v.fuelType} ${v.make} ${v.model}`),
     },
 ];
 
@@ -84,6 +128,15 @@ function CategoryIcon({ type }) {
             </svg>
         );
     }
+    if (type === 'scooter' || type === 'commuter' || type === 'sports') {
+        return (
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+                <circle cx="6.5" cy="16.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+                <circle cx="17.5" cy="16.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M8.8 16h5.2l1.4-5.2H11L8.8 16zM12.5 10.8V8.5h2.2" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+        );
+    }
     return (
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
             <path d="M4 15h16l-1.5-5H5.5L4 15z" stroke="currentColor" strokeWidth="1.6" />
@@ -93,9 +146,18 @@ function CategoryIcon({ type }) {
     );
 }
 
+function kindFromParams(params) {
+    const raw = String(params.get('kind') || 'car').toLowerCase();
+    return raw === 'bike' || raw === 'bikes' ? 'bike' : 'car';
+}
+
 export default function RentalsPage() {
     const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const kind = kindFromParams(searchParams);
+    const isBike = kind === 'bike';
+
     const [listings, setListings] = useState([]);
     const [location, setLocation] = useState('');
     const [startDate, setStartDate] = useState(today);
@@ -110,13 +172,26 @@ export default function RentalsPage() {
     const [termsOpen, setTermsOpen] = useState(false);
     const [termsLoading, setTermsLoading] = useState(false);
     const motionRef = useRef(null);
-    useGoFlyMotion(motionRef, [listings, loading, category]);
+
+    const categories = isBike ? BIKE_CATEGORIES : CAR_CATEGORIES;
+    const fallbacks = isBike ? BIKE_FALLBACKS : CAR_FALLBACKS;
+
+    useGoFlyMotion(motionRef, [listings, loading, category, kind]);
 
     const rentalDays = useMemo(() => getDays(startDate, endDate), [startDate, endDate]);
 
+    const setKind = (next) => {
+        const params = new URLSearchParams(searchParams);
+        if (next === 'bike') params.set('kind', 'bike');
+        else params.delete('kind');
+        setSearchParams(params, { replace: true });
+        setCategory('');
+    };
+
     useEffect(() => {
         fetchListings();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [kind]);
 
     const fetchListings = async () => {
         setLoading(true);
@@ -126,6 +201,7 @@ export default function RentalsPage() {
                 location,
                 startDate,
                 endDate,
+                kind: isBike ? 'bike' : 'car',
             });
             setListings(res.data.data || []);
         } catch (err) {
@@ -137,26 +213,23 @@ export default function RentalsPage() {
     };
 
     const priceScale = useMemo(() => {
-        const maxBound = Math.max(...listings.map((x) => Number(x.pricePerDay) || 0), 500);
-        const useInr = maxBound > 1000;
-        const factor = useInr ? 40 : 1;
-        const symbol = useInr ? '₹' : '$';
-        const fmt = (n) => `${symbol}${Math.round(n * factor).toLocaleString()}`;
+        // Always INR — empty search used to fall back to "$" because maxBound was 500.
+        // Slider 50–500 maps to rupees: cars ₹2k–₹20k, bikes ₹200–₹2k.
+        const factor = isBike ? 4 : 40;
+        const fmt = (n) => `₹${Math.round(n * factor).toLocaleString('en-IN')}`;
         return {
-            useInr,
             factor,
-            symbol,
             fmt,
             displayMin: fmt(priceMin),
             displayMax: fmt(priceMax),
             floor: fmt(50),
             ceil: fmt(500),
         };
-    }, [listings, priceMin, priceMax]);
+    }, [isBike, priceMin, priceMax]);
 
     const filtered = useMemo(() => {
         let rows = [...listings];
-        const cat = CATEGORIES.find((c) => c.id === category);
+        const cat = categories.find((c) => c.id === category);
         if (cat) rows = rows.filter((l) => cat.match(l.vehicle));
 
         const min = priceMin * priceScale.factor;
@@ -169,7 +242,7 @@ export default function RentalsPage() {
         if (sortBy === 'price') rows.sort((a, b) => a.pricePerDay - b.pricePerDay);
         if (sortBy === 'price-desc') rows.sort((a, b) => b.pricePerDay - a.pricePerDay);
         return rows;
-    }, [listings, category, priceMin, priceMax, sortBy, priceScale.factor]);
+    }, [listings, category, priceMin, priceMax, sortBy, priceScale.factor, categories]);
 
     const handleSearch = (e) => {
         e?.preventDefault?.();
@@ -231,8 +304,11 @@ export default function RentalsPage() {
         }
     };
 
+    const noun = isBike ? 'bike' : 'car';
+    const nounPlural = isBike ? 'bikes' : 'cars';
+
     return (
-        <div className="cr-page page-enter" ref={motionRef}>
+        <div className={`cr-page page-enter ${isBike ? 'cr-kind-bike' : 'cr-kind-car'}`} ref={motionRef}>
             <section className="cr-hero">
                 <div className="cr-hero-media ps-parallax" aria-hidden="true" />
                 <div className="cr-hero-fx" aria-hidden="true">
@@ -246,8 +322,32 @@ export default function RentalsPage() {
                 </div>
 
                 <div className="container cr-hero-inner ps-reveal ps-left">
-                    <h1>Car on Rent</h1>
-                    <p>Self-drive cars from community hosts — weekends, outer-city runs, your schedule.</p>
+                    <div className="cr-kind-toggle" role="tablist" aria-label="Rent cars or bikes">
+                        <button
+                            type="button"
+                            role="tab"
+                            aria-selected={!isBike}
+                            className={!isBike ? 'active' : ''}
+                            onClick={() => setKind('car')}
+                        >
+                            Cars
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            aria-selected={isBike}
+                            className={isBike ? 'active' : ''}
+                            onClick={() => setKind('bike')}
+                        >
+                            Bikes
+                        </button>
+                    </div>
+                    <h1>{isBike ? 'Bike on Rent' : 'Car on Rent'}</h1>
+                    <p>
+                        {isBike
+                            ? 'Self-ride bikes and scooters from community hosts — city hops, weekends, your schedule.'
+                            : 'Self-drive cars from community hosts — weekends, outer-city runs, your schedule.'}
+                    </p>
 
                     <form className="cr-search" onSubmit={handleSearch}>
                         <label className="cr-field">
@@ -333,14 +433,14 @@ export default function RentalsPage() {
             </section>
 
             <section className="container cr-section">
-                <h2 className="cr-section-title ps-reveal">Explore by Vehicle Type</h2>
+                <h2 className="cr-section-title ps-reveal">Explore by type</h2>
                 <div className="cr-categories">
-                    {CATEGORIES.map((cat) => (
+                    {categories.map((cat, i) => (
                         <button
                             key={cat.id}
                             type="button"
                             className={`cr-cat ps-reveal ps-lift ${cat.accent} ${category === cat.id ? 'active' : ''}`}
-                            style={{ '--ps-delay': `${CATEGORIES.indexOf(cat) * 85}ms` }}
+                            style={{ '--ps-delay': `${i * 85}ms` }}
                             onClick={() => setCategory((c) => (c === cat.id ? '' : cat.id))}
                         >
                             <span className="cr-cat-icon"><CategoryIcon type={cat.icon} /></span>
@@ -353,7 +453,7 @@ export default function RentalsPage() {
 
             <section className="container cr-section cr-available">
                 <div className="cr-available-head ps-reveal">
-                    <h2 className="cr-section-title">Available Cars</h2>
+                    <h2 className="cr-section-title">Available {isBike ? 'Bikes' : 'Cars'}</h2>
                     <div className="cr-sorts" role="group" aria-label="Sort filters">
                         <button
                             type="button"
@@ -377,13 +477,13 @@ export default function RentalsPage() {
                     </div>
                 ) : listings.length === 0 ? (
                     <div className="cr-empty">
-                        <h3>No cars listed yet</h3>
+                        <h3>No {nounPlural} listed yet</h3>
                         <p>Be the first host in this city, or widen your search dates.</p>
-                        <Link to="/host" className="cr-book">List your car</Link>
+                        <Link to="/host" className="cr-book">List your {noun}</Link>
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="cr-empty">
-                        <h3>No cars match these filters</h3>
+                        <h3>No {nounPlural} match these filters</h3>
                         <p>Clear the category or widen the price range.</p>
                         <button type="button" className="cr-book" onClick={() => { setCategory(''); setPriceMin(50); setPriceMax(500); }}>
                             Reset filters
@@ -393,21 +493,35 @@ export default function RentalsPage() {
                     <div className="cr-grid">
                         {filtered.map((listing, index) => {
                             const v = listing.vehicle;
-                            const image = v.images?.[0] || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+                            const image = v.images?.[0] || fallbacks[index % fallbacks.length];
                             const glow = index % 3 === 0 ? 'glow-teal' : 'glow-orange';
                             const title = `${v.make} ${v.model}`.toUpperCase();
+                            const seatLabel = isBike
+                                ? `${v.seats || 2}-seater`
+                                : `${v.seats || 4} Seats`;
+                            const gearLabel = isBike
+                                ? (v.transmission === 'Manual' ? 'Geared' : (v.transmission || 'Automatic'))
+                                : (v.transmission || 'Automatic');
                             return (
                                 <article key={listing.id} className={`cr-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
                                     <div className="cr-card-media">
                                         <img src={image} alt={title} loading="lazy" />
+                                        {isBike && (
+                                            <span className="cr-card-type">
+                                                {v.type === 'SCOOTER' ? 'Scooter' : 'Bike'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="cr-card-body">
                                         <h3>{title}</h3>
                                         <div className="cr-specs">
-                                            <span>{v.transmission || 'Automatic'}</span>
-                                            <span>{v.seats || 4} Seats</span>
+                                            <span>{gearLabel}</span>
+                                            <span>{seatLabel}</span>
                                             <span>{v.fuelType || 'Petrol'}</span>
                                         </div>
+                                        {isBike && (
+                                            <p className="cr-helmet-note">Helmet recommended · Valid DL required</p>
+                                        )}
                                         <div className="cr-host-row">
                                             {listing.host?.avatarUrl
                                                 ? <img src={listing.host.avatarUrl} alt={listing.host.name} className="cr-avatar" />
@@ -426,7 +540,7 @@ export default function RentalsPage() {
                                         </div>
                                         <div className="cr-actions">
                                             <button type="button" className="cr-book" onClick={() => handleBook(listing)}>
-                                                Book Now
+                                                {isBike ? 'Request bike' : 'Book Now'}
                                             </button>
                                             <Link to={`/profile/${listing.host?.id}`} className="cr-host-btn">
                                                 Host Profile
@@ -441,7 +555,7 @@ export default function RentalsPage() {
             </section>
 
             <div className="container cr-host-cta ps-reveal ps-scale">
-                <Link to="/host">Become a Host</Link>
+                <Link to="/host">{isBike ? 'Host a bike' : 'Become a Host'}</Link>
             </div>
 
             <TermsAcceptanceModal
