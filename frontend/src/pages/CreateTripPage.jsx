@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
@@ -12,6 +12,51 @@ const STEPS = [
     { id: 'dates', label: 'Plan', hint: 'When & who' },
     { id: 'review', label: 'Publish', hint: 'Confirm' },
 ];
+
+const DRAFT_KEY = 'packandsync.createTrip.draft';
+
+const DEFAULT_FORM = {
+    title: '',
+    description: '',
+    destination: '',
+    coverImageUrl: '',
+    startDate: '',
+    endDate: '',
+    maxParticipants: 6,
+    budgetEstimate: '',
+    joinMode: 'everyone',
+    meetingPoint: '',
+    isPublic: true,
+};
+
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return null;
+        const step = Number.isInteger(parsed.step)
+            ? Math.min(Math.max(parsed.step, 0), STEPS.length - 1)
+            : 0;
+        const form = {
+            ...DEFAULT_FORM,
+            ...(parsed.form && typeof parsed.form === 'object' ? parsed.form : {}),
+        };
+        form.maxParticipants = Number(form.maxParticipants) || 6;
+        form.isPublic = form.joinMode !== 'invite';
+        return { step, form };
+    } catch {
+        return null;
+    }
+}
+
+function clearDraft() {
+    try {
+        localStorage.removeItem(DRAFT_KEY);
+    } catch {
+        /* ignore */
+    }
+}
 
 const JOIN_OPTIONS = [
     {
@@ -76,21 +121,33 @@ function formatRange(start, end) {
 
 export default function CreateTripPage() {
     const navigate = useNavigate();
-    const [step, setStep] = useState(0);
+    const draft = useMemo(() => loadDraft(), []);
+    const [step, setStep] = useState(() => draft?.step ?? 0);
     const [isLoading, setIsLoading] = useState(false);
-    const [form, setForm] = useState({
-        title: '',
-        description: '',
-        destination: '',
-        coverImageUrl: '',
-        startDate: '',
-        endDate: '',
-        maxParticipants: 6,
-        budgetEstimate: '',
-        joinMode: 'everyone',
-        meetingPoint: '',
-        isPublic: true,
-    });
+    const [form, setForm] = useState(() => draft?.form ?? { ...DEFAULT_FORM });
+
+    useEffect(() => {
+        if (!draft) return;
+        toast('Draft restored — pick up where you left off.', { id: 'create-trip-draft', duration: 2800 });
+    }, [draft]);
+
+    useEffect(() => {
+        const hasContent = Object.entries(form).some(([key, value]) => {
+            if (key === 'maxParticipants') return Number(value) !== DEFAULT_FORM.maxParticipants;
+            if (key === 'joinMode') return value !== DEFAULT_FORM.joinMode;
+            if (key === 'isPublic') return value !== DEFAULT_FORM.isPublic;
+            return String(value ?? '').trim() !== '';
+        });
+        if (!hasContent && step === 0) {
+            clearDraft();
+            return;
+        }
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, form, savedAt: Date.now() }));
+        } catch {
+            /* quota / private mode */
+        }
+    }, [step, form]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -156,6 +213,7 @@ export default function CreateTripPage() {
                 coverImageUrl: form.coverImageUrl || null,
             });
             toast.success('Trip posted — others can join and split costs.');
+            clearDraft();
             navigate(`/trips/${res.data.data.id}`);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to create trip.');

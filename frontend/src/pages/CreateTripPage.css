@@ -2,7 +2,9 @@
     position: relative;
     min-height: calc(100vh - 72px);
     padding: 2.5rem 1rem 4rem;
-    overflow: hidden;
+    /* Keep x clipped for glow bleed; y must stay visible so place suggestions aren't cut off */
+    overflow-x: clip;
+    overflow-y: visible;
     background:
         radial-gradient(ellipse 55% 35% at 85% 0%, rgba(92, 92, 153, 0.12), transparent 55%),
         radial-gradient(ellipse 45% 30% at 5% 25%, rgba(92, 92, 153, 0.1), transparent 50%),
@@ -333,20 +335,24 @@
     color: var(--clr-text-secondary);
 }
 
-/* Map */
+/* Map — overflow visible so LocationAutocomplete suggestions can drop below the card */
 .create-map {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 18px;
     border: 1px solid rgba(92, 92, 153, 0.22);
     background: var(--clr-bg-700);
     min-height: 210px;
+    z-index: 2;
 }
 
 .create-map-art {
     position: absolute;
     inset: 0;
     opacity: 0.9;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
 }
 
 .create-map-art svg {
@@ -404,10 +410,16 @@
     width: min(420px, 100%);
     margin-top: 0.35rem;
     text-align: left;
+    position: relative;
+    z-index: 5;
 }
 
 .create-map-autocomplete .location-autocomplete-input {
     background: var(--clr-bg-700);
+}
+
+.create-map-autocomplete .location-suggestions {
+    z-index: 50;
 }
 
 .create-note {
