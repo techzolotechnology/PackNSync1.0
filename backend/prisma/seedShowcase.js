@@ -140,10 +140,11 @@ const VEHICLES = [
         },
     },
     {
+        // Photo is a Honda Scoopy (badge visible) — title matches the image, not Activa.
         licensePlate: 'GA01BK2201',
         ownerEmail: `meera.iyer${HOST_DOMAIN}`,
         make: 'Honda',
-        model: 'Activa 6G',
+        model: 'Scoopy',
         year: 2023,
         type: 'SCOOTER',
         seats: 2,
@@ -153,11 +154,12 @@ const VEHICLES = [
         listing: {
             pricePerDay: 450,
             location: 'Goa',
-            description: 'Easy Activa for North Goa beach hops. Helmets available on request.',
+            description: 'Easy Honda Scoopy for North Goa beach hops. Helmets available on request.',
             availableDays: 90,
         },
     },
     {
+        // Photo shows Royal Enfield tank lettering, teardrop tank, round chrome headlamp.
         licensePlate: 'KA05BK3501',
         ownerEmail: `ananya.sharma${HOST_DOMAIN}`,
         make: 'Royal Enfield',
@@ -176,10 +178,11 @@ const VEHICLES = [
         },
     },
     {
+        // Photo is a Honda CB100 (Honda wing + CB100 panel) — renamed from Pulsar to match.
         licensePlate: 'MH02BK1501',
         ownerEmail: `rohan.mehta${HOST_DOMAIN}`,
-        make: 'Bajaj',
-        model: 'Pulsar 150',
+        make: 'Honda',
+        model: 'CB100',
         year: 2021,
         type: 'BIKE',
         seats: 2,
@@ -189,11 +192,12 @@ const VEHICLES = [
         listing: {
             pricePerDay: 650,
             location: 'Mumbai',
-            description: 'Commuter Pulsar for city rides and short getaways. Andheri pickup.',
+            description: 'Classic Honda CB for city rides and short getaways. Andheri pickup.',
             availableDays: 75,
         },
     },
     {
+        // Official Ather Energy Unsplash shot: modern EV scooter at a charger (not retro petrol).
         licensePlate: 'KA01EV8802',
         ownerEmail: `meera.iyer${HOST_DOMAIN}`,
         make: 'Ather',
@@ -203,7 +207,7 @@ const VEHICLES = [
         seats: 2,
         fuelType: 'Electric',
         transmission: 'Automatic',
-        images: ['https://images.unsplash.com/photo-1709877809176-0819fbfdb31f?auto=format&fit=crop&w=1200&q=80'],
+        images: ['https://images.unsplash.com/photo-1623079398404-4a024f3f4aee?auto=format&fit=crop&w=1200&q=80'],
         listing: {
             pricePerDay: 700,
             location: 'Bangalore',

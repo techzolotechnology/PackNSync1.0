@@ -19,14 +19,14 @@ const CAR_FALLBACKS = [
 ];
 
 const BIKE_FALLBACKS = [
-    // Commuter / modest naked (Pulsar-style)
+    // Honda CB100-style classic commuter (matches showcase Honda CB100)
     'https://images.unsplash.com/photo-1527905890126-e4d915153e25?auto=format&fit=crop&w=900&q=80',
     // Sports / naked street bike
     'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=900&q=80',
-    // Scooter street photo (Activa-style)
+    // Honda Scoopy petrol scooter (matches showcase Honda Scoopy)
     'https://images.unsplash.com/photo-1712213248719-aade0e02a591?auto=format&fit=crop&w=900&q=80',
-    // Modern clean scooter (Ather/electric-style)
-    'https://images.unsplash.com/photo-1709877809176-0819fbfdb31f?auto=format&fit=crop&w=900&q=80',
+    // Official Ather EV scooter at charger (matches showcase Ather 450X)
+    'https://images.unsplash.com/photo-1623079398404-4a024f3f4aee?auto=format&fit=crop&w=900&q=80',
 ];
 
 const CAR_CATEGORIES = [
@@ -71,8 +71,8 @@ const BIKE_CATEGORIES = [
         accent: 'teal',
         icon: 'commuter',
         thumb: BIKE_FALLBACKS[0],
-        match: (v) => /splendor|shine|pulsar 150|unicorn|fz-s|commuter|apache 160/i.test(`${v.make} ${v.model}`)
-            || (v.type === 'BIKE' && !/classic|bullet|duke|r15|ktm|ninja|activa|jupiter|access|scooty|ather|ola/i.test(`${v.make} ${v.model}`)),
+        match: (v) => /splendor|shine|pulsar 150|cb100|cb 100|unicorn|fz-s|commuter|apache 160/i.test(`${v.make} ${v.model}`)
+            || (v.type === 'BIKE' && !/classic|bullet|duke|r15|ktm|ninja|activa|scoopy|jupiter|access|scooty|ather|ola/i.test(`${v.make} ${v.model}`)),
     },
     {
         id: 'sports',
@@ -89,7 +89,7 @@ const BIKE_CATEGORIES = [
         icon: 'scooter',
         thumb: BIKE_FALLBACKS[2],
         match: (v) => v.type === 'SCOOTER'
-            || /activa|jupiter|access|scooty|fascino|ntorq|burgman|dio/i.test(`${v.make} ${v.model}`),
+            || /activa|scoopy|jupiter|access|scooty|fascino|ntorq|burgman|dio/i.test(`${v.make} ${v.model}`),
     },
     {
         id: 'electric-bike',
