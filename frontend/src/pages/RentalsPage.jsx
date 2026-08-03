@@ -19,10 +19,14 @@ const CAR_FALLBACKS = [
 ];
 
 const BIKE_FALLBACKS = [
-    'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=900&q=80',
+    // Commuter / modest naked (Pulsar-style)
+    'https://images.unsplash.com/photo-1527905890126-e4d915153e25?auto=format&fit=crop&w=900&q=80',
+    // Sports / naked street bike
+    'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=900&q=80',
+    // Scooter street photo (Activa-style)
+    'https://images.unsplash.com/photo-1712213248719-aade0e02a591?auto=format&fit=crop&w=900&q=80',
+    // Modern clean scooter (Ather/electric-style)
+    'https://images.unsplash.com/photo-1709877809176-0819fbfdb31f?auto=format&fit=crop&w=900&q=80',
 ];
 
 const CAR_CATEGORIES = [

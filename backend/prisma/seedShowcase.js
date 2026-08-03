@@ -149,7 +149,7 @@ const VEHICLES = [
         seats: 2,
         fuelType: 'Petrol',
         transmission: 'Automatic',
-        images: ['https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=1200&q=80'],
+        images: ['https://images.unsplash.com/photo-1712213248719-aade0e02a591?auto=format&fit=crop&w=1200&q=80'],
         listing: {
             pricePerDay: 450,
             location: 'Goa',
@@ -167,7 +167,7 @@ const VEHICLES = [
         seats: 2,
         fuelType: 'Petrol',
         transmission: 'Manual',
-        images: ['https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80'],
+        images: ['https://images.unsplash.com/photo-1574929465363-f6c5990656ec?auto=format&fit=crop&w=1200&q=80'],
         listing: {
             pricePerDay: 900,
             location: 'Bangalore',
@@ -185,7 +185,7 @@ const VEHICLES = [
         seats: 2,
         fuelType: 'Petrol',
         transmission: 'Manual',
-        images: ['https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80'],
+        images: ['https://images.unsplash.com/photo-1527905890126-e4d915153e25?auto=format&fit=crop&w=1200&q=80'],
         listing: {
             pricePerDay: 650,
             location: 'Mumbai',
@@ -203,7 +203,7 @@ const VEHICLES = [
         seats: 2,
         fuelType: 'Electric',
         transmission: 'Automatic',
-        images: ['https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=1200&q=80'],
+        images: ['https://images.unsplash.com/photo-1709877809176-0819fbfdb31f?auto=format&fit=crop&w=1200&q=80'],
         listing: {
             pricePerDay: 700,
             location: 'Bangalore',
