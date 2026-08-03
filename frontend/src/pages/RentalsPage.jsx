@@ -5,6 +5,7 @@ import { rentalsApi, verificationsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { wakeApi } from '../utils/apiResilience.js';
 import './RentalsPage.css';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -196,17 +197,29 @@ export default function RentalsPage() {
     const fetchListings = async () => {
         setLoading(true);
         setLoadError('');
+        wakeApi();
+        const params = {
+            startDate,
+            endDate,
+            kind: isBike ? 'bike' : 'car',
+        };
+        if (location.trim()) params.location = location.trim();
+
+        const attempt = () => rentalsApi.getListings(params);
         try {
-            const res = await rentalsApi.getListings({
-                location,
-                startDate,
-                endDate,
-                kind: isBike ? 'bike' : 'car',
-            });
+            let res;
+            try {
+                res = await attempt();
+            } catch (firstErr) {
+                // Render cold starts often time out once — wake and retry.
+                await new Promise((r) => setTimeout(r, 1500));
+                wakeApi();
+                res = await attempt();
+            }
             setListings(res.data.data || []);
         } catch (err) {
             setListings([]);
-            setLoadError(err.response?.data?.message || 'Unable to load rental listings.');
+            setLoadError(err.response?.data?.message || 'Unable to load rental listings. Try Search again in a moment.');
         } finally {
             setLoading(false);
         }
@@ -321,8 +334,8 @@ export default function RentalsPage() {
                     </div>
                 </div>
 
-                <div className="container cr-hero-inner ps-reveal ps-left">
-                    <div className="cr-kind-toggle" role="tablist" aria-label="Rent cars or bikes">
+                <div className="container cr-hero-inner">
+                    <div className="cr-kind-toggle ps-reveal" role="tablist" aria-label="Rent cars or bikes">
                         <button
                             type="button"
                             role="tab"
@@ -330,7 +343,8 @@ export default function RentalsPage() {
                             className={!isBike ? 'active' : ''}
                             onClick={() => setKind('car')}
                         >
-                            Cars
+                            <span className="cr-kind-label">Cars</span>
+                            <small>Self-drive</small>
                         </button>
                         <button
                             type="button"
@@ -339,17 +353,21 @@ export default function RentalsPage() {
                             className={isBike ? 'active' : ''}
                             onClick={() => setKind('bike')}
                         >
-                            Bikes
+                            <span className="cr-kind-label">Bikes</span>
+                            <small>Scooters too</small>
                         </button>
                     </div>
+                    <div className="ps-reveal ps-left">
+                    <p className="cr-hero-kicker">Cars &amp; bikes from community hosts</p>
                     <h1>{isBike ? 'Bike on Rent' : 'Car on Rent'}</h1>
                     <p>
                         {isBike
-                            ? 'Self-ride bikes and scooters from community hosts — city hops, weekends, your schedule.'
-                            : 'Self-drive cars from community hosts — weekends, outer-city runs, your schedule.'}
+                            ? 'Self-ride bikes and scooters — city hops, weekends, your schedule. Switch to Cars anytime.'
+                            : 'Self-drive cars for weekends and outer-city runs. Need two wheels? Tap Bikes above.'}
                     </p>
+                    </div>
 
-                    <form className="cr-search" onSubmit={handleSearch}>
+                    <form className="cr-search ps-reveal" onSubmit={handleSearch}>
                         <label className="cr-field">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
                                 <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" stroke="currentColor" strokeWidth="1.7" />
@@ -386,6 +404,15 @@ export default function RentalsPage() {
                                     </strong>
                                 </div>
                                 <div className="cr-dual-range">
+                                    <div className="cr-range-track" aria-hidden="true">
+                                        <div
+                                            className="cr-range-fill"
+                                            style={{
+                                                left: `${((priceMin - 50) / 450) * 100}%`,
+                                                width: `${((priceMax - priceMin) / 450) * 100}%`,
+                                            }}
+                                        />
+                                    </div>
                                     <input
                                         type="range"
                                         min="50"
@@ -393,6 +420,7 @@ export default function RentalsPage() {
                                         step="10"
                                         value={priceMin}
                                         aria-label={`Minimum price ${priceScale.displayMin}`}
+                                        style={{ zIndex: priceMin > priceMax - 80 ? 5 : 3 }}
                                         onChange={(e) => setPriceMin(Math.min(Number(e.target.value), priceMax - 10))}
                                     />
                                     <input
@@ -402,17 +430,9 @@ export default function RentalsPage() {
                                         step="10"
                                         value={priceMax}
                                         aria-label={`Maximum price ${priceScale.displayMax}`}
+                                        style={{ zIndex: 4 }}
                                         onChange={(e) => setPriceMax(Math.max(Number(e.target.value), priceMin + 10))}
                                     />
-                                    <div className="cr-range-track">
-                                        <div
-                                            className="cr-range-fill"
-                                            style={{
-                                                left: `${((priceMin - 50) / 450) * 100}%`,
-                                                width: `${((priceMax - priceMin) / 450) * 100}%`,
-                                            }}
-                                        />
-                                    </div>
                                 </div>
                                 <div className="cr-slider-ends">
                                     <span>{priceScale.floor}</span>
@@ -477,9 +497,22 @@ export default function RentalsPage() {
                     </div>
                 ) : listings.length === 0 ? (
                     <div className="cr-empty">
-                        <h3>No {nounPlural} listed yet</h3>
-                        <p>Be the first host in this city, or widen your search dates.</p>
-                        <Link to="/host" className="cr-book">List your {noun}</Link>
+                        <h3>No {nounPlural} listed for these dates</h3>
+                        <p>
+                            {isBike
+                                ? 'Try another city, widen dates, or switch to Cars. You can also host your own bike.'
+                                : 'Try another city, widen dates, or switch to Bikes. You can also host your own car.'}
+                        </p>
+                        <div className="cr-empty-actions">
+                            <button
+                                type="button"
+                                className="cr-book"
+                                onClick={() => setKind(isBike ? 'car' : 'bike')}
+                            >
+                                Browse {isBike ? 'cars' : 'bikes'}
+                            </button>
+                            <Link to="/host" className="cr-host-btn">List your {noun}</Link>
+                        </div>
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="cr-empty">
@@ -555,7 +588,7 @@ export default function RentalsPage() {
             </section>
 
             <div className="container cr-host-cta ps-reveal ps-scale">
-                <Link to="/host">{isBike ? 'Host a bike' : 'Become a Host'}</Link>
+                <Link to="/host">Host a car or bike</Link>
             </div>
 
             <TermsAcceptanceModal
