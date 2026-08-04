@@ -65,7 +65,7 @@ async function main() {
     const admin = await prisma.user.create({
         data: {
             name: 'Kartik Gauttam',
-            email: 'kartikguatttam@packandsync.com',
+            email: 'pincu7707@gmail.com',
             role: 'ADMIN',
             city: 'Bangalore',
             bio: 'PackAndSync admin. Review verifications and keep the platform running.',
