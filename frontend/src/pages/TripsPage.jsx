@@ -139,7 +139,7 @@ export default function TripsPage() {
     }, [tab, user, navigate]);
 
     return (
-        <div className="tt-page page-enter" ref={motionRef}>
+        <div className="tt-page page-atmosphere page-enter" ref={motionRef}>
             <section className="tt-hero">
                 <div className="tt-hero-bg ps-parallax" aria-hidden="true">
                     <svg className="tt-waves" viewBox="0 0 1440 420" preserveAspectRatio="none">

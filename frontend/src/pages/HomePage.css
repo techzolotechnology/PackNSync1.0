@@ -6,11 +6,16 @@
 .home-welcome {
     position: relative;
     padding: clamp(1.75rem, 5vw, 3rem) 0 1rem;
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 55% 50% at 12% 0%, rgba(176, 33, 50, 0.09), transparent 58%),
-        radial-gradient(ellipse 45% 40% at 92% 18%, rgba(246, 238, 238, 0.95), transparent 55%),
-        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(253, 249, 245, 0.4), transparent 60%),
+        radial-gradient(ellipse 62% 58% at 10% -5%, rgba(176, 33, 50, 0.14), transparent 60%),
+        radial-gradient(ellipse 52% 48% at 94% 12%, rgba(246, 238, 238, 0.98), transparent 58%),
+        radial-gradient(ellipse 70% 55% at 50% 110%, rgba(253, 249, 245, 0.55), transparent 62%),
+        radial-gradient(ellipse 36% 40% at 72% 40%, rgba(232, 197, 202, 0.2), transparent 70%),
+        var(--line-pattern),
+        var(--dot-pattern),
         var(--clr-bg-800);
+    background-size: auto, auto, auto, auto, auto, 18px 18px, auto;
 }
 
 .home-welcome::before {
@@ -18,14 +23,26 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.04;
+    z-index: 0;
+    opacity: 0.07;
     background-image: var(--paper-noise);
-    background-size: 160px 160px;
+    background-size: 150px 150px;
     mix-blend-mode: multiply;
+}
+
+.home-welcome::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse 90% 70% at 50% 50%, transparent 50%, rgba(44, 36, 34, 0.03) 100%);
 }
 
 .home-welcome-inner {
     position: relative;
+    z-index: 1;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -67,8 +84,31 @@
 }
 
 .home-modules {
+    position: relative;
     padding: 1.75rem 0 2.5rem;
-    background: transparent;
+    isolation: isolate;
+    background:
+        radial-gradient(ellipse 45% 55% at 0% 40%, rgba(176, 33, 50, 0.055), transparent 62%),
+        radial-gradient(ellipse 40% 50% at 100% 60%, rgba(246, 238, 238, 0.75), transparent 58%),
+        var(--dot-pattern);
+    background-size: auto, auto, 20px 20px;
+}
+
+.home-modules::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.045;
+    background-image: var(--paper-noise);
+    background-size: 170px 170px;
+    mix-blend-mode: multiply;
+}
+
+.home-modules > .container {
+    position: relative;
+    z-index: 1;
 }
 
 .home-mode-switch {
@@ -205,11 +245,31 @@
     position: relative;
     padding: 3.5rem 0 3rem;
     border-top: 1px solid var(--clr-border);
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 40% 50% at 0% 50%, rgba(176, 33, 50, 0.04), transparent 60%),
-        radial-gradient(ellipse 35% 45% at 100% 40%, rgba(246, 238, 238, 0.7), transparent 55%),
+        radial-gradient(ellipse 48% 58% at -5% 45%, rgba(176, 33, 50, 0.09), transparent 62%),
+        radial-gradient(ellipse 42% 52% at 105% 35%, rgba(246, 238, 238, 0.9), transparent 58%),
+        radial-gradient(ellipse 50% 40% at 50% 100%, rgba(232, 197, 202, 0.14), transparent 65%),
+        var(--line-pattern),
         var(--dot-pattern);
-    background-size: auto, auto, 26px 26px;
+    background-size: auto, auto, auto, auto, 18px 18px;
+}
+
+.home-steps::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image: var(--paper-noise);
+    background-size: 160px 160px;
+    mix-blend-mode: multiply;
+}
+
+.home-steps > .container {
+    position: relative;
+    z-index: 1;
 }
 
 .home-steps::before {
@@ -299,7 +359,13 @@
 
 /* Bottom CTA */
 .home-cta {
+    position: relative;
     padding: 0.5rem 0 4rem;
+    isolation: isolate;
+    background:
+        radial-gradient(ellipse 55% 50% at 50% 80%, rgba(176, 33, 50, 0.05), transparent 65%),
+        var(--dot-pattern);
+    background-size: auto, 22px 22px;
 }
 
 .home-cta-panel {
@@ -457,6 +523,27 @@
         top: -60px;
         transform: translateX(50%);
         opacity: 0.7;
+    }
+
+    .home-welcome {
+        background:
+            radial-gradient(ellipse 55% 45% at 12% 0%, rgba(176, 33, 50, 0.09), transparent 60%),
+            radial-gradient(ellipse 45% 40% at 92% 18%, rgba(246, 238, 238, 0.9), transparent 55%),
+            var(--dot-pattern),
+            var(--clr-bg-800);
+        background-size: auto, auto, 22px 22px, auto;
+    }
+
+    .home-welcome::before,
+    .home-modules::before,
+    .home-steps::after {
+        opacity: 0.035;
+    }
+
+    .home-modules,
+    .home-steps,
+    .home-cta {
+        background-size: auto, auto, 24px 24px;
     }
 }
 

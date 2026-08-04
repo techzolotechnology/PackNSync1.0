@@ -325,7 +325,7 @@ export default function RentalsPage() {
     const nounPlural = isBike ? 'bikes' : 'cars';
 
     return (
-        <div className={`cr-page page-enter ${isBike ? 'cr-kind-bike' : 'cr-kind-car'}`} ref={motionRef}>
+        <div className={`cr-page page-atmosphere page-enter ${isBike ? 'cr-kind-bike' : 'cr-kind-car'}`} ref={motionRef}>
             <section className="cr-hero">
                 <div className="cr-hero-media ps-parallax" aria-hidden="true" />
                 <div className="cr-hero-fx" aria-hidden="true">

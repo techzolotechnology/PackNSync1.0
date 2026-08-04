@@ -2,11 +2,14 @@
     display: grid;
     grid-template-columns: minmax(340px, 460px) 1fr;
     min-height: calc(100vh - 68px);
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 40% 30% at 0% 0%, rgba(163, 29, 49, 0.06), transparent 55%),
+        radial-gradient(ellipse 48% 36% at 0% 0%, rgba(163, 29, 49, 0.1), transparent 58%),
+        radial-gradient(ellipse 40% 32% at 100% 8%, rgba(246, 238, 238, 0.9), transparent 55%),
+        var(--line-pattern),
         var(--dot-pattern),
         var(--clr-bg-800);
-    background-size: auto, 22px 22px, auto;
+    background-size: auto, auto, auto, 18px 18px, auto;
 }
 
 .explore-side {

@@ -73,12 +73,21 @@
   --shadow-glow: 0 0 28px rgba(163, 29, 49, 0.22);
   --shadow-glow-accent: 0 0 24px rgba(176, 33, 50, 0.2);
 
-  /* Atmosphere textures */
-  --paper-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
-  --dot-pattern: radial-gradient(rgba(163, 29, 49, 0.09) 1px, transparent 1.2px);
-  --wash-cream: rgba(246, 238, 238, 0.95);
-  --wash-burgundy: rgba(163, 29, 49, 0.08);
-  --hairline: rgba(163, 29, 49, 0.22);
+  /* Atmosphere textures — tuned so large cream screens feel designed, not empty */
+  --paper-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.65'/%3E%3C/svg%3E");
+  --dot-pattern: radial-gradient(rgba(163, 29, 49, 0.13) 1.05px, transparent 1.35px);
+  --line-pattern: repeating-linear-gradient(
+    -12deg,
+    transparent 0,
+    transparent 11px,
+    rgba(163, 29, 49, 0.035) 11px,
+    rgba(163, 29, 49, 0.035) 12px
+  );
+  --wash-cream: rgba(246, 238, 238, 0.98);
+  --wash-burgundy: rgba(163, 29, 49, 0.12);
+  --wash-burgundy-soft: rgba(163, 29, 49, 0.06);
+  --hairline: rgba(163, 29, 49, 0.24);
+  --vignette: radial-gradient(ellipse 78% 72% at 50% 42%, transparent 42%, rgba(44, 36, 34, 0.055) 100%);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -106,12 +115,18 @@ body {
   font-family: var(--font-sans);
   background-color: var(--clr-bg-800);
   background-image:
-    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 255, 255, 0.72), transparent 58%),
-    radial-gradient(ellipse 50% 42% at 8% 8%, var(--wash-burgundy), transparent 55%),
-    radial-gradient(ellipse 45% 38% at 96% 12%, var(--wash-cream), transparent 52%),
-    radial-gradient(ellipse 55% 40% at 80% 85%, rgba(163, 29, 49, 0.045), transparent 60%),
+    radial-gradient(ellipse 85% 60% at 50% -8%, rgba(255, 254, 251, 0.88), transparent 62%),
+    radial-gradient(ellipse 58% 48% at 6% 6%, var(--wash-burgundy), transparent 58%),
+    radial-gradient(ellipse 52% 44% at 96% 10%, var(--wash-cream), transparent 55%),
+    radial-gradient(ellipse 48% 42% at 18% 72%, var(--wash-burgundy-soft), transparent 62%),
+    radial-gradient(ellipse 60% 48% at 88% 88%, rgba(163, 29, 49, 0.07), transparent 58%),
+    radial-gradient(ellipse 40% 36% at 55% 48%, rgba(232, 197, 202, 0.18), transparent 70%),
+    var(--line-pattern),
     var(--dot-pattern);
-  background-size: auto, auto, auto, auto, 22px 22px;
+  background-size:
+    auto, auto, auto, auto, auto, auto,
+    auto,
+    20px 20px;
   background-attachment: fixed;
   color: var(--clr-text-primary);
   line-height: 1.6;
@@ -123,18 +138,28 @@ body {
   position: relative;
 }
 
-/* Global paper grain — behind UI so large cream surfaces don't feel empty */
+/* Global paper grain — stronger so cream voids read as paper, not flat paint */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.045;
+  opacity: 0.078;
   background-image: var(--paper-noise);
   background-repeat: repeat;
-  background-size: 180px 180px;
+  background-size: 160px 160px;
   mix-blend-mode: multiply;
+}
+
+/* Soft edge vignette — frames the viewport without darkening content */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--vignette);
 }
 
 #root {
@@ -566,7 +591,8 @@ h1 {
   color: var(--clr-text-primary);
 }
 
-/* Decorative helpers for section bands / heroes */
+/* Decorative helpers for section bands / heroes
+   Uses z-index: -1 so absolute children (auth deco, glows) stay intact */
 .page-atmosphere {
   position: relative;
   isolation: isolate;
@@ -577,18 +603,29 @@ h1 {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background:
-    radial-gradient(ellipse 48% 55% at 8% 20%, var(--wash-burgundy), transparent 60%),
-    radial-gradient(ellipse 42% 50% at 94% 30%, var(--wash-cream), transparent 58%),
+    radial-gradient(ellipse 56% 62% at 4% 12%, var(--wash-burgundy), transparent 62%),
+    radial-gradient(ellipse 50% 55% at 96% 22%, var(--wash-cream), transparent 60%),
+    radial-gradient(ellipse 44% 40% at 70% 88%, var(--wash-burgundy-soft), transparent 65%),
+    radial-gradient(ellipse 36% 34% at 28% 78%, rgba(232, 197, 202, 0.22), transparent 68%),
+    var(--line-pattern),
     var(--dot-pattern);
-  background-size: auto, auto, 24px 24px;
-  opacity: 0.9;
+  background-size: auto, auto, auto, auto, auto, 18px 18px;
+  opacity: 1;
 }
 
-.page-atmosphere > * {
-  position: relative;
-  z-index: 1;
+.page-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.055;
+  background-image: var(--paper-noise);
+  background-repeat: repeat;
+  background-size: 150px 150px;
+  mix-blend-mode: multiply;
 }
 
 .section-accent {
@@ -640,6 +677,39 @@ h1 {
   .btn {
     white-space: normal;
     text-align: center;
+  }
+
+  /* Dial back atmosphere on small screens — keep cream calm */
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 254, 251, 0.75), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 8% 8%, var(--wash-burgundy-soft), transparent 58%),
+      radial-gradient(ellipse 45% 36% at 94% 12%, var(--wash-cream), transparent 55%),
+      var(--dot-pattern);
+    background-size: auto, auto, auto, 24px 24px;
+    background-attachment: scroll;
+  }
+
+  body::before {
+    opacity: 0.04;
+    background-size: 200px 200px;
+  }
+
+  body::after {
+    opacity: 0.55;
+  }
+
+  .page-atmosphere::before {
+    background:
+      radial-gradient(ellipse 50% 48% at 8% 18%, var(--wash-burgundy-soft), transparent 62%),
+      radial-gradient(ellipse 44% 42% at 94% 28%, var(--wash-cream), transparent 58%),
+      var(--dot-pattern);
+    background-size: auto, auto, 22px 22px;
+    opacity: 0.85;
+  }
+
+  .page-atmosphere::after {
+    opacity: 0.03;
   }
 }
 

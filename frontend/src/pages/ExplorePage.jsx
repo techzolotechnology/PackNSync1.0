@@ -247,7 +247,7 @@ export default function ExplorePage() {
     };
 
     return (
-        <div className="explore-page page-enter" ref={motionRef}>
+        <div className="explore-page page-atmosphere page-enter" ref={motionRef}>
             <aside className="explore-side">
                 <div className="explore-mode-tabs ps-reveal">
                     <button

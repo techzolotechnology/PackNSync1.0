@@ -249,7 +249,7 @@ export default function CreateTripPage() {
     const joinLabel = JOIN_OPTIONS.find((o) => o.id === form.joinMode)?.label || 'Everyone';
 
     return (
-        <div className="create-trip-page page-enter">
+        <div className="create-trip-page page-atmosphere page-enter">
             <div className="create-glow" aria-hidden="true" />
             <div className="create-shell">
                 <header className="create-hero">

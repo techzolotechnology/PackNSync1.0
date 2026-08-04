@@ -187,7 +187,7 @@ export default function WalletPage() {
 
     if (!user) {
         return (
-            <div className="wallet-page">
+            <div className="wallet-page page-atmosphere">
                 <p>
                     Please{' '}
                     <button type="button" className="wallet-linkish" onClick={() => openAuth('login')}>
@@ -200,7 +200,7 @@ export default function WalletPage() {
     }
 
     return (
-        <div className="wallet-page">
+        <div className="wallet-page page-atmosphere">
             <header className="wallet-header">
                 <div>
                     <p className="wallet-eyebrow">PackAndSync</p>

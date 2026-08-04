@@ -5,12 +5,15 @@
     /* Keep x clipped for glow bleed; y must stay visible so place suggestions aren't cut off */
     overflow-x: clip;
     overflow-y: visible;
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 55% 35% at 85% 0%, rgba(163, 29, 49, 0.12), transparent 55%),
-        radial-gradient(ellipse 45% 30% at 5% 25%, rgba(163, 29, 49, 0.1), transparent 50%),
+        radial-gradient(ellipse 58% 40% at 88% -5%, rgba(163, 29, 49, 0.15), transparent 58%),
+        radial-gradient(ellipse 48% 36% at 4% 22%, rgba(163, 29, 49, 0.12), transparent 55%),
+        radial-gradient(ellipse 40% 34% at 50% 90%, rgba(232, 197, 202, 0.16), transparent 62%),
+        var(--line-pattern),
         var(--dot-pattern),
         var(--clr-bg-800);
-    background-size: auto, auto, 24px 24px, auto;
+    background-size: auto, auto, auto, auto, 18px 18px, auto;
 }
 
 .create-glow {

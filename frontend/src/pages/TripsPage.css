@@ -16,12 +16,14 @@
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 55% 70% at 78% 42%, rgba(246, 238, 238, 0.85), transparent 58%),
-        radial-gradient(ellipse 40% 55% at 88% 55%, rgba(163, 29, 49, 0.12), transparent 55%),
-        radial-gradient(ellipse 50% 60% at 18% 55%, rgba(163, 29, 49, 0.06), transparent 60%),
+        radial-gradient(ellipse 60% 75% at 78% 42%, rgba(246, 238, 238, 0.92), transparent 58%),
+        radial-gradient(ellipse 48% 60% at 90% 52%, rgba(163, 29, 49, 0.16), transparent 58%),
+        radial-gradient(ellipse 55% 65% at 14% 55%, rgba(163, 29, 49, 0.09), transparent 62%),
+        radial-gradient(ellipse 36% 40% at 40% 20%, rgba(232, 197, 202, 0.18), transparent 68%),
+        var(--line-pattern),
         var(--dot-pattern),
         linear-gradient(180deg, var(--clr-bg-800) 0%, var(--clr-bg-800) 72%, var(--clr-bg-800) 100%);
-    background-size: auto, auto, auto, 24px 24px, auto;
+    background-size: auto, auto, auto, auto, auto, 18px 18px, auto;
 }
 
 .tt-hero-bg::after {

@@ -1,15 +1,30 @@
 .footer {
     position: relative;
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 50% 80% at 10% 0%, rgba(176, 33, 50, 0.05), transparent 60%),
-        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(246, 238, 238, 0.9), transparent 55%),
+        radial-gradient(ellipse 55% 85% at 8% 0%, rgba(176, 33, 50, 0.09), transparent 62%),
+        radial-gradient(ellipse 48% 70% at 92% 100%, rgba(246, 238, 238, 0.95), transparent 58%),
+        radial-gradient(ellipse 40% 50% at 50% 50%, rgba(232, 197, 202, 0.1), transparent 70%),
+        var(--line-pattern),
         var(--dot-pattern),
-        transparent;
-    background-size: auto, auto, 28px 28px, auto;
+        var(--clr-bg-900);
+    background-size: auto, auto, auto, auto, 18px 18px, auto;
     border-top: 1px solid var(--clr-border);
     padding: var(--space-16) 0 var(--space-8);
     margin-top: var(--space-12);
     box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image: var(--paper-noise);
+    background-size: 160px 160px;
+    mix-blend-mode: multiply;
 }
 
 .footer::before {
@@ -24,6 +39,8 @@
 }
 
 .footer-grid {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 2fr;
     gap: var(--space-12);
@@ -96,6 +113,8 @@
 }
 
 .footer-bottom {
+    position: relative;
+    z-index: 1;
     padding-top: var(--space-8);
     border-top: 1px solid var(--clr-border);
     display: flex;

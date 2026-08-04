@@ -2,13 +2,44 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255, 249, 245, 0.88);
+    background:
+        linear-gradient(180deg, rgba(255, 254, 251, 0.92) 0%, rgba(255, 249, 245, 0.86) 100%);
     backdrop-filter: blur(18px) saturate(1.12);
     border-bottom: 1px solid var(--clr-border);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
 }
 
+.navbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.04;
+    background-image: var(--paper-noise);
+    background-size: 180px 180px;
+    mix-blend-mode: multiply;
+}
+
+.navbar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    background-image: var(--dot-pattern);
+    background-size: 20px 20px;
+}
+
+.navbar > * {
+    position: relative;
+    z-index: 1;
+}
+
 .navbar-inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;

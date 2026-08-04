@@ -68,7 +68,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="home page-enter" ref={motionRef}>
+        <div className="home page-atmosphere page-enter" ref={motionRef}>
             <section className="home-welcome">
                 <div className="container home-welcome-inner">
                     <div className="home-welcome-copy ps-reveal ps-left">

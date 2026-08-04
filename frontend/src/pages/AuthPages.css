@@ -11,10 +11,15 @@
     display: flex;
     position: relative;
     overflow: auto;
+    isolation: isolate;
     background:
-        radial-gradient(ellipse 50% 42% at 8% 0%, rgba(176, 33, 50, 0.1), transparent 58%),
-        radial-gradient(ellipse 42% 38% at 100% 100%, rgba(246, 238, 238, 0.9), transparent 55%),
+        radial-gradient(ellipse 58% 48% at 6% -5%, rgba(176, 33, 50, 0.14), transparent 60%),
+        radial-gradient(ellipse 48% 42% at 100% 100%, rgba(246, 238, 238, 0.95), transparent 58%),
+        radial-gradient(ellipse 40% 36% at 70% 20%, rgba(232, 197, 202, 0.18), transparent 65%),
+        var(--line-pattern),
+        var(--dot-pattern),
         var(--auth-canvas);
+    background-size: auto, auto, auto, auto, 18px 18px, auto;
 }
 
 .auth-page::before {
@@ -22,10 +27,20 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.035;
+    z-index: 0;
+    opacity: 0.065;
     background-image: var(--paper-noise);
-    background-size: 180px 180px;
+    background-size: 160px 160px;
     mix-blend-mode: multiply;
+}
+
+.auth-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse 80% 70% at 50% 40%, transparent 45%, rgba(44, 36, 34, 0.045) 100%);
 }
 
 .auth-panel {

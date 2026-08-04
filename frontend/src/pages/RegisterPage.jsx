@@ -85,7 +85,7 @@ export default function RegisterPage() {
     const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
     return (
-        <div className="auth-page page-enter">
+        <div className="auth-page page-atmosphere page-enter">
             <svg className="auth-deco auth-deco-a" viewBox="0 0 140 70" fill="none" aria-hidden="true">
                 <path d="M8 48 C40 18, 80 58, 122 22" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 5" />
                 <path d="M116 18 L128 24 L118 30 Z" fill="currentColor" />
