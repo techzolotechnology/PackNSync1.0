@@ -17,6 +17,7 @@
         "db:seed": "node prisma/seed.js",
         "db:seed:showcase": "node prisma/seedShowcase.js",
         "db:seed:showcase:remove": "node prisma/seedShowcase.js --remove",
+        "admin:upsert": "node scripts/upsert_admin_user.js",
         "test": "vitest run"
     },
     "dependencies": {
