@@ -39,7 +39,7 @@
 
 .location-autocomplete-input:focus {
     border-color: var(--clr-primary-500);
-    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.18);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
 }
 
 .location-autocomplete-loading {
@@ -50,7 +50,7 @@
     height: 14px;
     margin-top: -7px;
     border-radius: 50%;
-    border: 2px solid rgba(163, 29, 49, 0.25);
+    border: 2px solid rgba(0, 123, 255, 0.25);
     border-top-color: var(--clr-primary-500);
     animation: loc-spin 0.7s linear infinite;
 }
@@ -105,6 +105,6 @@
 
 .location-suggestion-item:hover,
 .location-suggestion-item:focus {
-    background: rgba(163, 29, 49, 0.08);
+    background: rgba(0, 123, 255, 0.08);
     outline: none;
 }

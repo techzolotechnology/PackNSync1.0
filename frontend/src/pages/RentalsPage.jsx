@@ -164,12 +164,12 @@ export default function RentalsPage() {
     const isBike = kind === 'bike';
 
     const [listings, setListings] = useState([]);
-    const [location, setLocation] = useState('');
-    const [startDate, setStartDate] = useState(today);
+    const [location, setLocation] = useState(() => searchParams.get('location') || '');
+    const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || today);
     const [endDate, setEndDate] = useState(tomorrow);
     const [priceMin, setPriceMin] = useState(50);
     const [priceMax, setPriceMax] = useState(500);
-    const [category, setCategory] = useState('');
+    const [category, setCategory] = useState(() => searchParams.get('category') || '');
     const [sortBy, setSortBy] = useState('price');
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');

@@ -1,8 +1,8 @@
 .privacy-page {
     padding: var(--space-16) 0;
     background:
-        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(246, 238, 238, 0.55), transparent 55%),
-        radial-gradient(ellipse 40% 30% at 100% 10%, rgba(196, 90, 102, 0.2), transparent 50%),
+        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(239, 246, 255, 0.55), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 100% 10%, rgba(59, 158, 255, 0.2), transparent 50%),
         var(--clr-bg-800);
 }
 

@@ -2,11 +2,10 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background:
-        linear-gradient(180deg, rgba(255, 254, 251, 0.92) 0%, rgba(255, 249, 245, 0.86) 100%);
-    backdrop-filter: blur(18px) saturate(1.12);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(18px) saturate(1.08);
     border-bottom: 1px solid var(--clr-border);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 4px 18px rgba(15, 23, 42, 0.04);
 }
 
 .navbar::before {
@@ -89,7 +88,7 @@
 }
 
 .nav-link.active {
-    color: var(--clr-primary-700);
+    color: var(--clr-primary-500);
     background: transparent;
     border-radius: 0;
     box-shadow: inset 0 -2px 0 var(--clr-primary-500);
@@ -108,7 +107,7 @@
     border-radius: 999px !important;
     background: var(--clr-primary-500) !important;
     color: #ffffff !important;
-    box-shadow: 0 8px 18px rgba(163, 29, 49, 0.28) !important;
+    box-shadow: 0 8px 18px rgba(0, 123, 255, 0.28) !important;
 }
 
 .nav-auth-sync:hover {
@@ -151,10 +150,10 @@
 }
 
 .nav-wallet.active {
-    border-color: rgba(163, 29, 49, 0.4);
-    background: rgba(163, 29, 49, 0.08);
+    border-color: rgba(0, 123, 255, 0.4);
+    background: rgba(0, 123, 255, 0.08);
     color: var(--clr-primary-700);
-    box-shadow: inset 0 0 0 1px rgba(163, 29, 49, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(0, 123, 255, 0.1);
 }
 
 .nav-wallet-icon {
@@ -164,7 +163,7 @@
     width: 1.55rem;
     height: 1.55rem;
     border-radius: 0.4rem;
-    background: linear-gradient(135deg, rgba(232, 197, 202, 0.7), rgba(163, 29, 49, 0.18));
+    background: linear-gradient(135deg, rgba(191, 219, 254, 0.7), rgba(0, 123, 255, 0.18));
     color: var(--clr-primary-700);
     flex-shrink: 0;
 }
@@ -206,7 +205,7 @@
     white-space: nowrap;
     background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700)) !important;
     border: none !important;
-    box-shadow: 0 8px 20px rgba(163, 29, 49, 0.32) !important;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.32) !important;
     color: #ffffff !important;
 }
 
@@ -479,7 +478,7 @@
 }
 
 .notif-item.unread {
-    background: rgba(163, 29, 49, 0.06);
+    background: rgba(0, 123, 255, 0.06);
 }
 
 .notif-title {

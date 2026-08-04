@@ -89,8 +89,8 @@ export default function TripsPage() {
 
     const [trips, setTrips] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('');
+    const [search, setSearch] = useState(() => searchParams.get('q') || '');
+    const [status, setStatus] = useState(() => searchParams.get('status') || '');
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
     const motionRef = useRef(null);

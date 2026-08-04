@@ -2,8 +2,8 @@
     --auth-navy: #1f1f1f;
     --auth-slate: #666666;
     --auth-mist: #8a8a8a;
-    --auth-wash: #f6eeee;
-    --auth-maroon: #b02132;
+    --auth-wash: #eff6ff;
+    --auth-maroon: #0066d6;
 
     position: fixed;
     inset: 0;
@@ -19,7 +19,7 @@
     inset: 0;
     border: 0;
     background:
-        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(176, 33, 50, 0.18), transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(0, 123, 255, 0.18), transparent 70%),
         rgba(20, 12, 14, 0.52);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -34,15 +34,15 @@
     overflow: auto;
     padding: 2rem 1.85rem 1.85rem;
     border-radius: 1.5rem;
-    border: 1px solid rgba(176, 33, 50, 0.18);
+    border: 1px solid rgba(0, 123, 255, 0.18);
     background:
-        radial-gradient(ellipse 90% 55% at 12% -10%, rgba(176, 33, 50, 0.08), transparent 55%),
-        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(246, 238, 238, 0.9), transparent 50%),
-        linear-gradient(165deg, #fffefb 0%, var(--auth-wash) 100%);
+        radial-gradient(ellipse 90% 55% at 12% -10%, rgba(0, 123, 255, 0.08), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(239, 246, 255, 0.9), transparent 50%),
+        linear-gradient(165deg, #ffffff 0%, var(--auth-wash) 100%);
     box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.85) inset,
         0 28px 64px rgba(31, 31, 31, 0.22),
-        0 8px 24px rgba(176, 33, 50, 0.1);
+        0 8px 24px rgba(0, 123, 255, 0.1);
     isolation: isolate;
 }
 
@@ -53,7 +53,7 @@
     right: -70px;
     bottom: -80px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(176, 33, 50, 0.14), transparent 68%);
+    background: radial-gradient(circle, rgba(0, 123, 255, 0.14), transparent 68%);
     pointer-events: none;
     z-index: 0;
 }
@@ -67,9 +67,9 @@
     height: 2.1rem;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(176, 33, 50, 0.2);
+    border: 1px solid rgba(0, 123, 255, 0.2);
     border-radius: 999px;
-    background: rgba(255, 254, 251, 0.85);
+    background: rgba(255, 255, 255, 0.85);
     color: var(--auth-slate);
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
@@ -78,7 +78,7 @@
 .auth-modal-close:hover {
     background: #fff;
     color: var(--auth-maroon);
-    border-color: rgba(176, 33, 50, 0.4);
+    border-color: rgba(0, 123, 255, 0.4);
 }
 
 .auth-modal-brand {
@@ -100,7 +100,7 @@
 
 .auth-modal-header h2 {
     margin: 0 0 0.5rem;
-    font-family: var(--font-display, 'Playfair Display', Georgia, serif);
+    font-family: var(--font-display, var(--font-display));
     font-size: clamp(1.85rem, 4.2vw, 2.25rem);
     font-weight: 700;
     letter-spacing: -0.025em;
@@ -123,7 +123,7 @@
     display: flex;
     gap: 1.35rem;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(176, 33, 50, 0.14);
+    border-bottom: 1px solid rgba(0, 123, 255, 0.14);
 }
 
 .auth-modal-switch button {
@@ -187,8 +187,8 @@
     width: 100%;
     min-height: 3rem;
     padding: 0.75rem 1rem;
-    background: rgba(255, 254, 251, 0.9);
-    border: 1px solid rgba(176, 33, 50, 0.18);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 123, 255, 0.18);
     border-radius: 0.9rem;
     color: var(--auth-navy);
     font: inherit;
@@ -204,7 +204,7 @@
     outline: none;
     background: #fff;
     border-color: var(--auth-maroon);
-    box-shadow: 0 0 0 3px rgba(176, 33, 50, 0.14);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.14);
 }
 
 .auth-modal-main {
@@ -220,14 +220,14 @@
     font-size: 0.98rem;
     letter-spacing: 0.01em;
     cursor: pointer;
-    box-shadow: 0 10px 28px rgba(176, 33, 50, 0.28);
+    box-shadow: 0 10px 28px rgba(0, 123, 255, 0.28);
     transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .auth-modal-main:hover:not(:disabled) {
     filter: brightness(1.06);
     transform: translateY(-1px);
-    box-shadow: 0 14px 32px rgba(176, 33, 50, 0.34);
+    box-shadow: 0 14px 32px rgba(0, 123, 255, 0.34);
 }
 
 .auth-modal-main:disabled {
@@ -284,8 +284,8 @@
     min-width: 0;
     height: 3.4rem;
     border-radius: 0.85rem;
-    border: 1.5px solid rgba(176, 33, 50, 0.22);
-    background: rgba(255, 254, 251, 0.95);
+    border: 1.5px solid rgba(0, 123, 255, 0.22);
+    background: rgba(255, 255, 255, 0.95);
     color: var(--auth-navy);
     text-align: center;
     font-size: 1.35rem;
@@ -299,7 +299,7 @@
 }
 
 .auth-otp-cell:hover:not(:disabled) {
-    border-color: rgba(176, 33, 50, 0.45);
+    border-color: rgba(0, 123, 255, 0.45);
     background: #fff;
 }
 
@@ -307,7 +307,7 @@
     outline: none;
     background: #fff;
     border-color: var(--auth-maroon);
-    box-shadow: 0 0 0 3px rgba(176, 33, 50, 0.16);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.16);
 }
 
 .auth-otp-cell:disabled {

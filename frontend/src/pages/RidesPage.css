@@ -201,8 +201,8 @@
 .provider-message {
     margin: 0 0 var(--space-8);
     padding: var(--space-4);
-    background: rgba(163, 29, 49, 0.1);
-    border: 1px solid rgba(163, 29, 49, 0.25);
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.25);
     border-radius: var(--radius-md);
     color: var(--clr-warning);
     line-height: 1.5;

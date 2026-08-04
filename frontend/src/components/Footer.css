@@ -2,9 +2,9 @@
     position: relative;
     isolation: isolate;
     background:
-        radial-gradient(ellipse 55% 85% at 8% 0%, rgba(176, 33, 50, 0.09), transparent 62%),
-        radial-gradient(ellipse 48% 70% at 92% 100%, rgba(246, 238, 238, 0.95), transparent 58%),
-        radial-gradient(ellipse 40% 50% at 50% 50%, rgba(232, 197, 202, 0.1), transparent 70%),
+        radial-gradient(ellipse 55% 85% at 8% 0%, rgba(0, 123, 255, 0.09), transparent 62%),
+        radial-gradient(ellipse 48% 70% at 92% 100%, rgba(239, 246, 255, 0.95), transparent 58%),
+        radial-gradient(ellipse 40% 50% at 50% 50%, rgba(191, 219, 254, 0.1), transparent 70%),
         var(--line-pattern),
         var(--dot-pattern),
         var(--clr-bg-900);

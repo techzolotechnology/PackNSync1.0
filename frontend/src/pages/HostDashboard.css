@@ -1,8 +1,8 @@
 .host-page {
     min-height: calc(100vh - 72px);
     background:
-        radial-gradient(ellipse 70% 40% at 10% 0%, rgba(163, 29, 49, 0.08), transparent 55%),
-        radial-gradient(ellipse 50% 35% at 90% 10%, rgba(163, 29, 49, 0.06), transparent 50%),
+        radial-gradient(ellipse 70% 40% at 10% 0%, rgba(0, 123, 255, 0.08), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 90% 10%, rgba(0, 123, 255, 0.06), transparent 50%),
         var(--clr-bg-800);
     padding: 2.5rem 0 4rem;
 }
@@ -21,7 +21,7 @@
 
 .host-header h1 {
     margin: 0;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 4vw, 2.75rem);
     font-weight: 700;
     color: var(--clr-text-primary);
@@ -46,7 +46,7 @@
     font-size: 0.95rem;
     cursor: pointer;
     transition: filter 0.15s ease, transform 0.15s ease;
-    box-shadow: 0 6px 20px rgba(163, 29, 49, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
 }
 
 .host-add-btn:hover {
@@ -58,15 +58,15 @@
     margin-bottom: 1.25rem;
     padding: 0.9rem 1.1rem;
     border-radius: 12px;
-    background: rgba(163, 29, 49, 0.08);
-    border: 1px solid rgba(163, 29, 49, 0.25);
+    background: rgba(0, 123, 255, 0.08);
+    border: 1px solid rgba(0, 123, 255, 0.25);
     color: var(--clr-text-secondary);
     font-size: 0.92rem;
 }
 
 .host-banner.warn {
-    background: rgba(163, 29, 49, 0.1);
-    border-color: rgba(163, 29, 49, 0.35);
+    background: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.35);
     color: var(--clr-primary-500);
 }
 
@@ -124,7 +124,7 @@
 
 .host-v-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(163, 29, 49, 0.35);
+    border-color: rgba(0, 123, 255, 0.35);
 }
 
 .host-v-top {
@@ -185,8 +185,8 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--clr-primary-700);
-    background: rgba(163, 29, 49, 0.12);
-    border: 1px solid rgba(163, 29, 49, 0.28);
+    background: rgba(0, 123, 255, 0.12);
+    border: 1px solid rgba(0, 123, 255, 0.28);
 }
 
 .host-type-chips {
@@ -197,7 +197,7 @@
 }
 
 .host-type-chip {
-    border: 1px solid rgba(163, 29, 49, 0.28);
+    border: 1px solid rgba(0, 123, 255, 0.28);
     background: rgba(244, 244, 255, 0.8);
     color: var(--clr-text-secondary);
     border-radius: 999px;
@@ -278,7 +278,7 @@
 }
 
 .host-v-action:hover {
-    border-color: rgba(163, 29, 49, 0.5);
+    border-color: rgba(0, 123, 255, 0.5);
     color: var(--clr-primary-500);
 }
 
@@ -350,7 +350,7 @@
 .host-empty h3 {
     margin: 0 0 0.4rem;
     color: var(--clr-text-primary);
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
 }
 
 .host-empty .host-add-btn {
@@ -380,7 +380,7 @@
 
 .modal-content h3 {
     margin: 0;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
     color: var(--clr-text-primary);
 }
 

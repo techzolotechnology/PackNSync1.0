@@ -2,8 +2,8 @@
     min-height: calc(100vh - 72px);
     padding: 2.5rem 0 4rem;
     background:
-        radial-gradient(ellipse 65% 40% at 15% 0%, rgba(163, 29, 49, 0.1), transparent 55%),
-        radial-gradient(ellipse 50% 35% at 85% 8%, rgba(163, 29, 49, 0.07), transparent 50%),
+        radial-gradient(ellipse 65% 40% at 15% 0%, rgba(0, 123, 255, 0.1), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 85% 8%, rgba(0, 123, 255, 0.07), transparent 50%),
         var(--dot-pattern),
         var(--clr-bg-800);
     background-size: auto, auto, 24px 24px, auto;
@@ -44,7 +44,7 @@
     background: linear-gradient(135deg, var(--clr-primary-400) 0%, var(--clr-primary-700) 100%);
     display: grid;
     place-items: center;
-    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
 }
 
 .pf-avatar img {
@@ -101,7 +101,7 @@
 
 .pf-title-row h1 {
     margin: 0;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
     font-size: clamp(1.7rem, 3vw, 2.2rem);
     font-weight: 700;
     color: var(--clr-text-primary);
@@ -131,7 +131,7 @@
 }
 
 .pf-badge.role {
-    background: rgba(163, 29, 49, 0.06);
+    background: rgba(0, 123, 255, 0.06);
     color: var(--clr-text-secondary);
     border: 1px solid var(--clr-border);
 }
@@ -143,9 +143,9 @@
 }
 
 .pf-badge.role.organizer {
-    background: rgba(163, 29, 49, 0.12);
+    background: rgba(0, 123, 255, 0.12);
     color: var(--clr-primary-500);
-    border-color: rgba(163, 29, 49, 0.3);
+    border-color: rgba(0, 123, 255, 0.3);
 }
 
 .pf-bio {
@@ -189,7 +189,7 @@
 .pf-btn.primary {
     background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
     color: #ffffff;
-    box-shadow: 0 6px 20px rgba(163, 29, 49, 0.35);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.35);
 }
 
 .pf-btn.primary:hover {
@@ -203,7 +203,7 @@
 }
 
 .pf-btn.ghost:hover {
-    border-color: rgba(163, 29, 49, 0.45);
+    border-color: rgba(0, 123, 255, 0.45);
     color: var(--clr-primary-500);
 }
 
@@ -269,8 +269,8 @@
 .pf-edit textarea:focus,
 .pf-edit select:focus {
     outline: none;
-    border-color: rgba(163, 29, 49, 0.55);
-    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.12);
+    border-color: rgba(0, 123, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
 }
 
 .pf-chip-field {
@@ -310,8 +310,8 @@
 }
 
 .pf-chips button.on {
-    background: rgba(163, 29, 49, 0.16);
-    border-color: rgba(163, 29, 49, 0.55);
+    background: rgba(0, 123, 255, 0.16);
+    border-color: rgba(0, 123, 255, 0.55);
     color: var(--clr-primary-500);
 }
 
@@ -327,7 +327,7 @@
     gap: 0.15rem;
     padding: 0.65rem 0.75rem;
     border-radius: 12px;
-    background: rgba(163, 29, 49, 0.06);
+    background: rgba(0, 123, 255, 0.06);
     border: 1px solid var(--clr-border);
 }
 
@@ -374,8 +374,8 @@
 .pf-tags span {
     padding: 0.3rem 0.7rem;
     border-radius: 999px;
-    background: rgba(163, 29, 49, 0.1);
-    border: 1px solid rgba(163, 29, 49, 0.25);
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.25);
     color: var(--clr-primary-700);
     font-size: 0.8rem;
     font-weight: 600;
@@ -421,7 +421,7 @@
 
 .pf-section-head h2 {
     margin: 0;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
     font-size: clamp(1.4rem, 2.5vw, 1.75rem);
     color: var(--clr-text-primary);
 }
@@ -464,7 +464,7 @@
 
 .pf-trip-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(163, 29, 49, 0.4);
+    border-color: rgba(0, 123, 255, 0.4);
 }
 
 .pf-trip-media {
@@ -526,7 +526,7 @@
 .pf-empty h3 {
     margin: 0 0 0.4rem;
     color: var(--clr-text-primary);
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
 }
 
 .pf-empty .pf-btn {
