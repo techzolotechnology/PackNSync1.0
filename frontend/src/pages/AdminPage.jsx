@@ -19,6 +19,15 @@ const BOOKING_STATUSES = ['PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED', 'PAID
 const TRIP_STATUSES = ['DRAFT', 'OPEN', 'FULL', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
 const MEMBER_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'LEFT'];
 
+function statusBadgeClass(status) {
+    const s = String(status || '').toUpperCase();
+    if (['PENDING', 'DRAFT', 'NO'].includes(s)) return 'badge-warning';
+    if (['VERIFIED', 'APPROVED', 'CONFIRMED', 'PAID', 'SUCCEEDED', 'OPEN', 'YES', 'ACTIVE'].includes(s)) return 'badge-success';
+    if (['REJECTED', 'CANCELLED', 'REFUNDED', 'BANNED', 'LEFT'].includes(s)) return 'badge-danger';
+    if (['FULL', 'IN_PROGRESS'].includes(s)) return 'badge-info';
+    return 'badge-neutral';
+}
+
 export default function AdminPage() {
     const [tab, setTab] = useState('Overview');
     const [stats, setStats] = useState(null);
@@ -464,7 +473,7 @@ export default function AdminPage() {
                                 <button type="button" className={trustSub === 'vehicles' ? 'active' : ''} onClick={() => setTrustSub('vehicles')}>Vehicle RC</button>
                             </div>
                             {trustSub === 'kyc' && (
-                                <select className="form-input" value={kycFilter} onChange={(e) => setKycFilter(e.target.value)} style={{ maxWidth: 200 }}>
+                                <select className="form-input admin-filter-select" value={kycFilter} onChange={(e) => setKycFilter(e.target.value)} style={{ maxWidth: 200 }}>
                                     <option value="PENDING">Pending</option>
                                     <option value="VERIFIED">Verified</option>
                                     <option value="REJECTED">Rejected</option>
@@ -487,7 +496,7 @@ export default function AdminPage() {
                                                         <td>{v.user?.name}<br /><small>{v.user?.email || v.user?.phoneNumber}</small></td>
                                                         <td>{v.documentType}</td>
                                                         <td>{v.documentNumber || v.digiLockerId || '—'}</td>
-                                                        <td><span className={`badge ${v.status === 'VERIFIED' ? 'badge-info' : v.status === 'REJECTED' ? 'badge-danger' : 'badge-neutral'}`}>{v.status}</span></td>
+                                                        <td><span className={`badge ${statusBadgeClass(v.status)}`}>{v.status}</span></td>
                                                         <td>{format(new Date(v.createdAt), 'MMM d, yyyy')}</td>
                                                         <td className="admin-actions">
                                                             {v.status === 'PENDING' && (
@@ -516,7 +525,7 @@ export default function AdminPage() {
                                                     <td>{v.owner?.name}</td>
                                                     <td>{v.licensePlate}</td>
                                                     <td>{v.rcUrl ? 'Submitted' : '—'}</td>
-                                                    <td><span className={`badge ${v.isVerified ? 'badge-info' : 'badge-neutral'}`}>{v.isVerified ? 'Yes' : 'No'}</span></td>
+                                                    <td><span className={`badge ${statusBadgeClass(v.isVerified ? 'Yes' : 'No')}`}>{v.isVerified ? 'Yes' : 'No'}</span></td>
                                                     <td className="admin-actions">
                                                         {!v.isVerified ? (
                                                             <>
@@ -583,7 +592,7 @@ export default function AdminPage() {
                                                     <td><small>{h.email || h.phoneNumber || '—'}</small></td>
                                                     <td>{h.role}</td>
                                                     <td>{h._count?.organizedTrips ?? 0}</td>
-                                                    <td><span className={`badge ${h.isBanned ? 'badge-danger' : 'badge-info'}`}>{h.isBanned ? 'Banned' : 'Active'}</span></td>
+                                                    <td><span className={`badge ${h.isBanned ? 'badge-danger' : 'badge-success'}`}>{h.isBanned ? 'Banned' : 'Active'}</span></td>
                                                     <td><Link to={`/profile/${h.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
                                                 </tr>
                                             ))}
@@ -637,7 +646,7 @@ export default function AdminPage() {
                                                                             {m.userId === t.organizerId ? ' (organizer)' : ''}
                                                                             <br /><small>{m.user?.email}</small>
                                                                         </td>
-                                                                        <td><span className="badge badge-neutral">{m.status}</span></td>
+                                                                        <td><span className={`badge ${statusBadgeClass(m.status)}`}>{m.status}</span></td>
                                                                         <td>
                                                                             {m.userId !== t.organizerId ? (
                                                                                 <select
@@ -699,7 +708,7 @@ export default function AdminPage() {
                                                 <td><small>{h.email || h.phoneNumber || '—'}</small></td>
                                                 <td>{h._count?.vehicles ?? 0}</td>
                                                 <td>{h._count?.rentalListings ?? 0}</td>
-                                                <td><span className={`badge ${h.isBanned ? 'badge-danger' : 'badge-info'}`}>{h.isBanned ? 'Banned' : 'Active'}</span></td>
+                                                <td><span className={`badge ${h.isBanned ? 'badge-danger' : 'badge-success'}`}>{h.isBanned ? 'Banned' : 'Active'}</span></td>
                                                 <td><Link to={`/profile/${h.id}`} className="btn btn-ghost btn-sm">Open</Link></td>
                                             </tr>
                                         ))}
@@ -722,7 +731,7 @@ export default function AdminPage() {
                                                     <td>{l.host?.name}</td>
                                                     <td>{l.location}</td>
                                                     <td>₹{Number(l.pricePerDay).toLocaleString()}</td>
-                                                    <td><span className={`badge ${l.isActive ? 'badge-info' : 'badge-neutral'}`}>{l.isActive ? 'Yes' : 'No'}</span></td>
+                                                    <td><span className={`badge ${statusBadgeClass(l.isActive ? 'Yes' : 'No')}`}>{l.isActive ? 'Yes' : 'No'}</span></td>
                                                     <td>{l._count?.bookings ?? 0}</td>
                                                     <td>
                                                         <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleListingToggle(l)}>
@@ -751,7 +760,7 @@ export default function AdminPage() {
                                                     <td>{b.listing?.host?.name}</td>
                                                     <td>{format(new Date(b.startDate), 'MMM d')} – {format(new Date(b.endDate), 'MMM d')}</td>
                                                     <td>₹{Number(b.totalPrice).toLocaleString()}</td>
-                                                    <td><span className="badge badge-neutral">{b.status}</span></td>
+                                                    <td><span className={`badge ${statusBadgeClass(b.status)}`}>{b.status}</span></td>
                                                     <td>
                                                         <select
                                                             className="form-input admin-inline-select"
@@ -793,7 +802,7 @@ export default function AdminPage() {
                                                     <td>{p.user?.name}<br /><small>{p.user?.email}</small></td>
                                                     <td>₹{Number(p.amount).toLocaleString()}</td>
                                                     <td>
-                                                        <span className={`badge ${p.status === 'succeeded' ? 'badge-info' : p.status === 'refunded' ? 'badge-danger' : 'badge-neutral'}`}>
+                                                        <span className={`badge ${statusBadgeClass(p.status)}`}>
                                                             {p.status}
                                                         </span>
                                                     </td>
@@ -864,7 +873,7 @@ export default function AdminPage() {
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <span className={`badge ${u.isBanned ? 'badge-danger' : 'badge-info'}`}>
+                                                    <span className={`badge ${u.isBanned ? 'badge-danger' : 'badge-success'}`}>
                                                         {u.isBanned ? 'Banned' : 'Active'}
                                                     </span>
                                                     {u.banReason && <><br /><small>{u.banReason}</small></>}
