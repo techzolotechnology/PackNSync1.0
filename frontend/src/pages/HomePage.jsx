@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
@@ -60,8 +60,37 @@ export default function HomePage() {
     const user = useAuthStore((s) => s.user);
     const logout = useAuthStore((s) => s.logout);
     const [mode, setMode] = useState('trips');
+    const [reduceMotion, setReduceMotion] = useState(false);
     const motionRef = useRef(null);
+    const videoRef = useRef(null);
     useGoFlyMotion(motionRef, [mode]);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const sync = () => setReduceMotion(mq.matches);
+        sync();
+        mq.addEventListener('change', sync);
+        return () => mq.removeEventListener('change', sync);
+    }, []);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (reduceMotion) {
+            video.pause();
+            return;
+        }
+
+        video.playbackRate = 0.7;
+        const play = () => {
+            video.playbackRate = 0.7;
+            video.play().catch(() => {});
+        };
+        play();
+        video.addEventListener('loadeddata', play);
+        return () => video.removeEventListener('loadeddata', play);
+    }, [reduceMotion]);
 
     const handleLogout = async () => {
         await logout();
@@ -69,7 +98,24 @@ export default function HomePage() {
 
     return (
         <div className="home page-atmosphere page-enter" ref={motionRef}>
-            <section className="home-welcome">
+            <section className={`home-welcome ${reduceMotion ? 'home-welcome--static' : ''}`}>
+                {!reduceMotion && (
+                    <video
+                        ref={videoRef}
+                        className="home-welcome-video"
+                        src="/videos/hero-bg.mp4"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                    />
+                )}
+                <div className="home-welcome-tint" aria-hidden="true" />
+                <div className="home-welcome-wash" aria-hidden="true" />
+                <div className="home-welcome-vignette" aria-hidden="true" />
                 <div className="container home-welcome-inner">
                     <div className="home-welcome-copy ps-reveal ps-left">
                         <p className="home-welcome-kicker">PackAndSync</p>
