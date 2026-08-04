@@ -4,8 +4,8 @@
     padding: 1.75rem 0 4rem;
     overflow: hidden;
     background:
-        radial-gradient(ellipse 50% 40% at 90% -10%, rgba(92, 92, 153, 0.14), transparent 55%),
-        radial-gradient(ellipse 40% 35% at 0% 20%, rgba(163, 163, 204, 0.1), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 90% -10%, rgba(163, 29, 49, 0.14), transparent 55%),
+        radial-gradient(ellipse 40% 35% at 0% 20%, rgba(196, 90, 102, 0.1), transparent 50%),
         var(--clr-bg-900);
 }
 
@@ -58,8 +58,8 @@
     gap: 0.45rem;
     padding: 0.4rem 0.75rem;
     border-radius: 999px;
-    border: 1px solid rgba(92, 92, 153, 0.3);
-    background: rgba(163, 163, 204, 0.1);
+    border: 1px solid rgba(163, 29, 49, 0.3);
+    background: rgba(196, 90, 102, 0.1);
     color: var(--clr-primary-500);
     font-size: 0.75rem;
     font-weight: 700;
@@ -73,7 +73,7 @@
     height: 0.45rem;
     border-radius: 50%;
     background: var(--clr-primary-500);
-    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.2);
+    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.2);
 }
 
 .admin-tabs {
@@ -109,7 +109,7 @@
 .admin-tab.active {
     color: #ffffff;
     background: linear-gradient(135deg, var(--clr-primary-400), var(--clr-primary-500));
-    box-shadow: 0 6px 18px rgba(92, 92, 153, 0.28);
+    box-shadow: 0 6px 18px rgba(163, 29, 49, 0.28);
 }
 
 .admin-kpi-strip {
@@ -173,7 +173,7 @@
     border-radius: 1.15rem;
     border: 1px solid var(--clr-border);
     background:
-        linear-gradient(145deg, rgba(92, 92, 153, 0.06), transparent 40%),
+        linear-gradient(145deg, rgba(163, 29, 49, 0.06), transparent 40%),
         var(--clr-bg-800);
     overflow: hidden;
     transition: border-color 0.2s ease, transform 0.2s ease;
@@ -181,7 +181,7 @@
 
 .admin-room-card:nth-child(2) {
     background:
-        linear-gradient(145deg, rgba(163, 163, 204, 0.08), transparent 40%),
+        linear-gradient(145deg, rgba(196, 90, 102, 0.08), transparent 40%),
         var(--clr-bg-800);
 }
 
@@ -226,7 +226,7 @@
     gap: 0.75rem;
     padding: 0.55rem 0.7rem;
     border-radius: 0.7rem;
-    background: rgba(41, 41, 102, 0.1);
+    background: rgba(44, 36, 34, 0.1);
 }
 
 .admin-metric span {
@@ -302,7 +302,7 @@
     padding: 0.25rem;
     border-radius: 999px;
     border: 1px solid var(--clr-border);
-    background: rgba(41, 41, 102, 0.1);
+    background: rgba(44, 36, 34, 0.1);
 }
 
 .admin-subtabs button {
@@ -317,7 +317,7 @@
 }
 
 .admin-subtabs button.active {
-    background: rgba(92, 92, 153, 0.18);
+    background: rgba(163, 29, 49, 0.18);
     color: var(--clr-primary-500);
 }
 
@@ -351,7 +351,7 @@
 }
 
 .admin-table thead {
-    background: rgba(92, 92, 153, 0.06);
+    background: rgba(163, 29, 49, 0.06);
 }
 
 .admin-table th {
@@ -382,7 +382,7 @@
 }
 
 .admin-table tbody tr:hover {
-    background: rgba(92, 92, 153, 0.05);
+    background: rgba(163, 29, 49, 0.05);
 }
 
 .admin-table small {
@@ -400,7 +400,7 @@
     border: 1px solid var(--clr-border);
     border-radius: 1rem;
     background:
-        linear-gradient(120deg, rgba(163, 163, 204, 0.05), transparent 45%),
+        linear-gradient(120deg, rgba(196, 90, 102, 0.05), transparent 45%),
         var(--clr-bg-800);
 }
 

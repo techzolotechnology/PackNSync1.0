@@ -6,40 +6,40 @@
 
 /* 2. CSS Custom Properties (Design Tokens) */
 :root {
-  /* Colors: lavender → navy (#CCCCFF / #A3A3CC / #5C5C99 / #292966) */
-  --clr-primary-50: #f4f4ff;
-  --clr-primary-100: #e8e8ff;
-  --clr-primary-200: #ccccff;
-  --clr-primary-400: #a3a3cc;
-  --clr-primary-500: #5c5c99;
-  --clr-primary-600: #48487a;
-  --clr-primary-700: #292966;
+  /* ParksTAG-inspired cream + burgundy (PackAndSync brand) */
+  --clr-primary-50: #fff5f2;
+  --clr-primary-100: #f6eeee;
+  --clr-primary-200: #e8c5ca;
+  --clr-primary-400: #c45a66;
+  --clr-primary-500: #a31d31;
+  --clr-primary-600: #8a1828;
+  --clr-primary-700: #7a1723;
 
-  --clr-accent-400: #ccccff;
-  --clr-accent-500: #a3a3cc;
-  --clr-accent-600: #5c5c99;
+  --clr-accent-400: #c45a66;
+  --clr-accent-500: #b02132;
+  --clr-accent-600: #a31d31;
 
   --clr-success: #22c55e;
   --clr-warning: #f59e0b;
   --clr-danger: #ef4444;
-  --clr-info: #a3a3cc;
+  --clr-info: #c45a66;
 
-  /* Soft lavender light UI */
-  --clr-bg-900: #e8e8ff;
-  --clr-bg-800: #f4f4ff;
-  --clr-bg-700: #ffffff;
-  --clr-bg-600: #e0e0f5;
-  --clr-bg-500: #ccccff;
-  --clr-bg-glass: rgba(255, 255, 255, 0.78);
-  --clr-bg-glass-hover: rgba(255, 255, 255, 0.94);
+  /* Warm cream light UI */
+  --clr-bg-900: #f6eeee;
+  --clr-bg-800: #fff9f5;
+  --clr-bg-700: #fffefb;
+  --clr-bg-600: #f0e6e2;
+  --clr-bg-500: #e8c5ca;
+  --clr-bg-glass: rgba(255, 254, 251, 0.82);
+  --clr-bg-glass-hover: rgba(255, 254, 251, 0.96);
 
-  --clr-border: rgba(92, 92, 153, 0.22);
-  --clr-border-bright: rgba(92, 92, 153, 0.4);
+  --clr-border: rgba(163, 29, 49, 0.14);
+  --clr-border-bright: rgba(163, 29, 49, 0.32);
 
-  /* Text */
-  --clr-text-primary: #292966;
-  --clr-text-secondary: #5c5c99;
-  --clr-text-muted: #a3a3cc;
+  /* Text — muted dark grey-brown, readable on cream */
+  --clr-text-primary: #2c2422;
+  --clr-text-secondary: #5c534e;
+  --clr-text-muted: #9a8b84;
 
   /* Typography */
   --font-sans: 'Manrope', system-ui, sans-serif;
@@ -58,20 +58,27 @@
   --space-16: 4rem;
   --space-20: 5rem;
 
-  /* Border radius */
+  /* Border radius — soft, high-radius cards */
   --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(41, 41, 102, 0.08);
-  --shadow-md: 0 8px 24px rgba(92, 92, 153, 0.14);
-  --shadow-lg: 0 20px 40px rgba(41, 41, 102, 0.16);
-  --shadow-glow: 0 0 24px rgba(92, 92, 153, 0.28);
-  --shadow-glow-accent: 0 0 24px rgba(163, 163, 204, 0.28);
+  /* Shadows — soft warm depth (not flat voids) */
+  --shadow-sm: 0 1px 2px rgba(44, 36, 34, 0.06);
+  --shadow-md: 0 10px 28px rgba(44, 36, 34, 0.08), 0 2px 8px rgba(163, 29, 49, 0.04);
+  --shadow-lg: 0 22px 48px rgba(44, 36, 34, 0.12), 0 4px 14px rgba(163, 29, 49, 0.06);
+  --shadow-glow: 0 0 28px rgba(163, 29, 49, 0.22);
+  --shadow-glow-accent: 0 0 24px rgba(176, 33, 50, 0.2);
+
+  /* Atmosphere textures */
+  --paper-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  --dot-pattern: radial-gradient(rgba(163, 29, 49, 0.09) 1px, transparent 1.2px);
+  --wash-cream: rgba(246, 238, 238, 0.95);
+  --wash-burgundy: rgba(163, 29, 49, 0.08);
+  --hairline: rgba(163, 29, 49, 0.22);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -99,8 +106,12 @@ body {
   font-family: var(--font-sans);
   background-color: var(--clr-bg-800);
   background-image:
-    radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.55), transparent 55%),
-    radial-gradient(ellipse 40% 30% at 100% 10%, rgba(163, 163, 204, 0.22), transparent 50%);
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 255, 255, 0.72), transparent 58%),
+    radial-gradient(ellipse 50% 42% at 8% 8%, var(--wash-burgundy), transparent 55%),
+    radial-gradient(ellipse 45% 38% at 96% 12%, var(--wash-cream), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 80% 85%, rgba(163, 29, 49, 0.045), transparent 60%),
+    var(--dot-pattern);
+  background-size: auto, auto, auto, auto, 22px 22px;
   background-attachment: fixed;
   color: var(--clr-text-primary);
   line-height: 1.6;
@@ -109,9 +120,26 @@ body {
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Global paper grain — behind UI so large cream surfaces don't feel empty */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.045;
+  background-image: var(--paper-noise);
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  mix-blend-mode: multiply;
 }
 
 #root {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   width: 100%;
   background: transparent;
@@ -246,11 +274,12 @@ h1 {
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* 7. Card */
+/* 7. Card — soft white, high radius, border + shadow (not flat voids) */
 .card {
-  background: var(--clr-bg-glass);
+  background: var(--clr-bg-700);
   border: 1px solid var(--clr-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
@@ -258,7 +287,7 @@ h1 {
 .card:hover {
   border-color: var(--clr-border-bright);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* 8. Button */
@@ -279,23 +308,23 @@ h1 {
 .btn-primary {
   background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
   color: #ffffff;
-  box-shadow: 0 6px 20px rgba(92, 92, 153, 0.35);
+  box-shadow: 0 8px 22px rgba(163, 29, 49, 0.32);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--clr-primary-600), var(--clr-primary-700));
-  box-shadow: 0 10px 28px rgba(41, 41, 102, 0.4);
+  background: linear-gradient(135deg, var(--clr-primary-400), var(--clr-primary-600));
+  box-shadow: 0 12px 30px rgba(163, 29, 49, 0.4);
   transform: translateY(-1px);
 }
 
 .btn-accent {
   background: linear-gradient(135deg, var(--clr-accent-500), var(--clr-accent-600));
   color: #ffffff;
-  box-shadow: 0 6px 20px rgba(163, 163, 204, 0.35);
+  box-shadow: 0 8px 22px rgba(176, 33, 50, 0.3);
 }
 
 .btn-accent:hover {
-  box-shadow: 0 10px 28px rgba(92, 92, 153, 0.4);
+  box-shadow: 0 12px 30px rgba(163, 29, 49, 0.38);
   transform: translateY(-1px);
 }
 
@@ -362,7 +391,7 @@ h1 {
 .form-input:focus {
   outline: none;
   border-color: var(--clr-primary-500);
-  box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.2);
+  box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.16);
 }
 
 .form-input::placeholder {
@@ -535,6 +564,63 @@ h1 {
   min-height: 60vh;
   background: transparent;
   color: var(--clr-text-primary);
+}
+
+/* Decorative helpers for section bands / heroes */
+.page-atmosphere {
+  position: relative;
+  isolation: isolate;
+}
+
+.page-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 48% 55% at 8% 20%, var(--wash-burgundy), transparent 60%),
+    radial-gradient(ellipse 42% 50% at 94% 30%, var(--wash-cream), transparent 58%),
+    var(--dot-pattern);
+  background-size: auto, auto, 24px 24px;
+  opacity: 0.9;
+}
+
+.page-atmosphere > * {
+  position: relative;
+  z-index: 1;
+}
+
+.section-accent {
+  position: relative;
+}
+
+.section-accent::before {
+  content: '';
+  display: block;
+  width: 2.75rem;
+  height: 2px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--clr-primary-500), var(--clr-primary-200));
+}
+
+.accent-hairline {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--hairline), transparent);
+  border: 0;
+}
+
+.surface-card {
+  background: var(--clr-bg-700);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.highlight-word {
+  color: var(--clr-primary-500);
 }
 
 /* 17. Responsive utilities */

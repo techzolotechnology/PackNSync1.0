@@ -57,12 +57,12 @@
 }
 
 .cover-picker-option:hover {
-    border-color: rgba(92, 92, 153, 0.45);
+    border-color: rgba(163, 29, 49, 0.45);
 }
 
 .cover-picker-option.selected {
     border-color: var(--clr-primary-500);
-    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.35);
+    box-shadow: 0 0 0 1px rgba(163, 29, 49, 0.35);
 }
 
 .cover-picker-check {
@@ -71,7 +71,7 @@
     bottom: 0.4rem;
     padding: 0.15rem 0.45rem;
     border-radius: 999px;
-    background: rgba(41, 41, 102, 0.85);
+    background: rgba(44, 36, 34, 0.85);
     color: #ffffff;
     font-size: 0.65rem;
     font-weight: 750;

@@ -103,8 +103,8 @@
     rotateY(var(--ps-ry))
     translateZ(8px);
   box-shadow:
-    0 22px 48px rgba(41, 41, 102, 0.18),
-    0 0 0 1px rgba(92, 92, 153, 0.12);
+    0 22px 48px rgba(31, 31, 31, 0.12),
+    0 0 0 1px rgba(176, 33, 50, 0.12);
 }
 
 .ps-tilt.ps-tilt-active::after {

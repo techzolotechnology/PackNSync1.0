@@ -34,34 +34,42 @@
     max-width: 36rem;
 }
 
+/* Maroon surface — text here must be light */
 .wallet-balance-panel {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 1.5rem 1.75rem;
+    gap: 0.3rem;
+    padding: 1.6rem 1.75rem;
     margin-bottom: 1.25rem;
     border-radius: var(--radius-lg);
     background:
-        radial-gradient(120% 140% at 0% 0%, rgba(163, 163, 204, 0.35), transparent 55%),
-        linear-gradient(135deg, #292966 0%, #5C5C99 100%);
-    color: var(--clr-text-primary);
+        radial-gradient(120% 140% at 0% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+        linear-gradient(135deg, #7a1723 0%, #b02132 55%, #c45a66 100%);
+    color: #ffffff;
+    box-shadow: 0 16px 36px rgba(176, 33, 50, 0.28);
 }
 
 .wallet-balance-label {
-    font-size: 0.85rem;
-    opacity: 0.85;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .wallet-balance-value {
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    font-weight: 700;
+    font-size: clamp(2.15rem, 4.5vw, 2.9rem);
+    font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.1;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .wallet-balance-meta {
     font-size: 0.8rem;
-    opacity: 0.75;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .wallet-grid {
@@ -75,7 +83,9 @@
     padding: 1.25rem 1.35rem;
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-lg);
-    background: var(--clr-bg-800);
+    /* Cream surface so panels lift off the warm page background */
+    background: var(--clr-bg-700);
+    box-shadow: 0 6px 18px rgba(31, 31, 31, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .wallet-panel h2 {
@@ -98,20 +108,29 @@
 
 .wallet-presets button,
 .wallet-mode-toggle button {
-    padding: 0.4rem 0.75rem;
+    padding: 0.45rem 0.85rem;
     border: 1px solid var(--clr-border);
-    border-radius: var(--radius-md);
+    border-radius: 999px;
     background: var(--clr-bg-700);
     color: var(--clr-text-secondary);
-    font-weight: 600;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 650;
     cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.wallet-presets button:hover,
+.wallet-mode-toggle button:hover {
+    border-color: var(--clr-primary-500);
+    color: var(--clr-text-primary);
 }
 
 .wallet-presets button.active,
 .wallet-mode-toggle button.active {
-    background: var(--clr-primary-500);
-    border-color: var(--clr-primary-500);
-    color: var(--clr-text-primary);
+    background: var(--clr-primary-700);
+    border-color: var(--clr-primary-700);
+    color: #ffffff;
 }
 
 .wallet-mode-toggle {

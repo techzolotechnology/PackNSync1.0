@@ -73,7 +73,7 @@ export default function HomePage() {
                 <div className="container home-welcome-inner">
                     <div className="home-welcome-copy ps-reveal ps-left">
                         <p className="home-welcome-kicker">PackAndSync</p>
-                        <h1 className="font-display">Travel together. Rent when you need wheels.</h1>
+                        <h1 className="font-display">Travel <span className="highlight-word">together</span>. Rent when you need wheels.</h1>
                         <p>
                             Join group trips, split costs, and book community cars or bikes — all in one place.
                         </p>

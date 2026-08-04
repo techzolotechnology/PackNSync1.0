@@ -17,8 +17,8 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(180deg, rgba(41, 41, 102, 0.55) 0%, rgba(41, 41, 102, 0.35) 40%, rgba(244, 244, 255, 0.92) 100%),
-        linear-gradient(90deg, rgba(41, 41, 102, 0.5) 0%, rgba(41, 41, 102, 0.2) 55%, rgba(92, 92, 153, 0.25) 100%),
+        linear-gradient(180deg, rgba(44, 28, 30, 0.55) 0%, rgba(44, 28, 30, 0.32) 40%, rgba(255, 249, 245, 0.94) 100%),
+        linear-gradient(90deg, rgba(44, 28, 30, 0.5) 0%, rgba(44, 28, 30, 0.18) 55%, rgba(163, 29, 49, 0.22) 100%),
         url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=85') center 40% / cover no-repeat;
 }
 
@@ -39,20 +39,20 @@
 
 .cr-waves path {
     fill: none;
-    stroke: rgba(92, 92, 153, 0.55);
+    stroke: rgba(163, 29, 49, 0.4);
     stroke-width: 1.4;
-    filter: drop-shadow(0 0 8px rgba(92, 92, 153, 0.55));
+    filter: drop-shadow(0 0 8px rgba(163, 29, 49, 0.28));
 }
 
 .cr-waves path:nth-child(2) {
-    stroke: rgba(92, 92, 153, 0.28);
+    stroke: rgba(163, 29, 49, 0.2);
     stroke-width: 1.1;
 }
 
 .cr-bokeh span {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(204, 204, 255, 0.95) 0%, rgba(92, 92, 153, 0.5) 40%, transparent 70%);
+    background: radial-gradient(circle, rgba(246, 238, 238, 0.95) 0%, rgba(163, 29, 49, 0.42) 40%, transparent 70%);
 }
 
 .cr-bokeh span:nth-child(1) { width: 8px; height: 8px; top: 22%; right: 18%; }
@@ -87,7 +87,7 @@
     background: rgba(255, 255, 255, 0.18);
     border: 1px solid rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(12px);
-    box-shadow: 0 12px 36px rgba(41, 41, 102, 0.25);
+    box-shadow: 0 12px 36px rgba(44, 36, 34, 0.22);
 }
 
 .cr-kind-toggle button {
@@ -139,7 +139,7 @@
 
 .cr-kind-bike .cr-hero-media {
     background-image:
-        linear-gradient(120deg, rgba(41, 41, 102, 0.72), rgba(92, 92, 153, 0.45)),
+        linear-gradient(120deg, rgba(44, 36, 34, 0.72), rgba(163, 29, 49, 0.45)),
         url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=2000&q=85');
 }
 
@@ -150,7 +150,7 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     color: #ffffff;
-    text-shadow: 0 4px 30px rgba(41, 41, 102, 0.35);
+    text-shadow: 0 4px 30px rgba(44, 36, 34, 0.35);
 }
 
 .cr-hero-inner p {
@@ -179,7 +179,7 @@
     background: rgba(255, 255, 255, 0.92);
     border: 1px solid var(--clr-border);
     backdrop-filter: blur(16px);
-    box-shadow: 0 18px 50px rgba(41, 41, 102, 0.14);
+    box-shadow: 0 18px 50px rgba(44, 36, 34, 0.14);
 }
 
 .cr-field {
@@ -299,7 +299,7 @@
     bottom: 0;
     border-radius: inherit;
     background: linear-gradient(90deg, var(--clr-primary-400), var(--clr-primary-500));
-    box-shadow: 0 0 10px rgba(92, 92, 153, 0.55);
+    box-shadow: 0 0 10px rgba(163, 29, 49, 0.55);
     pointer-events: none;
 }
 
@@ -337,7 +337,7 @@
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid var(--clr-primary-500);
-    box-shadow: 0 2px 8px rgba(41, 41, 102, 0.35);
+    box-shadow: 0 2px 8px rgba(44, 36, 34, 0.35);
     pointer-events: auto;
     cursor: grab;
     position: relative;
@@ -354,7 +354,7 @@
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid var(--clr-primary-500);
-    box-shadow: 0 2px 8px rgba(41, 41, 102, 0.35);
+    box-shadow: 0 2px 8px rgba(44, 36, 34, 0.35);
     pointer-events: auto;
     cursor: grab;
 }
@@ -373,7 +373,7 @@
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
-    box-shadow: 0 0 22px rgba(92, 92, 153, 0.35), 0 0 28px rgba(92, 92, 153, 0.25);
+    box-shadow: 0 0 22px rgba(163, 29, 49, 0.35), 0 0 28px rgba(163, 29, 49, 0.25);
     text-decoration: none;
     white-space: nowrap;
     align-self: center;
@@ -438,18 +438,18 @@
 
 .cr-cat:hover {
     transform: translateY(-2px);
-    border-color: rgba(92, 92, 153, 0.35);
+    border-color: rgba(163, 29, 49, 0.35);
 }
 
 .cr-cat.active {
-    border-color: rgba(92, 92, 153, 0.85);
-    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.25), 0 0 22px rgba(92, 92, 153, 0.28);
+    border-color: rgba(163, 29, 49, 0.85);
+    box-shadow: 0 0 0 1px rgba(163, 29, 49, 0.25), 0 0 22px rgba(163, 29, 49, 0.28);
     background: var(--clr-bg-700);
 }
 
 .cr-cat.active.teal {
-    border-color: rgba(92, 92, 153, 0.85);
-    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.2), 0 0 22px rgba(92, 92, 153, 0.28);
+    border-color: rgba(163, 29, 49, 0.85);
+    box-shadow: 0 0 0 1px rgba(163, 29, 49, 0.2), 0 0 22px rgba(163, 29, 49, 0.28);
 }
 
 .cr-cat-icon {
@@ -566,11 +566,11 @@
 }
 
 .cr-card.glow-orange {
-    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.22), 0 0 22px rgba(92, 92, 153, 0.12);
+    box-shadow: 0 0 0 1px rgba(163, 29, 49, 0.22), 0 0 22px rgba(163, 29, 49, 0.12);
 }
 
 .cr-card.glow-teal {
-    box-shadow: 0 0 0 1px rgba(163, 163, 204, 0.45), 0 0 24px rgba(163, 163, 204, 0.2);
+    box-shadow: 0 0 0 1px rgba(196, 90, 102, 0.45), 0 0 24px rgba(196, 90, 102, 0.2);
 }
 
 .cr-card:hover {
@@ -596,7 +596,7 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #fff;
-    background: rgba(41, 41, 102, 0.82);
+    background: rgba(44, 36, 34, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
@@ -717,7 +717,7 @@
     border: none;
     background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
     color: #ffffff;
-    box-shadow: 0 6px 16px rgba(92, 92, 153, 0.35);
+    box-shadow: 0 6px 16px rgba(163, 29, 49, 0.35);
 }
 
 .cr-book:hover {
@@ -731,7 +731,7 @@
 }
 
 .cr-host-btn:hover {
-    border-color: rgba(92, 92, 153, 0.55);
+    border-color: rgba(163, 29, 49, 0.55);
     color: var(--clr-primary-500);
 }
 

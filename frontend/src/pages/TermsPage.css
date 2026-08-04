@@ -1,7 +1,7 @@
 .terms-page {
     padding: 2rem 0 4rem;
     background:
-        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.45), transparent 55%),
+        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(246, 238, 238, 0.45), transparent 55%),
         var(--clr-bg-800);
     color: var(--clr-text-primary);
 }

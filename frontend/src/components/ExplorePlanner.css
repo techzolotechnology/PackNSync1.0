@@ -101,7 +101,7 @@
 .explore-stop-edit input:focus {
     outline: none;
     border-color: var(--clr-primary-500);
-    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.18);
+    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.18);
 }
 
 .explore-planner-row {
@@ -136,8 +136,8 @@
 
 .explore-planner-interests button.on {
     color: var(--clr-primary-700);
-    border-color: rgba(92, 92, 153, 0.5);
-    background: rgba(92, 92, 153, 0.12);
+    border-color: rgba(163, 29, 49, 0.5);
+    background: rgba(163, 29, 49, 0.12);
 }
 
 .explore-planner-actions {
@@ -198,8 +198,8 @@
 }
 
 .explore-stop-list li.selected {
-    border-color: rgba(92, 92, 153, 0.5);
-    box-shadow: 0 0 0 1px rgba(92, 92, 153, 0.15);
+    border-color: rgba(163, 29, 49, 0.5);
+    box-shadow: 0 0 0 1px rgba(163, 29, 49, 0.15);
 }
 
 .explore-stop-main {
@@ -289,7 +289,7 @@
 }
 
 .explore-plan-row:hover {
-    border-color: rgba(92, 92, 153, 0.4);
+    border-color: rgba(163, 29, 49, 0.4);
 }
 
 .explore-plan-row span {

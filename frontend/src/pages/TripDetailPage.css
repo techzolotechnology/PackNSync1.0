@@ -1,8 +1,8 @@
 .trip-detail {
     min-height: calc(100vh - 68px);
     background:
-        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(204, 204, 255, 0.45), transparent 55%),
-        radial-gradient(ellipse 40% 30% at 100% 10%, rgba(163, 163, 204, 0.18), transparent 50%),
+        radial-gradient(ellipse 55% 40% at 8% 0%, rgba(246, 238, 238, 0.45), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 100% 10%, rgba(196, 90, 102, 0.18), transparent 50%),
         var(--clr-bg-800);
     color: var(--clr-text-primary);
 }
@@ -37,7 +37,7 @@
 .trip-detail-hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(41, 41, 102, 0.72) 0%, rgba(41, 41, 102, 0.72) 60%, transparent 100%);
+    background: linear-gradient(to top, rgba(44, 36, 34, 0.72) 0%, rgba(44, 36, 34, 0.72) 60%, transparent 100%);
 }
 
 .trip-detail-hero-content {
@@ -427,7 +427,7 @@
 }
 
 .announcement.pinned {
-    border-color: rgba(92, 92, 153, 0.45);
+    border-color: rgba(163, 29, 49, 0.45);
 }
 
 .announcement-pinned-label {
@@ -435,7 +435,7 @@
     margin-right: 0.5rem;
     padding: 0.1rem 0.45rem;
     border-radius: 999px;
-    background: rgba(92, 92, 153, 0.14);
+    background: rgba(163, 29, 49, 0.14);
     color: var(--clr-primary-700);
     font-size: 0.7rem;
     font-weight: 700;

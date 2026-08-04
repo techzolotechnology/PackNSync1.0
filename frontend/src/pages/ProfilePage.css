@@ -2,9 +2,11 @@
     min-height: calc(100vh - 72px);
     padding: 2.5rem 0 4rem;
     background:
-        radial-gradient(ellipse 65% 40% at 15% 0%, rgba(92, 92, 153, 0.1), transparent 55%),
-        radial-gradient(ellipse 50% 35% at 85% 8%, rgba(92, 92, 153, 0.07), transparent 50%),
+        radial-gradient(ellipse 65% 40% at 15% 0%, rgba(163, 29, 49, 0.1), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 85% 8%, rgba(163, 29, 49, 0.07), transparent 50%),
+        var(--dot-pattern),
         var(--clr-bg-800);
+    background-size: auto, auto, 24px 24px, auto;
 }
 
 .pf-inner {
@@ -19,7 +21,7 @@
     border-radius: 22px;
     background: var(--clr-bg-glass);
     border: 1px solid var(--clr-border);
-    box-shadow: 0 20px 50px rgba(41, 41, 102, 0.1);
+    box-shadow: 0 20px 50px rgba(44, 36, 34, 0.1);
 }
 
 .pf-avatar-col {
@@ -42,7 +44,7 @@
     background: linear-gradient(135deg, var(--clr-primary-400) 0%, var(--clr-primary-700) 100%);
     display: grid;
     place-items: center;
-    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.15);
+    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.15);
 }
 
 .pf-avatar img {
@@ -75,7 +77,7 @@
     place-items: center;
     cursor: pointer;
     padding: 0;
-    box-shadow: 0 4px 12px rgba(41, 41, 102, 0.28);
+    box-shadow: 0 4px 12px rgba(44, 36, 34, 0.28);
 }
 
 .pf-avatar-edit:disabled {
@@ -129,7 +131,7 @@
 }
 
 .pf-badge.role {
-    background: rgba(92, 92, 153, 0.06);
+    background: rgba(163, 29, 49, 0.06);
     color: var(--clr-text-secondary);
     border: 1px solid var(--clr-border);
 }
@@ -141,9 +143,9 @@
 }
 
 .pf-badge.role.organizer {
-    background: rgba(92, 92, 153, 0.12);
+    background: rgba(163, 29, 49, 0.12);
     color: var(--clr-primary-500);
-    border-color: rgba(92, 92, 153, 0.3);
+    border-color: rgba(163, 29, 49, 0.3);
 }
 
 .pf-bio {
@@ -187,7 +189,7 @@
 .pf-btn.primary {
     background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-700));
     color: #ffffff;
-    box-shadow: 0 6px 20px rgba(92, 92, 153, 0.35);
+    box-shadow: 0 6px 20px rgba(163, 29, 49, 0.35);
 }
 
 .pf-btn.primary:hover {
@@ -201,7 +203,7 @@
 }
 
 .pf-btn.ghost:hover {
-    border-color: rgba(92, 92, 153, 0.45);
+    border-color: rgba(163, 29, 49, 0.45);
     color: var(--clr-primary-500);
 }
 
@@ -267,8 +269,8 @@
 .pf-edit textarea:focus,
 .pf-edit select:focus {
     outline: none;
-    border-color: rgba(92, 92, 153, 0.55);
-    box-shadow: 0 0 0 3px rgba(92, 92, 153, 0.12);
+    border-color: rgba(163, 29, 49, 0.55);
+    box-shadow: 0 0 0 3px rgba(163, 29, 49, 0.12);
 }
 
 .pf-chip-field {
@@ -308,8 +310,8 @@
 }
 
 .pf-chips button.on {
-    background: rgba(92, 92, 153, 0.16);
-    border-color: rgba(92, 92, 153, 0.55);
+    background: rgba(163, 29, 49, 0.16);
+    border-color: rgba(163, 29, 49, 0.55);
     color: var(--clr-primary-500);
 }
 
@@ -325,7 +327,7 @@
     gap: 0.15rem;
     padding: 0.65rem 0.75rem;
     border-radius: 12px;
-    background: rgba(92, 92, 153, 0.06);
+    background: rgba(163, 29, 49, 0.06);
     border: 1px solid var(--clr-border);
 }
 
@@ -372,8 +374,8 @@
 .pf-tags span {
     padding: 0.3rem 0.7rem;
     border-radius: 999px;
-    background: rgba(92, 92, 153, 0.1);
-    border: 1px solid rgba(92, 92, 153, 0.25);
+    background: rgba(163, 29, 49, 0.1);
+    border: 1px solid rgba(163, 29, 49, 0.25);
     color: var(--clr-primary-700);
     font-size: 0.8rem;
     font-weight: 600;
@@ -462,7 +464,7 @@
 
 .pf-trip-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(92, 92, 153, 0.4);
+    border-color: rgba(163, 29, 49, 0.4);
 }
 
 .pf-trip-media {
