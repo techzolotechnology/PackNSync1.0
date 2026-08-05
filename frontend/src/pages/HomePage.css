@@ -505,6 +505,13 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+.home-step-rupee {
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .home-step h3 {
     margin: 0 0 0.45rem;
     font-size: 1.15rem;

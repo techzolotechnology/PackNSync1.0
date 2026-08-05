@@ -81,9 +81,7 @@ const STEPS = [
         title: 'Split the money',
         desc: 'Add fuel, stay, or food costs and split fairly across the group.',
         icon: (
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-                <path d="M12 3v18M8 7.5c0-1.5 1.6-2.5 4-2.5s4 1 4 2.5-1.6 2.5-4 2.5-4 1-4 2.5 1.6 2.5 4 2.5 4-1 4-2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
+            <span className="home-step-rupee" aria-hidden="true">₹</span>
         ),
     },
 ];
