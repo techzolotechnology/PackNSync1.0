@@ -15,6 +15,7 @@ import MyBookingsPage from './pages/MyBookingsPage.jsx';
 import HostDashboard from './pages/HostDashboard.jsx';
 import VerificationPage from './pages/VerificationPage.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
+import RefundPolicy from './pages/RefundPolicy.jsx';
 import TermsAndConditions from './pages/TermsAndConditions.jsx';
 import TermsPage from './pages/TermsPage.jsx';
 import ExplorePage from './pages/ExplorePage.jsx';
@@ -148,6 +149,7 @@ export default function App() {
                     <Route path="/terms" element={<TermsAndConditions />} />
                     <Route path="/terms/:type" element={<TermsPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
                     </Routes>
                 </PageTransition>

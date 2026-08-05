@@ -17,6 +17,7 @@ const PrivacyPolicy = () => {
                         <Link to="/terms/rental">Rental</Link>
                         <Link to="/terms/listing">Listing</Link>
                         <Link to="/privacy-policy" className="active">Privacy</Link>
+                        <Link to="/refund-policy">Refunds</Link>
                     </nav>
                 </header>
 

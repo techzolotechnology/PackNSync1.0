@@ -95,6 +95,7 @@ export default function TermsPage() {
                         <Link to="/terms/rental" className={type === 'rental' ? 'active' : ''}>Rental</Link>
                         <Link to="/terms/listing" className={type === 'listing' ? 'active' : ''}>Listing</Link>
                         <Link to="/privacy-policy">Privacy</Link>
+                        <Link to="/refund-policy">Refunds</Link>
                     </div>
                 </header>
                 <main className="terms-content">

@@ -29,6 +29,7 @@ const Footer = () => {
                         <ul>
                             <li><Link to="/terms">Terms & Conditions</Link></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+                            <li><Link to="/refund-policy">Refund Policy</Link></li>
                             <li><a href="mailto:kartikgauttam@techzolo.in">Contact Us</a></li>
                         </ul>
                     </div>

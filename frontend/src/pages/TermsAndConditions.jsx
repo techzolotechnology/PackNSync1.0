@@ -52,6 +52,7 @@ export default function TermsAndConditions() {
                         <Link to="/terms/rental">Rental</Link>
                         <Link to="/terms/listing">Listing</Link>
                         <Link to="/privacy-policy">Privacy</Link>
+                        <Link to="/refund-policy">Refunds</Link>
                     </nav>
                 </header>
 
