@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './TermsAcceptanceModal.css';
 
@@ -17,6 +17,10 @@ const POLICY_PATHS = {
 export default function TermsAcceptanceModal({ isOpen, policyType, onAccept, onClose, loading }) {
     const [checked, setChecked] = useState(false);
 
+    useEffect(() => {
+        if (isOpen) setChecked(false);
+    }, [isOpen, policyType]);
+
     if (!isOpen || !policyType) return null;
 
     const label = POLICY_LABELS[policyType] || 'Terms & Conditions';
@@ -30,8 +34,11 @@ export default function TermsAcceptanceModal({ isOpen, policyType, onAccept, onC
     return (
         <div className="terms-modal-overlay" onClick={onClose}>
             <div className="terms-modal card" onClick={(e) => e.stopPropagation()}>
+                <button type="button" className="terms-modal-close" onClick={onClose} aria-label="Close">×</button>
+                <span className="terms-modal-icon" aria-hidden="true">✓</span>
+                <p className="terms-modal-eyebrow">Before you continue</p>
                 <h2>Accept {label}</h2>
-                <p>
+                <p className="terms-modal-copy">
                     You must read and accept the {label.toLowerCase()} before continuing.
                     PackAndSync only facilitates bookings; providers and hosts remain responsible for the service.
                 </p>
@@ -39,7 +46,7 @@ export default function TermsAcceptanceModal({ isOpen, policyType, onAccept, onC
                     <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
                     <span>
                         I have read and accept the{' '}
-                        <Link to={termsPath} target="_blank" rel="noreferrer">{label}</Link>
+                        <Link to={termsPath} target="_blank" rel="noreferrer">{label} ↗</Link>
                     </span>
                 </label>
                 <div className="terms-modal-actions">

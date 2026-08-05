@@ -4,7 +4,9 @@ import './TermsPage.css';
 
 const TERMS = {
     ride: {
+        eyebrow: 'Ride protection',
         title: 'Ride Booking Terms',
+        summary: 'Clear rules for comparing, requesting, and completing rides through third-party providers.',
         version: '1.0',
         sections: [
             {
@@ -26,7 +28,9 @@ const TERMS = {
         ],
     },
     rental: {
+        eyebrow: 'Rental protection',
         title: 'Rental Terms & Insurance',
+        summary: 'What renters and hosts should expect before, during, and after every vehicle booking.',
         version: '1.0',
         sections: [
             {
@@ -48,7 +52,9 @@ const TERMS = {
         ],
     },
     listing: {
+        eyebrow: 'Host standards',
         title: 'Host Listing Terms',
+        summary: 'The verification, accuracy, safety, and payout standards that apply to every host listing.',
         version: '1.0',
         sections: [
             {
@@ -76,11 +82,13 @@ export default function TermsPage() {
     const content = TERMS[type] || TERMS.ride;
 
     return (
-        <div className="terms-page page-enter">
+        <div className="terms-page page-enter page-atmosphere">
             <div className="container terms-container">
                 <header className="terms-header">
+                    <span className="terms-eyebrow">{content.eyebrow}</span>
                     <h1>{content.title}</h1>
-                    <p>Version {content.version} • Last updated July 2026</p>
+                    <p className="terms-summary">{content.summary}</p>
+                    <p className="terms-meta">Version {content.version} <span aria-hidden="true">•</span> Last updated August 2026</p>
                     <div className="terms-nav">
                         <Link to="/terms">General Terms</Link>
                         <Link to="/terms/ride" className={type === 'ride' ? 'active' : ''}>Ride</Link>
@@ -89,23 +97,29 @@ export default function TermsPage() {
                         <Link to="/privacy-policy">Privacy</Link>
                     </div>
                 </header>
-                <div className="terms-content card">
+                <main className="terms-content">
                     {content.sections.map((section) => (
-                        <section key={section.heading}>
-                            <h2>{section.heading}</h2>
-                            <p>{section.body}</p>
+                        <section className="terms-section-card" key={section.heading}>
+                            <span className="terms-section-mark" aria-hidden="true">✓</span>
+                            <div>
+                                <h2>{section.heading}</h2>
+                                <p>{section.body}</p>
+                            </div>
                         </section>
                     ))}
-                    <section>
-                        <h2>Operating entity</h2>
-                        <p>
-                            PackAndSync is owned and operated by TECHZOLO TECHNOLOGIES LLP,
-                            registered in Haryana, India. These terms form an agreement between you
-                            and TECHZOLO TECHNOLOGIES LLP. For questions, contact
-                            {' '}<a href="mailto:hello@packandsync.com">hello@packandsync.com</a>.
-                        </p>
+                    <section className="terms-section-card terms-entity">
+                        <span className="terms-section-mark" aria-hidden="true">i</span>
+                        <div>
+                            <h2>Operating entity</h2>
+                            <p>
+                                PackAndSync is owned and operated by TECHZOLO TECHNOLOGIES LLP,
+                                registered in Haryana, India. These terms form an agreement between you
+                                and TECHZOLO TECHNOLOGIES LLP. For questions, contact
+                                {' '}<a href="mailto:kartikgauttam@techzolo.in">kartikgauttam@techzolo.in</a>.
+                            </p>
+                        </div>
                     </section>
-                </div>
+                </main>
             </div>
         </div>
     );

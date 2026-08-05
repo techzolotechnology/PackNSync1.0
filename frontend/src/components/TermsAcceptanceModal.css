@@ -1,7 +1,8 @@
 .terms-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(44, 36, 34, 0.45);
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10,38 +11,118 @@
 }
 
 .terms-modal {
+    position: relative;
     max-width: 480px;
     width: 100%;
-    padding: 1.5rem;
+    padding: 2rem;
     background: #ffffff;
     border: 1px solid var(--clr-border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
 }
 
 .terms-modal h2 {
-    margin-bottom: 0.75rem;
-    color: var(--clr-text-primary);
+    margin: 0 0 0.75rem;
+    color: #0f172a;
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    letter-spacing: -0.025em;
 }
 
-.terms-modal p {
-    color: var(--clr-text-secondary);
-    line-height: 1.6;
+.terms-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 1.35rem;
+    cursor: pointer;
+}
+
+.terms-modal-icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
     margin-bottom: 1rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #e8f4ff, #f3f8ff);
+    color: #007bff;
+    font-size: 1.2rem;
+    font-weight: 900;
+}
+
+.terms-modal-eyebrow {
+    margin: 0 0 0.35rem !important;
+    color: #007bff !important;
+    font-size: 0.74rem !important;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.terms-modal-copy {
+    color: #64748b !important;
+    line-height: 1.7 !important;
+    margin-bottom: 1.25rem !important;
 }
 
 .terms-check {
     display: flex;
     gap: 0.75rem;
     align-items: flex-start;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
+    background: #f8fafc;
     font-size: 0.95rem;
     line-height: 1.5;
-    color: var(--clr-text-primary);
+    color: #334155;
+    cursor: pointer;
+}
+
+.terms-check input {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.15rem;
+    accent-color: #007bff;
+}
+
+.terms-check a {
+    color: #0066d6;
+    font-weight: 750;
+    text-decoration: none;
 }
 
 .terms-modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
+}
+
+.terms-modal-actions .btn {
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+}
+
+@media (max-width: 480px) {
+    .terms-modal {
+        padding: 1.5rem 1.2rem 1.2rem;
+    }
+
+    .terms-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .terms-modal-actions .btn {
+        width: 100%;
+    }
 }

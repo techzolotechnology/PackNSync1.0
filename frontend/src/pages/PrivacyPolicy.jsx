@@ -1,13 +1,23 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './PrivacyPolicy.css';
 
 const PrivacyPolicy = () => {
     return (
-        <div className="privacy-page page-enter">
-            <div className="container">
+        <div className="privacy-page page-enter page-atmosphere">
+            <div className="container privacy-container">
                 <header className="privacy-header">
-                    <h1 className="gradient-text h1">Privacy Policy</h1>
-                    <p className="last-updated">Last Updated: February 27, 2026</p>
+                    <span className="privacy-eyebrow">Your data, explained</span>
+                    <h1>Privacy Policy</h1>
+                    <p className="privacy-summary">A clear overview of what PackAndSync collects, why we use it, and the choices available to you.</p>
+                    <p className="last-updated">Last updated August 05, 2026</p>
+                    <nav className="privacy-nav" aria-label="Legal documents">
+                        <Link to="/terms">General Terms</Link>
+                        <Link to="/terms/ride">Ride</Link>
+                        <Link to="/terms/rental">Rental</Link>
+                        <Link to="/terms/listing">Listing</Link>
+                        <Link to="/privacy-policy" className="active">Privacy</Link>
+                    </nav>
                 </header>
 
                 <div className="privacy-content card">
@@ -28,7 +38,7 @@ const PrivacyPolicy = () => {
                         <ul>
                             <li><strong>Personal Data:</strong> Name, email address, phone number, and profile picture.</li>
                             <li><strong>Travel Data:</strong> Trip details, itineraries, and preferences you share in travel groups.</li>
-                            <li><strong>Payment Data:</strong> We collect data necessary to process your payment if you make purchases, such as your payment instrument number (such as a credit card number), and the security code associated with your payment instrument. All payment data is stored by <strong>Stripe</strong>.</li>
+                            <li><strong>Payment Data:</strong> Payments and wallet top-ups are processed by <strong>Cashfree</strong>. PackAndSync does not store your full card number or card security code.</li>
                             <li><strong>Social Media Login:</strong> We may provide you with the option to register with us using your existing social media account details, like your Google account.</li>
                         </ul>
                     </section>
