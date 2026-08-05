@@ -82,6 +82,7 @@ export default function TermsPage() {
                     <h1>{content.title}</h1>
                     <p>Version {content.version} • Last updated July 2026</p>
                     <div className="terms-nav">
+                        <Link to="/terms">General Terms</Link>
                         <Link to="/terms/ride" className={type === 'ride' ? 'active' : ''}>Ride</Link>
                         <Link to="/terms/rental" className={type === 'rental' ? 'active' : ''}>Rental</Link>
                         <Link to="/terms/listing" className={type === 'listing' ? 'active' : ''}>Listing</Link>

@@ -27,8 +27,9 @@ const Footer = () => {
                     <div className="footer-links-group">
                         <h4>Company</h4>
                         <ul>
+                            <li><Link to="/terms">Terms & Conditions</Link></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
-                            <li><a href="mailto:hello@packandsync.com">Contact Us</a></li>
+                            <li><a href="mailto:kartikgauttam@techzolo.in">Contact Us</a></li>
                         </ul>
                     </div>
 

@@ -15,6 +15,7 @@ import MyBookingsPage from './pages/MyBookingsPage.jsx';
 import HostDashboard from './pages/HostDashboard.jsx';
 import VerificationPage from './pages/VerificationPage.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
+import TermsAndConditions from './pages/TermsAndConditions.jsx';
 import TermsPage from './pages/TermsPage.jsx';
 import ExplorePage from './pages/ExplorePage.jsx';
 import WalletPage from './pages/WalletPage.jsx';
@@ -144,6 +145,7 @@ export default function App() {
                     <Route path="/wallet" element={<BlockAdminFromApp><PrivateRoute><WalletPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/host" element={<BlockAdminFromApp><PrivateRoute><HostDashboard /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/verify" element={<BlockAdminFromApp><PrivateRoute><VerificationPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/terms" element={<TermsAndConditions />} />
                     <Route path="/terms/:type" element={<TermsPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
