@@ -4,6 +4,20 @@ import { useAuthStore } from '../store/authStore.js';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import './HomePage.css';
 
+const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
+const HERO_VIDEO_ID = import.meta.env.VITE_HERO_VIDEO_ID?.trim() || 'packandsync/hero-bg';
+
+function heroMediaUrls() {
+    if (!CLOUDINARY_CLOUD) return null;
+    const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/video/upload`;
+    return {
+        video: `${base}/w_1280,q_auto,vc_auto,ac_none,f_auto/${HERO_VIDEO_ID}.mp4`,
+        poster: `${base}/so_1,w_1280,q_auto,f_jpg/${HERO_VIDEO_ID}.jpg`,
+    };
+}
+
+const HERO_MEDIA = heroMediaUrls();
+
 const SEARCH_TABS = [
     { id: 'trips', label: 'Trips', iconTone: 'gold' },
     { id: 'cars', label: 'Cars', iconTone: 'brown' },
@@ -133,6 +147,7 @@ export default function HomePage() {
     const [date, setDate] = useState('');
     const [category, setCategory] = useState('');
     const [reduceMotion, setReduceMotion] = useState(false);
+    const [loadHeroVideo, setLoadHeroVideo] = useState(false);
     const motionRef = useRef(null);
     const videoRef = useRef(null);
     useGoFlyMotion(motionRef, [mode, searchTab]);
@@ -144,6 +159,14 @@ export default function HomePage() {
         mq.addEventListener('change', sync);
         return () => mq.removeEventListener('change', sync);
     }, []);
+
+    useEffect(() => {
+        if (reduceMotion) return undefined;
+        const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 200));
+        const cancel = window.cancelIdleCallback || window.clearTimeout;
+        const id = idle(() => setLoadHeroVideo(true));
+        return () => cancel(id);
+    }, [reduceMotion]);
 
     useEffect(() => {
         const video = videoRef.current;
@@ -162,7 +185,7 @@ export default function HomePage() {
         play();
         video.addEventListener('loadeddata', play);
         return () => video.removeEventListener('loadeddata', play);
-    }, [reduceMotion]);
+    }, [reduceMotion, loadHeroVideo]);
 
     useEffect(() => {
         setCategory('');
@@ -198,19 +221,23 @@ export default function HomePage() {
     return (
         <div className="home page-atmosphere page-enter" ref={motionRef}>
             <section className={`home-hero ${reduceMotion ? 'home-hero--static' : ''}`}>
-                {!reduceMotion && (
+                {!reduceMotion && HERO_MEDIA && (
                     <video
                         ref={videoRef}
                         className="home-hero-video"
-                        src="/videos/hero-bg.mp4"
+                        poster={HERO_MEDIA.poster}
                         autoPlay
                         muted
                         loop
                         playsInline
-                        preload="metadata"
+                        preload="none"
                         aria-hidden="true"
                         tabIndex={-1}
-                    />
+                    >
+                        {loadHeroVideo && (
+                            <source src={HERO_MEDIA.video} type="video/mp4" />
+                        )}
+                    </video>
                 )}
                 <div className="home-hero-overlay" aria-hidden="true" />
 

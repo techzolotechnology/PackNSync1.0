@@ -1,29 +1,31 @@
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { useAuthUiStore } from './store/authUiStore.js';
 import Navbar from './components/Navbar.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import HomePage from './pages/HomePage.jsx';
 import TripsPage from './pages/TripsPage.jsx';
-import TripDetailPage from './pages/TripDetailPage.jsx';
 import CreateTripPage from './pages/CreateTripPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
-import AdminPage from './pages/AdminPage.jsx';
-import RentalsPage from './pages/RentalsPage.jsx';
 import MyBookingsPage from './pages/MyBookingsPage.jsx';
-import HostDashboard from './pages/HostDashboard.jsx';
 import VerificationPage from './pages/VerificationPage.jsx';
-import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
-import RefundPolicy from './pages/RefundPolicy.jsx';
-import TermsAndConditions from './pages/TermsAndConditions.jsx';
-import TermsPage from './pages/TermsPage.jsx';
-import ExplorePage from './pages/ExplorePage.jsx';
-import WalletPage from './pages/WalletPage.jsx';
 import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 import PageTransition from './components/motion/PageTransition.jsx';
 import MotionBridge from './components/motion/MotionBridge.jsx';
+
+// Heavy routes are code-split so the initial bundle stays small.
+const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
+const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx'));
+const RentalsPage = lazy(() => import('./pages/RentalsPage.jsx'));
+const TripDetailPage = lazy(() => import('./pages/TripDetailPage.jsx'));
+const HostDashboard = lazy(() => import('./pages/HostDashboard.jsx'));
+const WalletPage = lazy(() => import('./pages/WalletPage.jsx'));
+const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions.jsx'));
+const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'));
 
 const HIDE_FOOTER_PATHS = new Set(['/explore']);
 
@@ -130,6 +132,7 @@ export default function App() {
             <main className="app-page">
                 <MotionBridge />
                 <PageTransition>
+                    <Suspense fallback={<div className="page-auth-pending" aria-busy="true" />}>
                     <Routes location={location}>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
@@ -152,6 +155,7 @@ export default function App() {
                     <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
                     </Routes>
+                    </Suspense>
                 </PageTransition>
             </main>
             {!HIDE_FOOTER_PATHS.has(pathname) && (!user || user.role !== 'ADMIN') ? <Footer /> : null}

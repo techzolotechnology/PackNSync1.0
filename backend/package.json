@@ -18,6 +18,7 @@
         "db:seed:showcase": "node prisma/seedShowcase.js",
         "db:seed:showcase:remove": "node prisma/seedShowcase.js --remove",
         "admin:upsert": "node scripts/upsert_admin_user.js",
+        "hero:upload": "node scripts/upload_hero_video.js",
         "test": "vitest run"
     },
     "dependencies": {
