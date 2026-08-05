@@ -4,6 +4,7 @@ import { tripsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { TRIP_COVER_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './TripsPage.css';
 
 const STATUSES = ['', 'OPEN', 'FULL', 'IN_PROGRESS', 'COMPLETED'];
@@ -16,14 +17,7 @@ const STATUS_LABELS = {
     CANCELLED: 'Cancelled',
 };
 
-const COVER_FALLBACKS = [
-    'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=80',
-];
+const COVER_FALLBACKS = TRIP_COVER_FALLBACKS;
 
 const coverFor = (trip, index) =>
     trip.coverImageUrl || COVER_FALLBACKS[index % COVER_FALLBACKS.length];
@@ -51,7 +45,13 @@ function TripCard({ trip, index, isMine, myRole }) {
     return (
         <article className={`tt-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
             <div className="tt-card-media">
-                <img src={coverFor(trip, index)} alt={trip.title} loading="lazy" />
+                <img
+                    src={coverFor(trip, index)}
+                    alt={trip.title}
+                    loading="lazy"
+                    width={STOCK_IMG_SIZE.cardCover.width}
+                    height={STOCK_IMG_SIZE.cardCover.height}
+                />
                 <span className={`tt-status tt-status-${statusKey}`}>{statusLabel}</span>
                 {role === 'ORGANIZER' && <span className="tt-yours-badge">Yours</span>}
                 {role === 'MEMBER' && <span className="tt-yours-badge tt-joined-badge">Joined</span>}

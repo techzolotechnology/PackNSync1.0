@@ -1,26 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { getGoogleMapsApiKey, hasGoogleMapsApiKey, loadGoogleMaps } from '../utils/googleMapsLoader.js';
 import './LocationAutocomplete.css';
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
-
-let mapsLoaderPromise = null;
-
-function loadGoogleMaps() {
-    if (!API_KEY) return Promise.resolve(null);
-    if (window.google?.maps?.importLibrary) return Promise.resolve(window.google.maps);
-    if (mapsLoaderPromise) return mapsLoaderPromise;
-
-    mapsLoaderPromise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&loading=async`;
-        script.async = true;
-        script.onload = () => resolve(window.google?.maps || null);
-        script.onerror = () => reject(new Error('Failed to load Google Maps'));
-        document.head.appendChild(script);
-    });
-
-    return mapsLoaderPromise;
-}
+const API_KEY = getGoogleMapsApiKey();
 
 async function fetchPhotonSuggestions(input) {
     const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(input)}&limit=6&lang=en`;
@@ -53,7 +35,7 @@ export default function LocationAutocomplete({
 }) {
     const [suggestions, setSuggestions] = useState([]);
     const [show, setShow] = useState(false);
-    const [ready, setReady] = useState(!API_KEY);
+    const [ready, setReady] = useState(!hasGoogleMapsApiKey());
     const [loading, setLoading] = useState(false);
     const legacyServiceRef = useRef(null);
     const legacyPlacesRef = useRef(null);

@@ -5,29 +5,12 @@ import { rentalsApi, verificationsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { CAR_FALLBACKS, BIKE_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import { wakeApi } from '../utils/apiResilience.js';
 import './RentalsPage.css';
 
 const today = new Date().toISOString().slice(0, 10);
 const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-
-const CAR_FALLBACKS = [
-    'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=900&q=80',
-    'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=900&q=80',
-];
-
-const BIKE_FALLBACKS = [
-    // Honda CB100-style classic commuter (matches showcase Honda CB100)
-    'https://images.unsplash.com/photo-1527905890126-e4d915153e25?auto=format&fit=crop&w=900&q=80',
-    // Sports / naked street bike
-    'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=900&q=80',
-    // Honda Scoopy petrol scooter (matches showcase Honda Scoopy)
-    'https://images.unsplash.com/photo-1712213248719-aade0e02a591?auto=format&fit=crop&w=900&q=80',
-    // Official Ather EV scooter at charger (matches showcase Ather 450X)
-    'https://images.unsplash.com/photo-1623079398404-4a024f3f4aee?auto=format&fit=crop&w=900&q=80',
-];
 
 const CAR_CATEGORIES = [
     {
@@ -469,7 +452,14 @@ export default function RentalsPage() {
                         >
                             <span className="cr-cat-icon"><CategoryIcon type={cat.icon} /></span>
                             <span className="cr-cat-label">{cat.label}</span>
-                            <img src={cat.thumb} alt="" className="cr-cat-thumb" />
+                            <img
+                                src={cat.thumb}
+                                alt=""
+                                className="cr-cat-thumb"
+                                loading="lazy"
+                                width={STOCK_IMG_SIZE.catThumb.width}
+                                height={STOCK_IMG_SIZE.catThumb.height}
+                            />
                         </button>
                     ))}
                 </div>
@@ -542,7 +532,13 @@ export default function RentalsPage() {
                             return (
                                 <article key={listing.id} className={`cr-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
                                     <div className="cr-card-media">
-                                        <img src={image} alt={title} loading="lazy" />
+                                        <img
+                                            src={image}
+                                            alt={title}
+                                            loading="lazy"
+                                            width={STOCK_IMG_SIZE.cardCover.width}
+                                            height={STOCK_IMG_SIZE.cardCover.height}
+                                        />
                                         {isBike && (
                                             <span className="cr-card-type">
                                                 {v.type === 'SCOOTER' ? 'Scooter' : 'Bike'}

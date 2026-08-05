@@ -19,7 +19,7 @@
     background:
         linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.32) 40%, rgba(248, 250, 252, 0.94) 100%),
         linear-gradient(90deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.18) 55%, rgba(0, 123, 255, 0.22) 100%),
-        url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=85') center 40% / cover no-repeat;
+        url('/images/stock/car-hero.jpg') center 40% / cover no-repeat;
 }
 
 .cr-hero-fx {
@@ -140,7 +140,7 @@
 .cr-kind-bike .cr-hero-media {
     background-image:
         linear-gradient(120deg, rgba(44, 36, 34, 0.72), rgba(0, 123, 255, 0.45)),
-        url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=2000&q=85');
+        url('/images/stock/bike-hero.jpg');
 }
 
 .cr-hero-inner h1 {

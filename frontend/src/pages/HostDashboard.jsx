@@ -3,15 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { rentalsApi, vehiclesApi, verificationsApi } from '../api/index.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
+import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './HostDashboard.css';
 
 const today = new Date().toISOString().slice(0, 10);
 const nextMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
-const FALLBACK_THUMB =
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=70';
-const FALLBACK_BIKE_THUMB =
-    'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=400&q=70';
+const FALLBACK_THUMB = STOCK.carHero;
+const FALLBACK_BIKE_THUMB = STOCK.bikeHero;
 
 const VEHICLE_TYPES = [
     { id: 'CAR', label: 'Car', makeHint: 'Toyota', modelHint: 'Innova', seats: 5 },
@@ -312,7 +311,14 @@ export default function HostDashboard() {
                                 return (
                                     <article key={vehicle.id} className="host-v-card">
                                         <div className="host-v-top">
-                                            <img src={thumb} alt={title} className="host-v-thumb" />
+                                            <img
+                                                src={thumb}
+                                                alt={title}
+                                                className="host-v-thumb"
+                                                loading="lazy"
+                                                width={STOCK_IMG_SIZE.hostThumb.width}
+                                                height={STOCK_IMG_SIZE.hostThumb.height}
+                                            />
                                             <div className="host-v-meta">
                                                 <h3>{title}</h3>
                                                 <span className="host-type-badge">{typeLabel(vehicle.type)}</span>
@@ -445,7 +451,7 @@ export default function HostDashboard() {
                             {vehicleImages.length > 0 && (
                                 <div className="vehicle-photo-preview">
                                     {vehicleImages.map((url) => (
-                                        <img key={url} src={url} alt="Vehicle" />
+                                        <img key={url} src={url} alt="Vehicle" loading="lazy" width={800} height={600} />
                                     ))}
                                 </div>
                             )}

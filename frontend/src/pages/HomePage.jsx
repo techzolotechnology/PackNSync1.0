@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { STOCK } from '../constants/stockImages.js';
 import './HomePage.css';
 
 const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
@@ -92,13 +93,13 @@ const MODULES = {
         to: '/trips',
         title: 'Group Adventure Hub',
         cta: 'Browse trips →',
-        image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1400&q=80',
+        image: STOCK.tripRoad,
     },
     rentals: {
         to: '/rentals',
         title: 'Community cars & bikes',
         cta: 'Find wheels →',
-        image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1400&q=80',
+        image: STOCK.carClassic,
     },
 };
 

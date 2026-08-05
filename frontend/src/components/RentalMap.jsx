@@ -1,28 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { geocodeAddress } from '../utils/geocode.js';
+import { hasGoogleMapsApiKey, loadGoogleMaps } from '../utils/googleMapsLoader.js';
 import './RentalMap.css';
-
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
-
-const loadGoogleMaps = () => {
-    if (window.google?.maps?.importLibrary) return Promise.resolve(window.google.maps);
-    if (!API_KEY) return Promise.resolve(null);
-
-    return new Promise((resolve) => {
-        const existing = document.querySelector('script[data-rental-map]');
-        if (existing) {
-            existing.addEventListener('load', () => resolve(window.google?.maps || null));
-            return;
-        }
-        const script = document.createElement('script');
-        script.dataset.rentalMap = '1';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&loading=async`;
-        script.async = true;
-        script.onload = () => resolve(window.google?.maps || null);
-        script.onerror = () => resolve(null);
-        document.head.appendChild(script);
-    });
-};
 
 export default function RentalMap({ listings, selectedId, onSelect, rentalDays }) {
     const mapRef = useRef(null);
@@ -50,7 +29,7 @@ export default function RentalMap({ listings, selectedId, onSelect, rentalDays }
     }, [listings]);
 
     useEffect(() => {
-        if (!mapRef.current || !API_KEY) return;
+        if (!mapRef.current || !hasGoogleMapsApiKey()) return;
 
         let cancelled = false;
         (async () => {
@@ -105,7 +84,7 @@ export default function RentalMap({ listings, selectedId, onSelect, rentalDays }
     }, [listings, coordsById, selectedId, onSelect]);
 
     useEffect(() => {
-        if (!API_KEY) setMapError('Add VITE_GOOGLE_MAPS_API_KEY for the map view.');
+        if (!hasGoogleMapsApiKey()) setMapError('Add VITE_GOOGLE_MAPS_API_KEY for the map view.');
     }, []);
 
     const pinnedCount = Object.keys(coordsById).length;

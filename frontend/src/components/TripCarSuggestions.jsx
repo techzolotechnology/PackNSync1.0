@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { rentalsApi, tripsApi } from '../api/index.js';
+import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './TripCarSuggestions.css';
 
-const FALLBACK =
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=70';
+const FALLBACK = STOCK.carHero;
 
 /**
  * Suggests rental cars matched to trip destination, dates, and group size.
@@ -103,7 +103,14 @@ export default function TripCarSuggestions({
                         const bookHref = `/rentals?listing=${listing.id}&start=${startDate || ''}&end=${endDate || ''}`;
                         return (
                             <article key={listing.id} className="trip-car-card">
-                                <img src={thumb} alt={name} className="trip-car-thumb" />
+                                <img
+                                    src={thumb}
+                                    alt={name}
+                                    className="trip-car-thumb"
+                                    loading="lazy"
+                                    width={STOCK_IMG_SIZE.tripCarThumb.width}
+                                    height={STOCK_IMG_SIZE.tripCarThumb.height}
+                                />
                                 <div className="trip-car-body">
                                     <h4>{name}</h4>
                                     <p className="trip-car-loc">{listing.location}</p>

@@ -5,11 +5,11 @@ import { exploreApi } from '../api/index.js';
 import ExploreMap from '../components/ExploreMap.jsx';
 import ExplorePlanner from '../components/ExplorePlanner.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './ExplorePage.css';
 
 const SESSION_KEY = 'packandsync-explore-session';
-const FALLBACK_IMG =
-    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=70';
+const FALLBACK_IMG = STOCK.explorePlace;
 
 function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
     const img = place.photoUrl || FALLBACK_IMG;
@@ -23,7 +23,13 @@ function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
             tabIndex={0}
         >
             <div className="explore-place-media">
-                <img src={img} alt={place.name} loading="lazy" />
+                <img
+                    src={img}
+                    alt={place.name}
+                    loading="lazy"
+                    width={STOCK_IMG_SIZE.exploreThumb.width}
+                    height={STOCK_IMG_SIZE.exploreThumb.height}
+                />
                 <span className="explore-place-rank">{index + 1}</span>
                 {place.rating != null && (
                     <span className="explore-place-rating">

@@ -1,27 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { hasGoogleMapsApiKey, loadGoogleMaps } from '../utils/googleMapsLoader.js';
 import './ExploreMap.css';
-
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
-
-const loadGoogleMaps = () => {
-    if (window.google?.maps?.importLibrary) return Promise.resolve(window.google.maps);
-    if (!API_KEY) return Promise.resolve(null);
-
-    return new Promise((resolve) => {
-        const existing = document.querySelector('script[data-explore-map]');
-        if (existing) {
-            existing.addEventListener('load', () => resolve(window.google?.maps || null));
-            return;
-        }
-        const script = document.createElement('script');
-        script.dataset.exploreMap = '1';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&loading=async`;
-        script.async = true;
-        script.onload = () => resolve(window.google?.maps || null);
-        script.onerror = () => resolve(null);
-        document.head.appendChild(script);
-    });
-};
 
 function FallbackMap({ places, selectedId, onSelect }) {
     const bounds = useMemo(() => {
@@ -78,10 +57,10 @@ export default function ExploreMap({ places = [], selectedId, onSelect }) {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
     const markersRef = useRef([]);
-    const [useFallback, setUseFallback] = useState(!API_KEY);
+    const [useFallback, setUseFallback] = useState(!hasGoogleMapsApiKey());
 
     useEffect(() => {
-        if (!API_KEY || !mapRef.current) return undefined;
+        if (!hasGoogleMapsApiKey() || !mapRef.current) return undefined;
         let cancelled = false;
 
         (async () => {

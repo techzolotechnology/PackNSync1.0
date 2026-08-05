@@ -5,10 +5,10 @@ import toast from 'react-hot-toast';
 import { usersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { mediaUrl } from '../utils/mediaUrl.js';
+import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './ProfilePage.css';
 
-const TRIP_FALLBACK =
-    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=70';
+const TRIP_FALLBACK = STOCK.tripRoad;
 
 const INTEREST_OPTIONS = [
     'Road trips', 'Beach', 'Mountains', 'Food', 'Photography',
@@ -476,6 +476,8 @@ export default function ProfilePage() {
                                             src={trip.coverImageUrl || TRIP_FALLBACK}
                                             alt=""
                                             loading="lazy"
+                                            width={STOCK_IMG_SIZE.profileTrip.width}
+                                            height={STOCK_IMG_SIZE.profileTrip.height}
                                         />
                                     </div>
                                     <div className="pf-trip-info">
