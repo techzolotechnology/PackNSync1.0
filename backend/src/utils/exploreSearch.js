@@ -7,7 +7,7 @@ import {
     isGooglePlacesConfigured,
 } from './exploreGooglePlaces.js';
 
-const USER_AGENT = 'PackAndSync/1.0 (explore; contact=dev@packandsync.local)';
+const USER_AGENT = 'PickAndSync/1.0 (explore; contact=dev@packandsync.local)';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
 

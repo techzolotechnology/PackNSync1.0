@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_ADMIN_NAME = 'PackAndSync Admin';
+const DEFAULT_ADMIN_NAME = 'PickAndSync Admin';
 const DEFAULT_ADMIN_CITY = 'Bangalore';
 
 function getTrimmedEnv(name) {
@@ -39,7 +39,7 @@ async function main() {
       email,
       role: 'ADMIN',
       city: adminCity,
-      bio: 'PackAndSync admin account. Platform access enabled.',
+      bio: 'PickAndSync admin account. Platform access enabled.',
       languages: ['English', 'Hindi'],
       interests: ['Road trips', 'City breaks'],
       travelStyle: 'balanced',

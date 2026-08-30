@@ -98,7 +98,7 @@ export default function LoginPage() {
                 <div className="auth-shell">
                     <Link to="/" className="auth-brand">
                         <span className="auth-brand-mark" aria-hidden="true" />
-                        PackAndSync
+                        PickAndSync
                     </Link>
 
                     <div className="auth-card">

@@ -1,9 +1,10 @@
 import axios from 'axios';
 
+import { API_BASE_URL } from '../config/backend.js';
 import { withNetworkRetry } from '../utils/apiResilience.js';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (window.location.protocol === 'file:' ? 'http://127.0.0.1:3001/api' : '/api'),
+    baseURL: API_BASE_URL,
     withCredentials: true,
     headers: { 'Content-Type': 'application/json' },
     // OTP + Render cold start can exceed 20s; still fail eventually

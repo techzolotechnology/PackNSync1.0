@@ -302,7 +302,7 @@ model Payment {
   @@map("payments")
 }
 
-/// In-app PackAndSync wallet (INR). Top up via Cashfree; spend in-app; withdraw outside.
+/// In-app PickAndSync wallet (INR). Top up via Cashfree; spend in-app; withdraw outside.
 model Wallet {
   id        String   @id @default(uuid())
   userId    String   @unique

@@ -1,7 +1,7 @@
-import { Platform } from 'react-native';
+import { API_BASE_URL } from './backendConfig';
 
 let token = null;
-let baseUrl = process.env.EXPO_PUBLIC_API_URL || (Platform.OS === 'android' ? 'http://10.0.2.2:3001/api' : 'http://127.0.0.1:3001/api');
+const baseUrl = API_BASE_URL;
 
 const request = async (path, options = {}) => {
   const url = `${baseUrl}${path}`;
@@ -32,7 +32,6 @@ const requestWithRefresh = async (path, options = {}) => {
 
 export const api = {
   setToken: (nextToken) => { token = nextToken; },
-  setBaseUrl: (nextBaseUrl) => { baseUrl = nextBaseUrl; },
   get: (path, params) => {
     const query = params ? `?${new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== '')).toString()}` : '';
     return requestWithRefresh(`${path}${query}`);

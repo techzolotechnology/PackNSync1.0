@@ -146,7 +146,7 @@ export const createTopup = async (req, res) => {
             customerName: user.name,
             returnUrl,
             notifyUrl,
-            orderNote: 'PackAndSync wallet top-up',
+            orderNote: 'PickAndSync wallet top-up',
         });
 
         await prisma.walletTransaction.update({
@@ -402,7 +402,7 @@ export const withdraw = async (req, res) => {
             bankAccount: payoutMeta.accountNumber,
             ifsc: payoutMeta.ifsc,
             vpa: payoutMeta.upiId,
-            remarks: 'PackAndSync wallet withdrawal',
+            remarks: 'PickAndSync wallet withdrawal',
         });
 
         await markWithdrawSuccess(transaction.id, {

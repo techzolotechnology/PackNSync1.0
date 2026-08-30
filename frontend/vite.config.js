@@ -2,8 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-// GitHub Pages needs e.g. "/PackNSync1.0/" — set VITE_BASE in CI
+// GitHub Pages needs e.g. "/PickAndSync1.0/" — set VITE_BASE in CI
 const base = process.env.VITE_BASE || './';
+const backendOrigin = process.env.VITE_DEV_BACKEND_ORIGIN || 'https://packandsync-api.onrender.com';
 
 export default defineConfig({
     base,
@@ -40,12 +41,17 @@ export default defineConfig({
         port: 5173,
         proxy: {
             '/api': {
-                target: 'http://localhost:3001',
+                target: backendOrigin,
                 changeOrigin: true,
             },
             '/uploads': {
-                target: 'http://localhost:3001',
+                target: backendOrigin,
                 changeOrigin: true,
+            },
+            '/socket.io': {
+                target: backendOrigin,
+                changeOrigin: true,
+                ws: true,
             },
         },
     },

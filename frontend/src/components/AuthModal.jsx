@@ -133,7 +133,7 @@ export default function AuthModal() {
                     </svg>
                 </button>
 
-                <p className="auth-modal-brand">PackAndSync</p>
+                <p className="auth-modal-brand">PickAndSync</p>
 
                 <div className="auth-modal-header">
                     <h2 id="auth-modal-title" className="font-display">

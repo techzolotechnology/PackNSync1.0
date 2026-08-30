@@ -155,7 +155,7 @@ export async function createPayoutTransfer({
         amount: String(Number(amount).toFixed(2)),
         transferId,
         transferMode: transferMode === 'upi' ? 'upi' : 'banktransfer',
-        remarks: remarks || 'PackAndSync wallet withdrawal',
+        remarks: remarks || 'PickAndSync wallet withdrawal',
         beneDetails: {
             beneId: `bene_${transferId}`.slice(0, 50),
             name: beneficiary.name,

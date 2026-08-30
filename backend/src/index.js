@@ -34,12 +34,17 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+app.set('trust proxy', 1);
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 const DEFAULT_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
+  'http://localhost:19006',
+  'http://127.0.0.1:19006',
   'https://pickandsync.com',
   'https://www.pickandsync.com',
 ];
@@ -58,15 +63,17 @@ const allowedOrigins = [...new Set([
   ...parseOrigins(process.env.FRONTEND_URLS, process.env.FRONTEND_URL),
 ])];
 
+function allowClientOrigin(origin, callback) {
+  if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+  console.warn(`[CORS] blocked origin: ${origin}`);
+  // Do not throw: browsers otherwise report only a generic CORS failure.
+  return callback(null, false);
+}
+
 const corsOptions = {
-  origin(origin, callback) {
-    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    console.warn(`[CORS] blocked origin: ${origin}`);
-    // Do not throw — throwing omits ACAO headers and browsers report a generic CORS failure
-    return callback(null, false);
-  },
+  origin: allowClientOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -76,7 +83,7 @@ const corsOptions = {
 // Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: allowClientOrigin,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -118,20 +125,21 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-  const protocol = req.protocol;
-  const host = req.get('host');
+  const publicOrigin = String(
+    process.env.API_PUBLIC_URL || `${req.protocol}://${req.get('host')}`
+  ).replace(/\/$/, '');
   res.json({
     success: true,
-    apiBaseUrl: `${protocol}://${host}/api`,
-    socketUrl: `${protocol}://${host}`,
-    clients: ['web', 'desktop', 'android'],
+    apiBaseUrl: `${publicOrigin}/api`,
+    socketUrl: publicOrigin,
+    clients: ['web', 'desktop', 'android', 'ios', 'expo-web'],
   });
 });
 
 // Root route
 app.get('/', (_req, res) => {
   res.json({
-    message: 'Welcome to PackAndSync API',
+    message: 'Welcome to PickAndSync API',
     status: 'running',
     docs: '/api-docs', // placeholder if there are docs
     version: '1.0.0'
@@ -162,7 +170,7 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   const lan = Object.values(os.networkInterfaces())
     .flat()
     .find((net) => net?.family === 'IPv4' && !net.internal)?.address;
-  console.log(`🚀 PackAndSync API running on http://localhost:${PORT}`);
+  console.log(`🚀 PickAndSync API running on http://localhost:${PORT}`);
   if (lan) console.log(`📱 Android/other devices: http://${lan}:${PORT}/api`);
 });
 

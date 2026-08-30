@@ -1,6 +1,6 @@
-# PackAndSync
+# PickAndSync
 
-PackAndSync is a travel coordination system for groups, rides, and self-drive rentals. One backend powers three clients:
+PickAndSync is a travel coordination system for groups, rides, and self-drive rentals. One backend powers three clients:
 
 - Website: React + Vite
 - Android APK: React Native + Expo
@@ -50,12 +50,11 @@ flowchart TD
 
 All clients talk to the same Express backend:
 
-- Website dev uses Vite proxy: `/api`
-- Desktop packaged app uses: `http://127.0.0.1:3001/api`
-- Android emulator uses: `http://10.0.2.2:3001/api`
-- Physical Android phone uses your PC LAN URL printed by backend, for example `http://192.168.1.10:3001/api`
-
-In the APK, open `Account`, paste the backend URL in `Backend API URL`, then tap `Sync Backend`.
+- Website, Android, Expo web, and packaged desktop default to `https://packandsync-api.onrender.com/api`.
+- Local website development reaches that API through Vite's same-origin proxy.
+- Website and desktop can deliberately override it with `VITE_API_URL` and `VITE_SOCKET_URL`.
+- Mobile can deliberately override it with `EXPO_PUBLIC_API_URL`.
+- The backend accepts the production website, local web development, native mobile, and packaged desktop clients through one CORS policy.
 
 ## Project Structure
 
@@ -181,7 +180,7 @@ Windows `.exe`:
 npm run build:desktop:exe
 ```
 
-Output: `desktop/release/PackAndSync Setup 1.0.0.exe`
+Output: `desktop/release/PickAndSync Setup 1.0.0.exe`
 
 ## Backend API Areas
 

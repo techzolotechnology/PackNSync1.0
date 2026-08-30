@@ -3,6 +3,13 @@
     background: transparent;
 }
 
+.hero-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-6, 1.5rem);
+}
+
+
 /* ── Cinematic video hero ── */
 .home-hero {
     position: relative;
@@ -13,7 +20,7 @@
     flex-direction: column;
     justify-content: center;
     padding: clamp(4.5rem, 10vw, 6.5rem) 0 0;
-    background: #0b1f33;
+    background: linear-gradient(145deg, #eff9ff 0%, #d8efff 48%, #bfe2ff 100%);
 }
 
 .home-hero-video {
@@ -25,8 +32,8 @@
     object-position: center;
     z-index: 0;
     pointer-events: none;
-    /* Keep video readable — light grade only, not crushed */
-    filter: brightness(0.92) saturate(1.05) contrast(1.02);
+    opacity: 0.1;
+    filter: brightness(1.12) saturate(0.7) contrast(0.9);
     transform: scale(1.02);
 }
 
@@ -36,20 +43,20 @@
     z-index: 1;
     pointer-events: none;
     background:
-        linear-gradient(180deg, rgba(8, 18, 32, 0.35) 0%, rgba(8, 18, 32, 0.22) 38%, rgba(8, 18, 32, 0.55) 100%),
-        radial-gradient(ellipse 70% 55% at 50% 40%, transparent 30%, rgba(8, 18, 32, 0.28) 100%);
+        radial-gradient(ellipse 70% 55% at 50% 28%, rgba(255, 255, 255, 0.8), transparent 68%),
+        linear-gradient(180deg, rgba(220, 242, 255, 0.22) 0%, rgba(130, 196, 246, 0.18) 100%);
 }
 
 .home-hero--static {
     background:
-        radial-gradient(ellipse 62% 58% at 10% -5%, rgba(0, 123, 255, 0.22), transparent 60%),
-        radial-gradient(ellipse 52% 48% at 94% 12%, rgba(219, 234, 254, 0.35), transparent 58%),
-        linear-gradient(160deg, #0c2744 0%, #134e8a 48%, #0b1f33 100%);
+        radial-gradient(ellipse 62% 58% at 10% -5%, rgba(255, 255, 255, 0.92), transparent 60%),
+        radial-gradient(ellipse 52% 48% at 94% 12%, rgba(111, 190, 248, 0.28), transparent 58%),
+        linear-gradient(160deg, #eff9ff 0%, #d8efff 48%, #bfe2ff 100%);
 }
 
 .home-hero--static .home-hero-overlay {
     background:
-        linear-gradient(180deg, rgba(8, 18, 32, 0.2) 0%, rgba(8, 18, 32, 0.45) 100%);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(84, 164, 224, 0.12) 100%);
 }
 
 .home-hero-copy {
@@ -67,8 +74,8 @@
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #ffffff;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+    color: #0876cf;
+    text-shadow: none;
 }
 
 .home-hero-copy h1 {
@@ -77,14 +84,14 @@
     font-weight: 800;
     line-height: 1.08;
     letter-spacing: -0.03em;
-    color: #ffffff !important;
-    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+    color: #0b2744 !important;
+    text-shadow: none;
 }
 
 .home-hero-sub {
     margin: 0 auto;
     max-width: 34rem;
-    color: rgba(255, 255, 255, 0.88);
+    color: #35556f;
     font-size: clamp(0.98rem, 1.6vw, 1.12rem);
     font-weight: 500;
     line-height: 1.55;

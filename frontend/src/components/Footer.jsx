@@ -8,7 +8,7 @@ const Footer = () => {
             <div className="container">
                 <div className="footer-grid">
                     <div className="footer-brand">
-                        <Link to="/" className="brand-link font-display">PackAndSync</Link>
+                        <Link to="/" className="brand-link font-display">PickAndSync</Link>
                         <p>Travel together with shared trips and split costs — or rent a self-drive car from local hosts.</p>
                         <p className="footer-legal-name">
                             A product of <strong>TECHZOLO TECHNOLOGIES LLP</strong>

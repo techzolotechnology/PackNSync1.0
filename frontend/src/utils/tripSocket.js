@@ -1,6 +1,5 @@
 import { io as ioClient } from 'socket.io-client';
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+import { SOCKET_BASE_URL } from '../config/backend.js';
 
 let sharedSocket = null;
 let sharedUserId = null;
@@ -21,7 +20,7 @@ export function getTripSocket(userId) {
     }
 
     sharedUserId = userId;
-    sharedSocket = ioClient(SOCKET_URL, {
+    sharedSocket = ioClient(SOCKET_BASE_URL, {
         auth: { userId },
         transports: ['websocket', 'polling'],
         autoConnect: true,

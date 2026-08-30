@@ -56,7 +56,7 @@ export async function fetchCoverSuggestions(place, limit = 4) {
         const res = await fetch(url.toString(), {
             headers: {
                 Accept: 'application/json',
-                'User-Agent': 'PackAndSync/1.0 (trip cover suggestions)',
+                'User-Agent': 'PickAndSync/1.0 (trip cover suggestions)',
             },
         });
 

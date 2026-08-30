@@ -1,4 +1,4 @@
-# PackAndSync API — for Render / Railway / any Docker host
+# PickAndSync API — for Render / Railway / any Docker host
 FROM node:20-bookworm-slim
 
 WORKDIR /app

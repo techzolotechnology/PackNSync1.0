@@ -1,3 +1,5 @@
+import { BACKEND_ORIGIN } from '../config/backend.js';
+
 /**
  * Transient browser/network failures (Wi‑Fi flip, VPN, ERR_NETWORK_CHANGED).
  * Do NOT treat HTTP 4xx/5xx as transient — those are real API answers
@@ -36,7 +38,7 @@ export async function withNetworkRetry(fn, { retries = 2, delayMs = 900 } = {}) 
 
 /** Ping Render health so cold starts begin before the user hits Get OTP. */
 export function wakeApi() {
-    const base = (import.meta.env.VITE_SOCKET_URL || '').replace(/\/$/, '');
+    const base = BACKEND_ORIGIN;
     if (!base || base.includes('localhost') || base.includes('127.0.0.1')) return;
     fetch(`${base}/health`, { method: 'GET', mode: 'cors', cache: 'no-store' }).catch(() => {});
 }

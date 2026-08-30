@@ -1,10 +1,10 @@
 /**
- * PackAndSync branded email templates.
+ * PickAndSync branded email templates.
  * Inline styles + table layout for Gmail / Outlook / ZeptoMail.
  */
 
 const BRAND = {
-    name: 'PackAndSync',
+    name: 'PickAndSync',
     navy: '#292966',
     slate: '#5c5c99',
     mist: '#a3a3cc',
@@ -35,7 +35,7 @@ export function wrapEmail({
 }) {
     const site = BRAND.site;
     const btnUrl = ctaUrl || site;
-    const btnLabel = ctaLabel || 'Open PackAndSync';
+    const btnLabel = ctaLabel || 'Open PickAndSync';
     const safeTitle = escapeHtml(title);
     const safePre = escapeHtml(preheader);
 
@@ -121,9 +121,9 @@ export function wrapEmail({
 export function otpEmail({ otpCode, minutes = 10 }) {
     const code = escapeHtml(otpCode);
     return wrapEmail({
-        preheader: `Your PackAndSync code is ${otpCode}`,
+        preheader: `Your PickAndSync code is ${otpCode}`,
         title: 'Your verification code',
-        ctaLabel: 'Open PackAndSync',
+        ctaLabel: 'Open PickAndSync',
         ctaUrl: BRAND.site,
         bodyHtml: `
           <p style="margin:0 0 16px;">Use this one-time code to sign in. It expires in <strong>${minutes} minutes</strong>.</p>
@@ -131,9 +131,9 @@ export function otpEmail({ otpCode, minutes = 10 }) {
                     color:${BRAND.slate};font-weight:700;">Code</p>
           <p style="margin:0 0 20px;font-size:32px;font-weight:800;letter-spacing:0.28em;
                     color:${BRAND.navy};font-family:Consolas,Monaco,monospace;">${code}</p>
-          <p style="margin:0;color:${BRAND.slate};font-size:14px;">Do not share this code with anyone. PackAndSync will never ask for it by phone.</p>
+          <p style="margin:0;color:${BRAND.slate};font-size:14px;">Do not share this code with anyone. PickAndSync will never ask for it by phone.</p>
         `,
-        bodyText: `Your PackAndSync verification code is ${otpCode}. It expires in ${minutes} minutes. Do not share it with anyone.`,
+        bodyText: `Your PickAndSync verification code is ${otpCode}. It expires in ${minutes} minutes. Do not share it with anyone.`,
     });
 }
 
@@ -238,7 +238,7 @@ export function rideBookingEmail({ userName, provider, vehicleType, pickup, drop
     return wrapEmail({
         preheader: `Ride request — ${provider}`,
         title: 'Ride booking requested',
-        ctaLabel: 'Open PackAndSync',
+        ctaLabel: 'Open PickAndSync',
         ctaUrl: BRAND.site,
         bodyHtml: `
           <p style="margin:0 0 14px;">Hi ${escapeHtml(userName || 'there')},</p>
@@ -271,7 +271,7 @@ export function walletTopupEmail({ userName, amount, balance, orderId }) {
         bodyHtml: `
           <p style="margin:0 0 14px;">Hi ${escapeHtml(userName || 'there')},</p>
           <p style="margin:0 0 18px;">
-            <strong>₹${escapeHtml(Number(amount).toLocaleString('en-IN'))}</strong> was added to your PackAndSync wallet.
+            <strong>₹${escapeHtml(Number(amount).toLocaleString('en-IN'))}</strong> was added to your PickAndSync wallet.
           </p>
           <p style="margin:0;color:${BRAND.slate};font-size:14px;">
             Available balance: <strong style="color:${BRAND.navy};">₹${escapeHtml(Number(balance).toLocaleString('en-IN'))}</strong>
@@ -281,7 +281,7 @@ export function walletTopupEmail({ userName, amount, balance, orderId }) {
         bodyText: [
             `Hi ${userName || 'there'},`,
             '',
-            `₹${Number(amount).toLocaleString('en-IN')} was added to your PackAndSync wallet.`,
+            `₹${Number(amount).toLocaleString('en-IN')} was added to your PickAndSync wallet.`,
             `Available balance: ₹${Number(balance).toLocaleString('en-IN')}`,
             orderId ? `Reference: ${orderId}` : '',
         ].filter(Boolean).join('\n'),

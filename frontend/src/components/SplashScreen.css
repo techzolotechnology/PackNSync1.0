@@ -1,0 +1,12 @@
+.pns-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--clr-primary-500, #007bff), var(--clr-primary-700, #0052ad));
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+.pns-splash-fade { opacity: 0; pointer-events: none; }

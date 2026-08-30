@@ -1,4 +1,4 @@
-# Deploy PackAndSync with GitHub
+# Deploy PickAndSync with GitHub
 
 This repo includes a **GitHub Actions CI/CD pipeline** so pushes to `main` build and deploy the website.
 
@@ -70,9 +70,9 @@ Manual deploy: **Actions** → **Deploy** → **Run workflow**.
 | | Local | Production |
 |--|--------|------------|
 | Website | `http://localhost:5173` | `https://<org>.github.io/<repo>/` |
-| API | `http://localhost:3001/api` | `https://<api>.onrender.com/api` |
+| API | Vite proxy to the common deployed API | `https://packandsync-api.onrender.com/api` |
 
-Frontend reads `VITE_API_URL` / `VITE_SOCKET_URL` at **build** time (set in the Deploy workflow secrets).
+All clients default to the common deployed API. Frontend builds can override it with `VITE_API_URL` / `VITE_SOCKET_URL`; local Vite proxy development can deliberately target another backend with `VITE_DEV_BACKEND_ORIGIN`.
 
 For **custom domains** (e.g. `pickandsync.com`), the workflow builds with `VITE_BASE=/` so JS/CSS load from `/assets/...`.  
 If you only use `https://<org>.github.io/<repo>/` with **no** custom domain, change `VITE_BASE` in `.github/workflows/deploy.yml` to `/<repo>/`.

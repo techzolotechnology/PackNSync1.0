@@ -3,21 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { STOCK } from '../constants/stockImages.js';
+import { HERO_MEDIA } from '../utils/heroMedia.js';
+import AnimatedLogo from '../components/AnimatedLogo';
 import './HomePage.css';
-
-const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
-const HERO_VIDEO_ID = import.meta.env.VITE_HERO_VIDEO_ID?.trim() || 'packandsync/hero-bg';
-
-function heroMediaUrls() {
-    if (!CLOUDINARY_CLOUD) return null;
-    const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/video/upload`;
-    return {
-        video: `${base}/w_1280,q_auto,vc_auto,ac_none,f_auto/${HERO_VIDEO_ID}.mp4`,
-        poster: `${base}/so_1,w_1280,q_auto,f_jpg/${HERO_VIDEO_ID}.jpg`,
-    };
-}
-
-const HERO_MEDIA = heroMediaUrls();
 
 const SEARCH_TABS = [
     { id: 'trips', label: 'Trips', iconTone: 'gold' },
@@ -241,7 +229,8 @@ export default function HomePage() {
                 <div className="home-hero-overlay" aria-hidden="true" />
 
                 <div className="container home-hero-copy ps-reveal">
-                    <p className="home-hero-brand">PackAndSync</p>
+                    <div className="hero-logo"><AnimatedLogo size={120} /></div>
+                    <p className="home-hero-brand">PickAndSync</p>
                     <h1>Travel together. Book wheels. Split fairly.</h1>
                     <p className="home-hero-sub">
                         Join group trips, rent community cars or bikes, and keep every cost clear — built for crews on the move.

@@ -1,4 +1,6 @@
 .tt-page {
+    position: relative;
+    isolation: isolate;
     min-height: calc(100vh - 68px);
     background: transparent;
     color: var(--clr-text-primary);
@@ -7,34 +9,41 @@
 /* ── Hero ── */
 .tt-hero {
     position: relative;
+    z-index: 2;
     padding: 5rem 0 2.5rem;
     overflow: hidden;
+    background: transparent;
 }
 
 .tt-hero-bg {
     position: absolute;
     inset: 0;
+    z-index: 2;
     pointer-events: none;
-    background:
-        radial-gradient(ellipse 60% 75% at 78% 42%, rgba(239, 246, 255, 0.92), transparent 58%),
-        radial-gradient(ellipse 48% 60% at 90% 52%, rgba(0, 123, 255, 0.16), transparent 58%),
-        radial-gradient(ellipse 55% 65% at 14% 55%, rgba(0, 123, 255, 0.09), transparent 62%),
-        radial-gradient(ellipse 36% 40% at 40% 20%, rgba(191, 219, 254, 0.18), transparent 68%),
-        var(--line-pattern),
-        var(--dot-pattern),
-        linear-gradient(180deg, var(--clr-bg-800) 0%, var(--clr-bg-800) 72%, var(--clr-bg-800) 100%);
-    background-size: auto, auto, auto, auto, auto, 18px 18px, auto;
+    background: transparent;
 }
 
 .tt-hero-bg::after {
     content: '';
     position: absolute;
     inset: 0;
-    opacity: 0.04;
-    background-image: var(--paper-noise);
-    background-size: 160px 160px;
-    mix-blend-mode: multiply;
+    display: none;
     pointer-events: none;
+}
+
+.app-shell--trips-video .tt-page.page-atmosphere::before,
+.app-shell--trips-video .tt-page.page-atmosphere::after {
+    display: none;
+}
+
+.app-shell--trips-video .footer {
+    margin-top: 0;
+    background: rgba(239, 249, 255, 0.58);
+    backdrop-filter: blur(10px) saturate(1.05);
+}
+
+.app-shell--trips-video .footer::after {
+    opacity: 0.015;
 }
 
 .tt-waves {
@@ -125,7 +134,7 @@
 
 .tt-hero-inner {
     position: relative;
-    z-index: 1;
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -207,6 +216,8 @@
 
 /* ── Toolbar ── */
 .tt-main {
+    position: relative;
+    z-index: 2;
     padding: 1.75rem 0 4rem;
 }
 
@@ -506,7 +517,8 @@
     padding: 4rem 1rem;
     border: 1px dashed var(--clr-border);
     border-radius: 18px;
-    background: var(--clr-bg-700);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(10px) saturate(1.05);
 }
 
 .tt-empty h3 {

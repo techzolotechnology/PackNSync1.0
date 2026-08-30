@@ -57,7 +57,7 @@ async function sendEmailOtp(email, otpCode) {
     try {
         await sendMail({
             to: email,
-            subject: 'Your PackAndSync verification code',
+            subject: 'Your PickAndSync verification code',
             html,
             text,
         });
@@ -84,7 +84,7 @@ async function sendTwilioSms(phoneNumber, otpCode) {
     const body = new URLSearchParams({
         To: to,
         From: from,
-        Body: `Your PackAndSync verification code is ${otpCode}. Valid for 10 minutes.`,
+        Body: `Your PickAndSync verification code is ${otpCode}. Valid for 10 minutes.`,
     });
 
     const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {

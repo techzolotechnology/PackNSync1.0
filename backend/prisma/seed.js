@@ -39,7 +39,7 @@ async function seedVerifiedUser(userId) {
 }
 
 async function main() {
-    console.log('Seeding PackAndSync with real sample data...');
+    console.log('Seeding PickAndSync with real sample data...');
 
     console.log('Clearing existing data...');
     await prisma.policyAcceptance.deleteMany();
@@ -68,7 +68,7 @@ async function main() {
             email: 'pincu7707@gmail.com',
             role: 'ADMIN',
             city: 'Bangalore',
-            bio: 'PackAndSync admin. Review verifications and keep the platform running.',
+            bio: 'PickAndSync admin. Review verifications and keep the platform running.',
             languages: ['English', 'Hindi'],
             interests: ['Road trips', 'City breaks'],
             travelStyle: 'balanced',

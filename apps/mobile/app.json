@@ -1,14 +1,16 @@
 {
   "expo": {
-    "name": "PackAndSync",
+    "name": "PickAndSync",
     "slug": "packandsync",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "scheme": "packandsync",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#080c10"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0052ad"
     },
     "assetBundlePatterns": ["**/*"],
     "android": {
@@ -16,15 +18,12 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#080c10"
+        "backgroundColor": "#007bff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "single"
-    },
-    "extra": {
-      "apiUrl": "http://10.0.2.2:3001/api"
     }
   }
 }

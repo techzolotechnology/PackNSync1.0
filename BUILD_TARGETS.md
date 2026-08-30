@@ -1,4 +1,4 @@
-# PackAndSync Build Targets
+# PickAndSync Build Targets
 
 This repo now has three client targets:
 
@@ -32,7 +32,7 @@ Requirements:
 
 - Expo/EAS account
 - Android package configured in `apps/mobile/app.json`
-- API URL set with `EXPO_PUBLIC_API_URL` for physical devices
+- The deployed common API is used automatically
 
 ## Desktop EXE
 
@@ -44,4 +44,4 @@ Output goes to `desktop/release`.
 
 ## Backend
 
-All clients expect the backend API to be available. For Android emulator use `http://10.0.2.2:3001/api`; for web/desktop use `http://127.0.0.1:3001/api` or the deployed API URL.
+Website, Android, Expo web, and desktop all default to the common deployed API at `https://packandsync-api.onrender.com/api`. Local website development reaches it through Vite's same-origin proxy. For deliberate local-backend testing, set `VITE_DEV_BACKEND_ORIGIN`; build-time client overrides remain available through `VITE_API_URL`/`VITE_SOCKET_URL` or `EXPO_PUBLIC_API_URL`.

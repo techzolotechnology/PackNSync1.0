@@ -54,6 +54,21 @@
     text-decoration: none;
 }
 
+.navbar-logo-animation {
+    display: block;
+    flex: 0 0 auto;
+    width: 1.875rem;
+    height: 1.875rem;
+    overflow: hidden;
+    border-radius: 0.55rem;
+    background: linear-gradient(135deg, #007bff, #0052ad);
+    filter: drop-shadow(0 4px 8px rgba(0, 102, 214, 0.2));
+}
+
+.navbar-logo-animation > div {
+    display: block !important;
+}
+
 .logo-mark {
     width: 1.55rem;
     height: 1.55rem;

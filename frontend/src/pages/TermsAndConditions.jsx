@@ -67,12 +67,12 @@ export default function TermsAndConditions() {
                             We operate the website{' '}
                             <a href={SITE_URL} target="_blank" rel="noreferrer">{SITE_URL}</a>
                             {' '}(the &quot;<strong>Site</strong>&quot;), the mobile application{' '}
-                            <strong>PackAndSync</strong> (also referred to as Pick And Sync) (the &quot;<strong>App</strong>&quot;),
+                            <strong>PickAndSync</strong> (also referred to as Pick And Sync) (the &quot;<strong>App</strong>&quot;),
                             as well as any other related products and services that refer or link to these legal terms
                             (the &quot;<strong>Legal Terms</strong>&quot;) (collectively, the &quot;<strong>Services</strong>&quot;).
                         </p>
                         <p>
-                            PackAndSync is a travel coordination platform for groups. Users can plan and join trips,
+                            PickAndSync is a travel coordination platform for groups. Users can plan and join trips,
                             split expenses, rent community cars and bikes through a self-drive marketplace, compare
                             ride options, and manage bookings from one connected web and mobile app. The product helps
                             friends and crews travel together with clear costs and shared logistics.
@@ -329,7 +329,7 @@ export default function TermsAndConditions() {
                             You may not access or use the Services for any purpose other than that for which we make
                             the Services available. The Services may not be used in connection with any commercial
                             endeavors except those that are specifically endorsed or approved by us (including
-                            legitimate host vehicle listings on PackAndSync).
+                            legitimate host vehicle listings on PickAndSync).
                         </p>
                         <p>As a user of the Services, you agree not to:</p>
                         <ul>

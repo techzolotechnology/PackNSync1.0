@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const DEFAULT_FROM = 'PackAndSync <noreply@pickandsync.com>';
+const DEFAULT_FROM = 'PickAndSync <noreply@pickandsync.com>';
 const SEND_TIMEOUT_MS = Number(process.env.SMTP_TIMEOUT_MS || 12000);
 
 export function smtpConfigured() {
@@ -17,9 +17,9 @@ export function getEmailFrom() {
 function parseFrom(from) {
     const match = String(from).match(/^(.*?)\s*<([^>]+)>$/);
     if (match) {
-        return { name: match[1].trim() || 'PackAndSync', address: match[2].trim() };
+        return { name: match[1].trim() || 'PickAndSync', address: match[2].trim() };
     }
-    return { name: 'PackAndSync', address: from };
+    return { name: 'PickAndSync', address: from };
 }
 
 function createTransport() {

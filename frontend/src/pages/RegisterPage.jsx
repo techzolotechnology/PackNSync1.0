@@ -98,13 +98,13 @@ export default function RegisterPage() {
                 <div className="auth-shell">
                     <Link to="/" className="auth-brand">
                         <span className="auth-brand-mark" aria-hidden="true" />
-                        PackAndSync
+                        PickAndSync
                     </Link>
 
                     <div className="auth-card">
                         <div className="auth-header">
                             <h1>Create an account</h1>
-                            <p>Join PackAndSync with email or mobile — OTP only, no password.</p>
+                            <p>Join PickAndSync with email or mobile — OTP only, no password.</p>
                         </div>
 
                         {step === 1 ? (

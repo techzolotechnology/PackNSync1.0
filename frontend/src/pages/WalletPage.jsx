@@ -203,7 +203,7 @@ export default function WalletPage() {
         <div className="wallet-page page-atmosphere">
             <header className="wallet-header">
                 <div>
-                    <p className="wallet-eyebrow">PackAndSync</p>
+                    <p className="wallet-eyebrow">PickAndSync</p>
                     <h1>Wallet</h1>
                     <p>Add money with Cashfree, spend on rentals &amp; more, or withdraw to UPI / bank.</p>
                 </div>

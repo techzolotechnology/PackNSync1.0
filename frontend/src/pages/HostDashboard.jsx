@@ -291,7 +291,7 @@ export default function HostDashboard() {
                     vehicles.length === 0 ? (
                         <div className="host-empty">
                             <h3>No vehicles yet</h3>
-                            <p>Add your first car, bike, or scooter to start hosting on PackAndSync.</p>
+                            <p>Add your first car, bike, or scooter to start hosting on PickAndSync.</p>
                             <button type="button" className="host-add-btn" onClick={() => setShowAddForm(true)}>
                                 Add vehicle
                             </button>

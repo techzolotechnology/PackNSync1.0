@@ -1,4 +1,4 @@
-# 🛠️ PackAndSync Setup Guide
+# 🛠️ PickAndSync Setup Guide
 
 To get the application fully functional, you need to configure several external services. Follow this guide to obtain and set up all required environment variables.
 
@@ -59,7 +59,7 @@ Used for real-time ride pricing and automated connections.
 - **Service:** [Uber Developer Dashboard](https://developer.uber.com/dashboard/)
 - **Steps:**
     1. **Login:** Sign in to the [Uber Developer Portal](https://developer.uber.com/).
-    2. **Create App:** Click **Create App** and give it a name (e.g., "PackAndSync").
+    2. **Create App:** Click **Create App** and give it a name (e.g., "PickAndSync").
     3. **Configure Auth:** Go to the **Settings** or **Auth** tab:
         - **Redirect URI:** Add `http://localhost:3001/api/rides/auth/uber/callback`
         - **Origin URI:** Add `http://localhost:5173` (Frontend URL)

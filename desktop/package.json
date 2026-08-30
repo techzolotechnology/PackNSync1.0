@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.packandsync.desktop",
-    "productName": "PackAndSync",
+    "productName": "PickAndSync",
     "npmRebuild": false,
     "directories": {
       "output": "release"

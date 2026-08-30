@@ -172,7 +172,7 @@ adminRouter.put('/users/:id/ban', async (req, res) => {
             userId: user.id,
             type: 'SYSTEM',
             title: 'Account restored',
-            body: 'Your account suspension has been lifted. You can use PackAndSync again.',
+            body: 'Your account suspension has been lifted. You can use PickAndSync again.',
             data: { isBanned: false },
         });
     }

@@ -7,6 +7,7 @@ import { useChatUnreadStore } from '../store/chatUnreadStore.js';
 import { mediaUrl } from '../utils/mediaUrl.js';
 import { formatInrCompact } from '../utils/formatInr.js';
 import toast from 'react-hot-toast';
+import AnimatedLogo from './AnimatedLogo.jsx';
 import './Navbar.css';
 
 function timeAgo(dateStr) {
@@ -235,8 +236,10 @@ export default function Navbar() {
         <header className={`navbar ${menuOpen ? 'menu-is-open' : ''}`}>
             <div className="container navbar-inner">
                 <Link to={isAdmin ? '/admin' : '/'} className="navbar-logo">
-                    <span className="logo-mark" aria-hidden="true" />
-                    <span className="logo-word">PackAndSync</span>
+                    <span className="navbar-logo-animation" aria-hidden="true">
+                        <AnimatedLogo size={30} />
+                    </span>
+                    <span className="logo-word">PickAndSync</span>
                 </Link>
 
                 {!isAdmin && (

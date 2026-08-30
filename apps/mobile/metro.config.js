@@ -1,15 +1,20 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const fs = require('fs');
 const path = require('path');
 
 const projectRoot = __dirname;
-const monorepoRoot = path.resolve(projectRoot, '../..');
+const monorepoCandidate = path.resolve(projectRoot, '../..');
+const monorepoPackagePath = path.join(monorepoCandidate, 'package.json');
+const isMonorepo = fs.existsSync(monorepoPackagePath)
+  && Boolean(JSON.parse(fs.readFileSync(monorepoPackagePath, 'utf8')).workspaces);
+const monorepoRoot = isMonorepo ? monorepoCandidate : projectRoot;
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [monorepoRoot];
+config.watchFolders = isMonorepo ? [monorepoRoot] : [];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
-  path.resolve(monorepoRoot, 'node_modules'),
+  ...(isMonorepo ? [path.resolve(monorepoRoot, 'node_modules')] : []),
 ];
 // Prevent resolving the wrong nested RN under expo/node_modules (0.85.x).
 config.resolver.disableHierarchicalLookup = true;

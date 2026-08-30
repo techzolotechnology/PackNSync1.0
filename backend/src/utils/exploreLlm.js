@@ -170,7 +170,7 @@ export async function planExploreChatTurn({ history, userMessage, lastPlaces }) 
         const placeNames = (lastPlaces || []).slice(0, 8).map((p, i) => `${i + 1}. ${p.name}`).join('\n');
 
         const out = await chatJson(
-            `You are PackAndSync Explore — a map concierge for India.
+            `You are PickAndSync Explore — a map concierge for India.
 Return JSON only:
 {
   "assistantMessage": "short friendly reply (2-4 sentences max)",

@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
                 <header className="privacy-header">
                     <span className="privacy-eyebrow">Your data, explained</span>
                     <h1>Privacy Policy</h1>
-                    <p className="privacy-summary">A clear overview of what PackAndSync collects, why we use it, and the choices available to you.</p>
+                    <p className="privacy-summary">A clear overview of what PickAndSync collects, why we use it, and the choices available to you.</p>
                     <p className="last-updated">Last updated August 05, 2026</p>
                     <nav className="privacy-nav" aria-label="Legal documents">
                         <Link to="/terms">General Terms</Link>
@@ -25,7 +25,7 @@ const PrivacyPolicy = () => {
                     <section className="privacy-section">
                         <h2>1. Introduction</h2>
                         <p>
-                            Welcome to <strong>PackAndSync</strong>, a platform owned and operated by
+                            Welcome to <strong>PickAndSync</strong>, a platform owned and operated by
                             {' '}<strong>TECHZOLO TECHNOLOGIES LLP</strong> (“we”, “us”, “our”).
                             We are committed to protecting your personal information and your right to privacy.
                             If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information,
@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
                         <ul>
                             <li><strong>Personal Data:</strong> Name, email address, phone number, and profile picture.</li>
                             <li><strong>Travel Data:</strong> Trip details, itineraries, and preferences you share in travel groups.</li>
-                            <li><strong>Payment Data:</strong> Payments and wallet top-ups are processed by <strong>Cashfree</strong>. PackAndSync does not store your full card number or card security code.</li>
+                            <li><strong>Payment Data:</strong> Payments and wallet top-ups are processed by <strong>Cashfree</strong>. PickAndSync does not store your full card number or card security code.</li>
                             <li><strong>Social Media Login:</strong> We may provide you with the option to register with us using your existing social media account details, like your Google account.</li>
                         </ul>
                     </section>

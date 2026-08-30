@@ -7,7 +7,7 @@ import { isOpenAiConfigured } from './exploreLlm.js';
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
-const USER_AGENT = 'PackAndSync/1.0 (explore-planner; contact=dev@packandsync.local)';
+const USER_AGENT = 'PickAndSync/1.0 (explore-planner; contact=dev@packandsync.local)';
 
 const PACE_STOPS = { relaxed: 3, balanced: 4, packed: 5 };
 const BUDGET_HINT = {
@@ -254,7 +254,7 @@ export async function generateExploreItinerary(prefs) {
     if (isOpenAiConfigured()) {
         try {
             raw = await chatJson(
-                `You are PackAndSync trip planner for India.
+                `You are PickAndSync trip planner for India.
 Return JSON only:
 {
   "title": string,

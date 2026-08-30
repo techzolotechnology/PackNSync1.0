@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { useAuthUiStore } from './store/authUiStore.js';
 import Navbar from './components/Navbar.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import HomePage from './pages/HomePage.jsx';
 import TripsPage from './pages/TripsPage.jsx';
@@ -14,6 +15,7 @@ import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 import PageTransition from './components/motion/PageTransition.jsx';
 import MotionBridge from './components/motion/MotionBridge.jsx';
+import { HERO_MEDIA } from './utils/heroMedia.js';
 
 // Heavy routes are code-split so the initial bundle stays small.
 const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
@@ -116,15 +118,34 @@ const BlockAdminFromApp = ({ children }) => {
 export default function App() {
     const user = useAuthStore((s) => s.user);
     const fetchMe = useAuthStore((s) => s.fetchMe);
+    const hydrated = useAuthHydrated();
+    const [booted, setBooted] = useState(false);
     const location = useLocation();
     const { pathname } = location;
+    const hasTripsVideoBackground = pathname === '/trips';
 
     useEffect(() => {
         fetchMe();
     }, [fetchMe]);
 
     return (
-        <div className="app-shell">
+        <div className={`app-shell ${hasTripsVideoBackground ? 'app-shell--trips-video' : ''}`}>
+            {hasTripsVideoBackground && HERO_MEDIA && (
+                <video
+                    className="app-shell-video"
+                    poster={HERO_MEDIA.poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-hidden="true"
+                >
+                    <source src={HERO_MEDIA.video} type="video/mp4" />
+                </video>
+            )}
+            {hasTripsVideoBackground && <div className="app-shell-video-overlay" aria-hidden="true" />}
+            {!booted && <SplashScreen ready={hydrated} onDone={() => setBooted(true)} />}
             <Navbar />
             <AuthModal />
             <AuthQueryBridge />

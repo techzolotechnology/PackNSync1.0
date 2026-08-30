@@ -40,7 +40,7 @@ export default function TermsAcceptanceModal({ isOpen, policyType, onAccept, onC
                 <h2>Accept {label}</h2>
                 <p className="terms-modal-copy">
                     You must read and accept the {label.toLowerCase()} before continuing.
-                    PackAndSync only facilitates bookings; providers and hosts remain responsible for the service.
+                    PickAndSync only facilitates bookings; providers and hosts remain responsible for the service.
                 </p>
                 <label className="terms-check">
                     <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />

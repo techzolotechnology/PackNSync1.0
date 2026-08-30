@@ -11,7 +11,7 @@ const TERMS = {
         sections: [
             {
                 heading: 'Platform role',
-                body: 'PackAndSync is an aggregator. We help you compare and request rides from third-party providers (Uber, Ola, Rapido, etc.). The underlying provider is solely responsible for the ride, driver, vehicle, and on-road service.',
+                body: 'PickAndSync is an aggregator. We help you compare and request rides from third-party providers (Uber, Ola, Rapido, etc.). The underlying provider is solely responsible for the ride, driver, vehicle, and on-road service.',
             },
             {
                 heading: 'No service guarantee',
@@ -23,7 +23,7 @@ const TERMS = {
             },
             {
                 heading: 'Limitation of liability',
-                body: 'To the maximum extent permitted by law, PackAndSync liability for ride booking facilitation is limited. Reference industry practice (e.g. Rapido-style caps on platform liability for consumer claims). Providers remain liable for ride execution.',
+                body: 'To the maximum extent permitted by law, PickAndSync liability for ride booking facilitation is limited. Reference industry practice (e.g. Rapido-style caps on platform liability for consumer claims). Providers remain liable for ride execution.',
             },
         ],
     },
@@ -43,11 +43,11 @@ const TERMS = {
             },
             {
                 heading: 'Accidents & misuse',
-                body: 'Report accidents immediately to local authorities (file FIR where required) and notify the host and PackAndSync support. Misuse, illegal activity, or unapproved drivers void coverage.',
+                body: 'Report accidents immediately to local authorities (file FIR where required) and notify the host and PickAndSync support. Misuse, illegal activity, or unapproved drivers void coverage.',
             },
             {
                 heading: 'Platform role',
-                body: 'PackAndSync facilitates listings and booking requests between verified hosts and renters. We are not the vehicle owner and do not assume liability for loss or damage between parties beyond our facilitation role.',
+                body: 'PickAndSync facilitates listings and booking requests between verified hosts and renters. We are not the vehicle owner and do not assume liability for loss or damage between parties beyond our facilitation role.',
             },
         ],
     },
@@ -59,7 +59,7 @@ const TERMS = {
         sections: [
             {
                 heading: 'Eligibility',
-                body: 'Only verified hosts with approved KYC (Aadhaar, Driving License) and verified vehicle RC may list cars on PackAndSync.',
+                body: 'Only verified hosts with approved KYC (Aadhaar, Driving License) and verified vehicle RC may list cars on PickAndSync.',
             },
             {
                 heading: 'Accurate listings',
@@ -71,7 +71,7 @@ const TERMS = {
             },
             {
                 heading: 'Bookings & payouts',
-                body: 'You agree to honor confirmed booking requests, communicate promptly with renters, and comply with PackAndSync cancellation and payout policies.',
+                body: 'You agree to honor confirmed booking requests, communicate promptly with renters, and comply with PickAndSync cancellation and payout policies.',
             },
         ],
     },
@@ -113,7 +113,7 @@ export default function TermsPage() {
                         <div>
                             <h2>Operating entity</h2>
                             <p>
-                                PackAndSync is owned and operated by TECHZOLO TECHNOLOGIES LLP,
+                                PickAndSync is owned and operated by TECHZOLO TECHNOLOGIES LLP,
                                 registered in Haryana, India. These terms form an agreement between you
                                 and TECHZOLO TECHNOLOGIES LLP. For questions, contact
                                 {' '}<a href="mailto:kartikgauttam@techzolo.in">kartikgauttam@techzolo.in</a>.
