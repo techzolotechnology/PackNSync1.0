@@ -1,5 +1,5 @@
-# PickAndSync API Dockerfile for Koyeb.
-# Build from the repository root and deploy only the backend workspace.
+# PickAndSync API Dockerfile for Northflank.
+# Build context: repository root. Dockerfile path: /Dockerfile.northflank.
 FROM node:20-bookworm-slim
 
 WORKDIR /app
@@ -24,7 +24,7 @@ COPY backend ./backend
 WORKDIR /app/backend
 
 # Prisma generate validates datasource env names, but does not need a live DB.
-# Runtime DATABASE_URL/DIRECT_URL values from the host override these placeholders.
+# Runtime DATABASE_URL/DIRECT_URL values from Northflank override these placeholders.
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/placeholder?sslmode=require"
 ENV DIRECT_URL="postgresql://user:pass@localhost:5432/placeholder?sslmode=require"
 RUN npx prisma generate
