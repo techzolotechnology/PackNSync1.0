@@ -34,7 +34,7 @@ export const useAuthStore = create(
                             (timedOut
                                 ? 'OTP request timed out. Please try again in a moment.'
                                 : network
-                                    ? 'Network blip — connection changed. Please try Get OTP again.'
+                                    ? 'Could not reach the PickAndSync API. Please make sure the Render backend is live and allowed for this website.'
                                     : 'Failed to request OTP.'),
                     };
                 } finally {
