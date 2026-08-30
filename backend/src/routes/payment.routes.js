@@ -2,14 +2,21 @@ import { Router } from 'express';
 import Stripe from 'stripe';
 import { prisma } from '../utils/prisma.js';
 import { authenticate } from '../middleware/auth.middleware.js';
+import { AppError } from '../utils/AppError.js';
 
 export const paymentRouter = Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+function getStripe() {
+    if (!process.env.STRIPE_SECRET_KEY) {
+        throw new AppError('Stripe payments are not configured.', 503);
+    }
+    return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 // POST /api/payments/create-intent
 paymentRouter.post('/create-intent', authenticate, async (req, res) => {
     const { amount, currency = 'usd', tripId } = req.body;
+    const stripe = getStripe();
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // in cents
@@ -23,6 +30,7 @@ paymentRouter.post('/create-intent', authenticate, async (req, res) => {
 // POST /api/payments/webhook — Stripe webhook
 paymentRouter.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
+    const stripe = getStripe();
     let event;
 
     try {

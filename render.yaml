@@ -18,6 +18,10 @@ services:
         fromDatabase:
           name: packandsync-db
           property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: packandsync-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET

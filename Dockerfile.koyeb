@@ -1,0 +1,31 @@
+# PickAndSync API Dockerfile for Koyeb.
+# Build from the repository root and deploy only the backend workspace.
+FROM node:20-bookworm-slim
+
+WORKDIR /app
+
+# OpenSSL is required by Prisma query engines.
+RUN apt-get update -y \
+    && apt-get install -y openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY apps/mobile/package.json ./apps/mobile/
+COPY desktop/package.json ./desktop/
+
+COPY backend/prisma ./backend/prisma
+
+RUN npm ci --workspace=backend --include-workspace-root --omit=dev --ignore-scripts
+
+COPY backend ./backend
+
+WORKDIR /app/backend
+
+RUN npx prisma generate
+
+ENV NODE_ENV=production
+EXPOSE 3001
+
+CMD ["sh", "-c", "npx prisma migrate deploy && { node prisma/seedShowcase.js || echo 'showcase seed skipped'; } && node src/index.js"]
