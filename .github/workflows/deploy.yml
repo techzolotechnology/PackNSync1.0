@@ -74,19 +74,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  deploy-backend:
-    name: Trigger backend deploy (Render)
-    runs-on: ubuntu-latest
-    needs: deploy-frontend
-    steps:
-      - name: Call Render deploy hook
-        env:
-          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          if [ -z "$HOOK" ]; then
-            echo "RENDER_DEPLOY_HOOK_URL not set — skip backend trigger."
-            echo "Add the secret after creating the Render service (see DEPLOY.md)."
-            exit 0
-          fi
-          curl -fsS -X POST "$HOOK"
-          echo "Backend deploy triggered on Render."
+

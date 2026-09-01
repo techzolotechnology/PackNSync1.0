@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND_ORIGIN = 'https://packandsync-api.onrender.com';
+const DEFAULT_BACKEND_ORIGIN = 'https://p01--striped-throne--64bsjhwpv9v8.code.run';
 
 function trimTrailingSlash(value) {
   return String(value || '').trim().replace(/\/+$/, '');

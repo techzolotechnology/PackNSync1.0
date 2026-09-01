@@ -18,7 +18,7 @@ jobs:
           BASE: ${{ secrets.VITE_SOCKET_URL }}
         run: |
           if [ -z "$BASE" ]; then
-            BASE="https://packandsync-api.onrender.com"
+            BASE="https://p01--striped-throne--64bsjhwpv9v8.code.run"
             echo "VITE_SOCKET_URL secret missing — using default $BASE"
           fi
           BASE="${BASE%/}"

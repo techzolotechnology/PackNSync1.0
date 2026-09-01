@@ -1,4 +1,6 @@
-const DEFAULT_BACKEND_ORIGIN = 'https://packandsync-api.onrender.com';
+const DEFAULT_BACKEND_ORIGIN =
+    (typeof window !== 'undefined' && window.__PICKANDSYNC_CONFIG__?.SOCKET_URL)
+    || 'https://p01--striped-throne--64bsjhwpv9v8.code.run';
 
 function trimTrailingSlash(value) {
     return String(value || '').trim().replace(/\/+$/, '');
@@ -26,6 +28,7 @@ function isLocalWebDevelopment() {
 // possible without letting individual screens select a different server.
 export const API_BASE_URL = trimTrailingSlash(
     import.meta.env.VITE_API_URL
+        || (typeof window !== 'undefined' && window.__PICKANDSYNC_CONFIG__?.API_URL)
         || (isLocalWebDevelopment() ? '/api' : `${DEFAULT_BACKEND_ORIGIN}/api`),
 );
 

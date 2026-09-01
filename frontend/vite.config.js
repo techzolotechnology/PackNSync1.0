@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 // GitHub Pages needs e.g. "/PickAndSync1.0/" — set VITE_BASE in CI
 const base = process.env.VITE_BASE || './';
-const backendOrigin = process.env.VITE_DEV_BACKEND_ORIGIN || 'https://packandsync-api.onrender.com';
+const backendOrigin = process.env.VITE_DEV_BACKEND_ORIGIN || 'https://p01--striped-throne--64bsjhwpv9v8.code.run';
 
 export default defineConfig({
     base,
