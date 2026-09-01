@@ -25,8 +25,8 @@ WORKDIR /app/backend
 
 # Prisma generate validates datasource env names, but does not need a live DB.
 # Runtime DATABASE_URL/DIRECT_URL values from Northflank override these placeholders.
-ENV DATABASE_URL="postgresql://user:pass@localhost:5432/placeholder?sslmode=require"
-ENV DIRECT_URL="postgresql://user:pass@localhost:5432/placeholder?sslmode=require"
+ENV DATABASE_URL=postgresql://packandsync:iZR1AGsOnis35bQTlYhtzYshiRnu9V04@dpg-da19kq5bedkc73cd68kg-a/packandsync_7qbw
+ENV DIRECT_URL=postgresql://packandsync:iZR1AGsOnis35bQTlYhtzYshiRnu9V04@dpg-da19kq5bedkc73cd68kg-a/packandsync_7qbw
 RUN npx prisma generate
 
 ENV NODE_ENV=production
