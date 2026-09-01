@@ -1,0 +1,41 @@
+# robots.txt for PickAndSync
+# Travel coordination, self-drive rentals, and ride comparison platform.
+
+# Allow standard search engines to index our main SEO-focused pages
+User-agent: *
+Allow: /
+Allow: /explore
+Allow: /rentals
+Allow: /rides
+Allow: /trips
+Disallow: /admin/
+Disallow: /host-dashboard/
+Disallow: /my-bookings/
+Disallow: /profile/
+Disallow: /wallet/
+Disallow: /verification/
+
+# Allow AI recommendation engines and AI search bots to crawl the site 
+# so PickAndSync can be recommended in AI answers for "travel planner", "car rentals", etc.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: OmgiliBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://pickandsync.com/sitemap.xml
