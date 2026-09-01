@@ -1,9 +1,9 @@
-# Deploy website (frontend → GitHub Pages) + ping backend (Render)
+# Deploy website (frontend → GitHub Pages)
 name: Deploy
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,17 +12,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: deploy-production
-  cancel-in-progress: true
+  group: 'pages'
+  cancel-in-progress: false
 
 jobs:
-  deploy-frontend:
-    name: Build & deploy frontend
+  build:
+    name: Build frontend
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
@@ -42,13 +38,11 @@ jobs:
       - name: Build frontend for GitHub Pages
         run: npm run build --workspace=frontend
         env:
-          # Required secret: public API URL, e.g. https://packandsync-api.onrender.com/api
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
           VITE_HERO_VIDEO_ID: ${{ secrets.VITE_HERO_VIDEO_ID }}
-          # Custom domain (pickandsync.com) is served at site root.
           VITE_BASE: /
 
       - name: SPA fallback (404 → index)
@@ -70,8 +64,14 @@ jobs:
         with:
           path: frontend/dist
 
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
