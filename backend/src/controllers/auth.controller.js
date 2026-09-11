@@ -7,10 +7,10 @@ import { normalizeContact, deliverOtp } from '../utils/otpDelivery.js';
 // POST /api/auth/request-otp
 export const requestOtp = async (req, res) => {
     const { contact, name, isRegister } = req.body;
-    if (!contact) throw new AppError('Email or phone number is required.', 400);
+    if (!contact) throw new AppError('Email address is required.', 400);
 
-    const { isEmail, value } = normalizeContact(contact);
-    const query = isEmail ? { email: value } : { phoneNumber: value };
+    const { value: email } = normalizeContact(contact);
+    const query = { email };
 
     let user = await prisma.user.findUnique({ where: query });
 
@@ -28,9 +28,8 @@ export const requestOtp = async (req, res) => {
     const otpExpiresAt = new Date(Date.now() + 10 * 60000);
 
     if (isRegister) {
-        const data = isEmail ? { email: value } : { phoneNumber: value };
         user = await prisma.user.create({
-            data: { ...data, name: name.trim(), otpCode, otpExpiresAt },
+            data: { email, name: name.trim(), otpCode, otpExpiresAt },
         });
     } else {
         user = await prisma.user.update({
@@ -39,24 +38,24 @@ export const requestOtp = async (req, res) => {
         });
     }
 
-    const channel = await deliverOtp({ contact: value, otpCode, isEmail });
+    const channel = await deliverOtp({ contact: email, otpCode });
 
     res.json({
         success: true,
         channel,
         message: channel === 'console'
-            ? 'OTP printed in the backend terminal (email/SMS provider cannot deliver to this address).'
-            : `OTP sent to your ${isEmail ? 'email' : 'phone'}.`,
+            ? 'OTP printed in the backend terminal (email provider cannot deliver to this address).'
+            : 'OTP sent to your email.',
     });
 };
 
 // POST /api/auth/verify-otp
 export const verifyOtp = async (req, res) => {
     const { contact, otpCode } = req.body;
-    if (!contact || !otpCode) throw new AppError('Contact and OTP are required.', 400);
+    if (!contact || !otpCode) throw new AppError('Email and OTP are required.', 400);
 
-    const { isEmail, value } = normalizeContact(contact);
-    const query = isEmail ? { email: value } : { phoneNumber: value };
+    const { value: email } = normalizeContact(contact);
+    const query = { email };
 
     const user = await prisma.user.findUnique({ where: query });
     if (!user) throw new AppError('Invalid request.', 401);

@@ -131,7 +131,7 @@ export function otpEmail({ otpCode, minutes = 10 }) {
                     color:${BRAND.slate};font-weight:700;">Code</p>
           <p style="margin:0 0 20px;font-size:32px;font-weight:800;letter-spacing:0.28em;
                     color:${BRAND.navy};font-family:Consolas,Monaco,monospace;">${code}</p>
-          <p style="margin:0;color:${BRAND.slate};font-size:14px;">Do not share this code with anyone. PickAndSync will never ask for it by phone.</p>
+          <p style="margin:0;color:${BRAND.slate};font-size:14px;">Do not share this code with anyone. PickAndSync will never ask for it outside the app.</p>
         `,
         bodyText: `Your PickAndSync verification code is ${otpCode}. It expires in ${minutes} minutes. Do not share it with anyone.`,
     });

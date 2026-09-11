@@ -8,7 +8,7 @@ services:
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -26,6 +26,12 @@ services:
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: COOKIE_SAMESITE
+        value: none
       - key: FRONTEND_URL
         value: https://pickandsync.com
       - key: FRONTEND_URLS

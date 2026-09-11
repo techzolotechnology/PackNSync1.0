@@ -1,6 +1,6 @@
 const DEFAULT_BACKEND_ORIGIN =
     (typeof window !== 'undefined' && window.__PICKANDSYNC_CONFIG__?.SOCKET_URL)
-    || 'https://p01--striped-throne--64bsjhwpv9v8.code.run';
+    || 'https://packandsync-api.onrender.com';
 
 function trimTrailingSlash(value) {
     return String(value || '').trim().replace(/\/+$/, '');

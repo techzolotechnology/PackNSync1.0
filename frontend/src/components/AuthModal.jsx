@@ -15,6 +15,7 @@ function safeNextPath(raw) {
 
 const RESEND_SECONDS = 60;
 const MAX_RESENDS = 3;
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 
 export default function AuthModal() {
     const navigate = useNavigate();
@@ -61,7 +62,8 @@ export default function AuthModal() {
         setError('');
         setSuccessMsg('');
         if (isRegister && !form.name?.trim()) return setError('Name is required');
-        if (!form.contact) return setError('Email or Phone Number is required');
+        if (!form.contact) return setError('Email address is required');
+        if (!isValidEmail(form.contact)) return setError('Enter a valid email address');
 
         const result = await requestOtp({
             name: form.name,
@@ -76,7 +78,7 @@ export default function AuthModal() {
             toast.success(
                 result.channel === 'console'
                     ? 'OTP is in the backend terminal — paste it below.'
-                    : (result.message || 'OTP sent! Check your email or phone.'),
+                    : (result.message || 'OTP sent! Check your email.'),
             );
             setStep(2);
         } else {
@@ -145,8 +147,8 @@ export default function AuthModal() {
                         {step === 2
                             ? `We sent a 6-digit code to ${form.contact}${otpChannel === 'console' ? ' — also check the backend terminal' : ''}.`
                             : (isRegister
-                                ? 'Join with email or mobile. One-time code, no password.'
-                                : 'Sign in with email or mobile. We’ll send a one-time code.')}
+                                ? 'Join with your email. One-time code, no password.'
+                                : 'Sign in with your email. We’ll send a one-time code.')}
                     </p>
                 </div>
 
@@ -192,17 +194,17 @@ export default function AuthModal() {
                             </div>
                         )}
                         <div className="form-group">
-                            <label className="form-label" htmlFor="auth-contact">Email or mobile</label>
+                            <label className="form-label" htmlFor="auth-contact">Email address</label>
                             <input
                                 id="auth-contact"
                                 name="contact"
-                                type="text"
+                                type="email"
                                 className="form-input"
-                                placeholder="you@example.com or +91…"
+                                placeholder="you@example.com"
                                 value={form.contact}
                                 onChange={handleChange}
                                 required
-                                autoComplete="username"
+                                autoComplete="email"
                             />
                         </div>
                         {error && <p className="form-error">{error}</p>}
@@ -251,7 +253,7 @@ export default function AuthModal() {
                                     setSuccessMsg('');
                                 }}
                             >
-                                Change contact
+                                Change email
                             </button>
                         </div>
                     </form>

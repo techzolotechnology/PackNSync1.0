@@ -5,6 +5,8 @@ import { api } from '../api';
 import { colors } from '../theme';
 import { AppButton, Field, Notice, PageIntro, Surface } from '../components/ui';
 
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
 export default function AccountScreen({ user, setUser, layout }) {
   const [isRegister, setIsRegister] = useState(false);
   const [step, setStep] = useState(1);
@@ -17,7 +19,8 @@ export default function AccountScreen({ user, setUser, layout }) {
   const resetFlow = () => { setStep(1); setOtpCode(''); setMessage(''); };
 
   const requestOtp = async () => {
-    if (!contact.trim()) return setMessage('Email or phone number is required.');
+    if (!contact.trim()) return setMessage('Email address is required.');
+    if (!isValidEmail(contact)) return setMessage('Enter a valid email address.');
     if (isRegister && !name.trim()) return setMessage('Name is required for registration.');
     setLoading(true);
     setMessage('');
@@ -54,24 +57,24 @@ export default function AccountScreen({ user, setUser, layout }) {
 
   return (
     <View style={styles.page}>
-      <PageIntro eyebrow="SYNC IN" title={user ? 'Your PickAndSync account.' : isRegister ? 'Create your account.' : 'Welcome back.'} description="One login connects your trips, bookings, and hosted vehicles across every platform." layout={layout} />
+      <PageIntro eyebrow="SYNC IN" title={user ? 'Your PickAndSync account.' : isRegister ? 'Create your account.' : 'Welcome back.'} description="Use email OTP to connect your trips, bookings, and hosted vehicles across every platform." layout={layout} />
       <Surface style={styles.accountCard}>
         {user ? (
           <>
             <View style={styles.avatar}><Text style={styles.avatarText}>{String(user.name || 'P').slice(0, 1).toUpperCase()}</Text></View>
             <Text style={styles.userName}>{user.name || 'PickAndSync member'}</Text>
-            <Text style={styles.userContact}>{user.email || user.phoneNumber || 'Connected account'}</Text>
+            <Text style={styles.userContact}>{user.email || 'Email connected account'}</Text>
             <View style={styles.accountRule} />
             <AppButton variant="ghost" onPress={logout}>Log Out</AppButton>
           </>
         ) : (
           <>
-            <Text style={styles.cardTitle}>{step === 1 ? (isRegister ? 'Start with your details' : 'Login with OTP') : 'Enter your code'}</Text>
-            <Text style={styles.cardSubtitle}>Password-free and consistent with the PickAndSync website.</Text>
+            <Text style={styles.cardTitle}>{step === 1 ? (isRegister ? 'Start with your details' : 'Login with email OTP') : 'Enter your code'}</Text>
+            <Text style={styles.cardSubtitle}>Password-free email sign-in, consistent with the PickAndSync website.</Text>
             {step === 1 ? (
               <>
                 {isRegister && <Field label="YOUR NAME" value={name} onChangeText={setName} placeholder="Your name" autoCapitalize="words" />}
-                <Field label="EMAIL OR PHONE" value={contact} onChangeText={setContact} placeholder="you@example.com or +919876543210" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+                <Field label="EMAIL ADDRESS" value={contact} onChangeText={setContact} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
                 <AppButton onPress={requestOtp} disabled={loading}>{loading ? 'Sending…' : 'Get OTP'}</AppButton>
               </>
             ) : (

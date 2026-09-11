@@ -8,6 +8,7 @@ import './AuthPages.css';
 
 const RESEND_SECONDS = 60;
 const MAX_RESENDS = 3;
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 
 export default function LoginPage() {
     const { requestOtp, verifyOtp, isLoading } = useAuthStore();
@@ -32,7 +33,8 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
         setSuccessMsg('');
-        if (!form.contact) return setError('Email or Phone Number is required');
+        if (!form.contact) return setError('Email address is required');
+        if (!isValidEmail(form.contact)) return setError('Enter a valid email address');
 
         const result = await requestOtp({ contact: form.contact, isRegister: false });
         if (result.success) {
@@ -43,7 +45,7 @@ export default function LoginPage() {
             toast.success(
                 result.channel === 'console'
                     ? 'OTP is in the backend terminal — paste it below.'
-                    : (result.message || 'OTP sent! Check your email or phone.'),
+                    : (result.message || 'OTP sent! Check your email.'),
             );
             setStep(2);
         } else {
@@ -104,23 +106,23 @@ export default function LoginPage() {
                     <div className="auth-card">
                         <div className="auth-header">
                             <h1>Welcome back</h1>
-                            <p>Log in with email or mobile. We’ll send a one-time code.</p>
+                            <p>Log in with your email. We’ll send a one-time code.</p>
                         </div>
 
                         {step === 1 ? (
                             <form onSubmit={handleRequestOtp} className="auth-form">
                                 <div className="form-group">
-                                    <label className="form-label" htmlFor="contact">Email or Mobile Number</label>
+                                    <label className="form-label" htmlFor="contact">Email address</label>
                                     <input
                                         id="contact"
                                         name="contact"
-                                        type="text"
+                                        type="email"
                                         className="form-input"
-                                        placeholder="you@example.com or +919876543210"
+                                        placeholder="you@example.com"
                                         value={form.contact}
                                         onChange={handleChange}
                                         required
-                                        autoComplete="username"
+                                        autoComplete="email"
                                     />
                                 </div>
 

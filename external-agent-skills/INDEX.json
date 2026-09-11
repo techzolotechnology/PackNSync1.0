@@ -1,0 +1,1640 @@
+[
+  {
+    "name": "adaptive",
+    "platform": "android",
+    "relativePath": "android-skills/jetpack-compose/adaptive/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\jetpack-compose\\adaptive\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Instructions to make or update an app's UI so that it adapts to different\r"
+  },
+  {
+    "name": "agp-9-upgrade",
+    "platform": "android",
+    "relativePath": "android-skills/build-system/agp/agp-9-upgrade/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\build-system\\agp\\agp-9-upgrade\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Upgrades, or migrates, an Android project to use Android Gradle Plugin\r"
+  },
+  {
+    "name": "android-cli",
+    "platform": "android",
+    "relativePath": "android-skills/devtools/android-cli/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\devtools\\android-cli\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides instructions for installing and using the `android` CLI. The `android` command-line tool is a critical tool for Android development and helps you create new Android projects, run Android apps on devices, manage and interact with Android virtual devices (including screenshots and UI inspection), manage Android SDK components, look up official Android documentation, and discover and install official Android skills.\r"
+  },
+  {
+    "name": "android-intent-security",
+    "platform": "android",
+    "relativePath": "android-skills/security/android-intent-security/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\security\\android-intent-security\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Best practices for Android Intent security. Use this skill when auditing\r"
+  },
+  {
+    "name": "android-profiler",
+    "platform": "android",
+    "relativePath": "android-skills/profilers/android-profiler/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\profilers\\android-profiler\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": ">\r"
+  },
+  {
+    "name": "appfunctions",
+    "platform": "android",
+    "relativePath": "android-skills/device-ai/appfunctions/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\device-ai\\appfunctions\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Analyzes Android apps to identify key user workflows for AppFunctions\r"
+  },
+  {
+    "name": "applying-testing-strategies",
+    "platform": "android",
+    "relativePath": "android-testing-skills/fundamentals/strategies/applying-testing-strategies/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\fundamentals\\strategies\\applying-testing-strategies\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to apply Android-team testing strategies — determinism, hermetic execution, Given-When-Then / Arrange-Act-Assert structure, naming conventions, and Hilt-based dependency replacement. Encodes which guidance actually lives on `/training/testing/fundamentals/strategies` (qualitative pyramid, network-access table) versus `/training/testing/instrumented-tests/stability` (determinism / flake) versus `/training/dependency-injection/hilt-testing` (`@HiltAndroidTest`, `HiltAndroidRule`, `@TestInstallIn`, `@UninstallModules`, `@BindValue`, rule ordering). Use when the user asks \"how should I structure tests\", \"Given When Then or Arrange Act Assert\", \"how do I name test methods\", \"Hilt rule order\", \"@HiltAndroidTest\", \"@BindValue\", \"how to swap a binding for tests\", \"tests pass locally fail on CI\", or \"make tests deterministic\".\r"
+  },
+  {
+    "name": "asserting-bounds-and-dimensions",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/assertions/asserting-bounds-and-dimensions/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\assertions\\asserting-bounds-and-dimensions\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to verify Compose layout measurements from a UI test using `assertWidthIsEqualTo`, `assertHeightIsEqualTo`, `assertWidthIsAtLeast`, `assertHeightIsAtLeast`, `assertTouchWidthIsEqualTo`, `assertTouchHeightIsEqualTo`, `assertPositionInRootIsEqualTo`, `assertTopPositionInRootIsEqualTo`, `assertLeftPositionInRootIsEqualTo`, plus read helpers `getUnclippedBoundsInRoot`, `getBoundsInRoot`, `getAlignmentLinePosition`, `getFirstLinkBounds`, and the underlying `Dp.assertIsEqualTo(expected, subject, tolerance = Dp(.5f))`. Covers the half-dp default tolerance, the unclipped vs clipped distinction, the canonical \"compute padding from two unclipped rects\" pattern, and minimum-touch-target assertions like `assertHeightIsAtLeast(MinHeight + 1.dp)`. Use when the developer wants to assert sizes, padding, alignment, position in dp, or asks about `getUnclippedBoundsInRoot`, `DpRect`, touch-target size, or compares widths in pixels. If the developer is comparing layout dimensions from a test, use this skill.\r"
+  },
+  {
+    "name": "asserting-node-state-and-text",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/assertions/asserting-node-state-and-text/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\assertions\\asserting-node-state-and-text\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to verify a Compose semantics node's properties from a UI test using `assertExists`, `assertDoesNotExist`, `assertIsDisplayed`, `assertIsNotDisplayed`, `assertIsDeactivated`, `assertIsEnabled`, `assertIsOn`, `assertIsOff`, `assertIsSelected`, `assertIsFocused`, `assertTextEquals`, `assertTextContains`, `assertContentDescriptionEquals`, `assertValueEquals`, `assertRangeInfoEquals`, `assertHasClickAction`, plus the generic `assert(matcher)` escape hatch and the boolean `isDisplayed()` / `isNotDisplayed()` for `waitUntil` predicates. Covers collection variants `assertCountEquals`, `assertAny`, `assertAll`. Use when the developer wants to verify a Switch is on, a Button is enabled, a Text shows the expected string, a node is displayed vs merely composed, or asks about `assertIsDisplayed` vs `assertExists`. If the developer mentions any `assert*` API on `SemanticsNodeInteraction`, use this skill.\r"
+  },
+  {
+    "name": "auditing-compose-test-suite",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/audit/auditing-compose-test-suite/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\audit\\auditing-compose-test-suite\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to perform an end-to-end review of an existing Jetpack Compose UI test file or test suite. Sequences six audit phases (setup correctness, finder discipline, assertion strength, action correctness, time/idle correctness, debug output) and routes each finding to the precise sibling skill that fixes it. Produces a prioritized issue list — does NOT mutate code. Use when the user asks \"review my Compose tests\", \"audit this test class\", \"is this test flaky\", \"why is this test slow on CI\", \"which Compose tests should I rewrite\", or pastes a `*Test.kt` file and asks for feedback.\r"
+  },
+  {
+    "name": "camerax",
+    "platform": "android",
+    "relativePath": "android-skills/camera/camerax/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\camera\\camerax\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provide technical guidance for Android camera development with CameraX.\r"
+  },
+  {
+    "name": "capturing-preview-screenshots-in-ci",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/preview/capturing-preview-screenshots-in-ci/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\preview\\capturing-preview-screenshots-in-ci\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to render every Jetpack Compose `@Preview` as a screenshot on a real Android device or emulator and publish a browsable HTML catalog from CI. Covers the Compose HotSwan Gradle compiler plugin (`com.github.skydoves.compose.hotswan.compiler`) and `debugImplementation(\"com.github.skydoves.compose.hotswan:preview\")`, the `captureAllPreviews` task, capturing one preview over ADB via `HotSwanPreviewActivity` + `screencap`, the `hotSwanCompiler { preview { renderDelayMs; demoMode; sdkModeEnabled } }` DSL, per-preview `@PreviewScreenshot(renderDelay = …)`, running it on an emulator in GitHub Actions (`reactivecircus/android-emulator-runner` or Gradle Managed Devices) and deploying the catalog to GitHub Pages, and how device rendering differs from host-JVM tools (Paparazzi, Roborazzi). Use when the user mentions \"captureAllPreviews\", \"HotSwan\", \"preview screenshots in CI\", \"screenshot catalog\", \"preview catalog on GitHub Pages\", or \"Paparazzi vs Roborazzi vs device screenshots\".\r"
+  },
+  {
+    "name": "capturing-screenshots-and-screenrecord",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/capture/capturing-screenshots-and-screenrecord/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\capture\\capturing-screenshots-and-screenrecord\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to capture visual artefacts from a device for test failures, golden image generation, QA repro, and demo videos. Covers `adb shell screencap -p` (PNG screenshot), `adb exec-out screencap -p > out.png` (binary-clean stream that avoids CRLF translation on Windows), `adb shell screenrecord` with `--size`, `--bit-rate`, `--time-limit`, `--rotate`, `--bugreport`, `--verbose` flags, the 3-minute hard cap, scoped-storage rules for `/sdcard/` on API 30+, and the JUnit4 TestWatcher capture-on-failure pattern that grabs a screencap plus `logcat -d` on failure. If the user mentions \"screenshot device\", \"screencap PNG\", \"raw RGBA dump\", \"screenrecord 3 minute limit\", \"scrcpy / Vysor streaming\", \"exec-out vs shell\", or \"bugreport overlay timestamp\", use this skill.\r"
+  },
+  {
+    "name": "choosing-test-rule-vs-runtest",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/setup/choosing-test-rule-vs-runtest/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\setup\\choosing-test-rule-vs-runtest\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": ">-\r"
+  },
+  {
+    "name": "choosing-what-to-test",
+    "platform": "android",
+    "relativePath": "android-testing-skills/fundamentals/concepts/choosing-what-to-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\fundamentals\\concepts\\choosing-what-to-test\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to pick which behaviors to cover in an Android test suite using Google's five-category state vocabulary plus the explicit \"what NOT to test\" list from `/training/testing/fundamentals/what-to-test`. Covers state on screen, state held in memory (ViewModels), persisted state (DB / DataStore / files), other state (system bars / system services), and errors / edge cases. Includes Google's verbatim \"Tests to Avoid\" list (framework entry points such as activities / fragments / services should not have business logic) and an edge-case mining checklist. Use when the user asks \"what should I write tests for\", \"should I unit-test this Activity\", \"do I need a test for this util class\", \"what edge cases am I missing\", or \"should I test the ViewModel or the Composable\".\r"
+  },
+  {
+    "name": "clicking-and-scrolling",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/actions/clicking-and-scrolling/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\actions\\clicking-and-scrolling\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive Jetpack Compose UI from tests with the high-level action APIs that do not go through a gesture builder — performClick, performScrollTo, performScrollToIndex, performScrollToKey, performScrollToNode, requestFocus, performSemanticsAction, and performFirstLinkClick. Covers picking the correct receiver node (the scrollable container vs an item), the matchers used to find a scroll parent (hasScrollAction, hasScrollToIndexAction, hasScrollToKeyAction, hasScrollToNodeAction), and how the lazy vs non-lazy scrollable cases differ. Use when the developer asks \"how do I tap a Compose node\", \"scroll to an item in a LazyColumn\", \"click a link inside Text\", \"trigger a custom semantics action\", or reports \"Action performScrollTo failed\" / \"node has no parent layout with a Scroll SemanticsAction\" / \"ScrollToIndex not defined\".\r"
+  },
+  {
+    "name": "composing-semantics-matchers",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/finders/composing-semantics-matchers/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\finders\\composing-semantics-matchers\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to build precise Compose UI test queries by composing `SemanticsMatcher` predicates with `infix and`, `infix or`, and `operator not`, plus the prebuilt filter library (`hasText`, `hasClickAction`, `isEnabled`, `isOn`, `hasTestTag`, `hasContentDescription`, `hasParent`, `hasAnyAncestor`, `hasAnyChild`, `hasAnySibling`, `hasAnyDescendant`, `hasImeAction`, `hasScrollToKeyAction`, `hasScrollToNodeAction`, `isDialog`, `isPopup`, `isRoot`, `isFocused`, `isEditable`, `isHeading`). Covers `SemanticsMatcher.expectValue` / `keyIsDefined` / `keyNotDefined` for custom semantics keys. Use when the developer asks how to find \"an enabled button with text Submit\", how to combine matchers, how to filter by a custom `SemanticsPropertyKey`, how to write a hierarchical predicate, or mentions `hasParent`, `hasAnyAncestor`, `expectValue`. If the developer wants one matcher instead of three chained assertions, use this skill.\r"
+  },
+  {
+    "name": "configuring-junit4-on-android",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/runner/configuring-junit4-on-android/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\runner\\configuring-junit4-on-android\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to stand up a JUnit4-based JVM unit-test suite on an Android module. Covers the canonical Gradle dependency matrix (`junit:junit:4.13.2`, `androidx.test:core:1.7.0`, `androidx.test.ext:junit:1.3.0`, `androidx.test.ext:truth:1.7.0`), the `@RunWith(AndroidJUnit4::class)` runner, `InstrumentationRegistry.getInstrumentation()`, `ApplicationProvider.getApplicationContext()`, the `@SmallTest` / `@MediumTest` / `@LargeTest` size annotations wired into `am instrument -e size`, the androidx-test Truth subjects, and the canonical `MainDispatcherRule` setup pattern. Use when the user mentions `AndroidJUnit4 unresolved`, `which AndroidJUnit4`, `InstrumentationRegistry deprecated`, `getApplicationContext in unit test`, `Truth IntentSubject`, `@SmallTest`, `MainDispatcherRule`, or asks how to wire JUnit4 into an Android module's `src/test/`.\r"
+  },
+  {
+    "name": "configuring-test-dependencies",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/setup/configuring-test-dependencies/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\setup\\configuring-test-dependencies\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": ">-\r"
+  },
+  {
+    "name": "connecting-over-wifi",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/devices/connecting-over-wifi/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\devices\\connecting-over-wifi\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to connect ADB to an Android 11+ device wirelessly with the modern `adb pair` flow (pairing code or QR via `Settings → Developer options → Wireless debugging`), then `adb connect <host:port>` and `adb disconnect`, plus mDNS auto-discovery via `adb mdns check` / `adb mdns services` and the `_adb-tls-pairing._tcp` / `_adb-tls-connect._tcp` service types. Covers the ADB v34+ default mDNS backend (Openscreen on Linux/Windows, not Bonjour as the public doc says), the legacy `adb tcpip <port>` + `adb connect` path that pre-dates pairing, security caveats (corporate Wi-Fi blocks p2p; flat LAN exposure), version requirements (Android 11/API 30 for phones, Android 13/API 33 for TV+Wear), and the `ADB_MDNS_OPENSCREEN` / `ADB_MDNS_AUTO_CONNECT` environment variables. Use when the user mentions `adb pair`, `adb connect`, \"wireless debugging\", \"QR code pairing\", `_adb-tls-connect`, \"Openscreen vs Bonjour\", `adb tcpip 5555`, or \"device not connecting after pairing successfully\".\r"
+  },
+  {
+    "name": "connecting-to-devices",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/devices/connecting-to-devices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\devices\\connecting-to-devices\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": ">-\r"
+  },
+  {
+    "name": "controlling-the-test-clock",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/synchronization/controlling-the-test-clock/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\synchronization\\controlling-the-test-clock\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive the Compose test clock by hand with MainTestClock — currentTime, autoAdvance, advanceTimeByFrame, advanceTimeBy(milliseconds, ignoreFrameDuration), and advanceTimeUntil. Explains the 16 ms frame delay used by TestMonotonicFrameClock, the per-frame ordering where withFrameNanos awaiters resume before recomposition, and how the recomposer and MainTestClock share one TestCoroutineScheduler. Covers v1 versus v2 entry-point dispatcher differences (UnconfinedTestDispatcher vs StandardTestDispatcher) and when an explicit runCurrent or advanceTimeBy(0) is required after migration. If the user mentions MainTestClock, mainClock.advanceTimeBy, mainClock.advanceTimeByFrame, mainClock.advanceTimeUntil, ComposeTimeoutException, frame delay, TestCoroutineScheduler, \"test clock vs wall clock\", or \"v2 createComposeRule queues tasks\", use this skill.\r"
+  },
+  {
+    "name": "cross-app-tests-with-uiautomator",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/uiautomator/cross-app-tests-with-uiautomator/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\uiautomator\\cross-app-tests-with-uiautomator\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive cross-app and system-UI flows from instrumentation tests using UiAutomator 2.3.0 — `UiDevice`, `BySelector` / `UiObject2` (modern), `UiSelector` / `UiObject` (legacy), `Until` conditions, and `Configurator` global timeouts. Covers the singleton acquisition (`UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())`), `pressBack/pressHome/pressRecentApps`, `device.findObject(By...)` cached-node refresh and `StaleObjectException` recovery, the `executeShellCommand` `@Discouraged` path vs `Context.startActivity` plus `<queries>`, and the full `By` factory catalog. Use when the user reports `StaleObjectException`, `Espresso InjectEventSecurityException`, `findObject returns null`, asks \"how do I open Settings from a test\", \"toggle Wi-Fi\", \"dismiss notification shade\", or \"test that spans my app and another\".\r"
+  },
+  {
+    "name": "developing-with-compose-previews",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/preview/developing-with-compose-previews/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\preview\\developing-with-compose-previews\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to make `@Preview` functions the primary feedback loop for Jetpack Compose UI work — preview-driven development. Covers hoisting state out of composables so a preview never needs a `ViewModel` or DI graph, `LocalInspectionMode` for conditional preview rendering (e.g. placeholder instead of Coil/Glide), `@PreviewParameter` + `PreviewParameterProvider` for rendering every UI state side by side, multi-configuration previews (`uiMode`, `fontScale`, `device`, `widthDp`, `locale`), `@Preview`-annotated annotation classes for reusable preview sets, and the anti-patterns that make previews rot (screen-level previews, unwrapped theme, zero-width `fillMaxWidth` previews, Lorem-ipsum data). Use when the user mentions \"preview won't render\", \"preview needs a ViewModel\", \"@PreviewParameter\", \"LocalInspectionMode\", \"preview out of date\", \"preview-driven development\", \"previews keep breaking\", or \"how to structure Compose previews\".\r"
+  },
+  {
+    "name": "display-glasses-with-jetpack-compose-glimmer",
+    "platform": "android",
+    "relativePath": "android-skills/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\xr\\display-glasses-with-jetpack-compose-glimmer\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides guidelines for developing projected Android XR apps for display\r"
+  },
+  {
+    "name": "edge-to-edge",
+    "platform": "android",
+    "relativePath": "android-skills/system/edge-to-edge/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\system\\edge-to-edge\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Use this skill to migrate your Jetpack Compose app to add adaptive edge-to-edge\r"
+  },
+  {
+    "name": "enabling-accessibility-checks",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/debug/enabling-accessibility-checks/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\debug\\enabling-accessibility-checks\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to enable Espresso's `AccessibilityValidator` against the Compose semantics tree via `enableAccessibilityChecks(...)` from `androidx.compose.ui:ui-test-accessibility` (for `ComposeUiTest`) or `androidx.compose.ui:ui-test-junit4-accessibility` (for `ComposeTestRule` / `AndroidComposeTestRule`). Covers the API surface, the auto-check after every UI-mutating action (`performMultiModalInput` is the lone exception), the manual `tryPerformAccessibilityChecks()` entry point, sharing the validator with Espresso via `AccessibilityChecks.enable()`, the API 34+ requirement, and the Robolectric inconclusive behavior (logs a `Log.w` warning and still installs the validator, but Robolectric does not faithfully drive accessibility services — b/332778271). Use when the developer asks \"how do I enable a11y checks in a Compose test\", \"AccessibilityChecks.enable\", \"AccessibilityValidator throws on click\", \"robolectric a11y not supported\", or \"ComposeTestRule IllegalStateException\".\r"
+  },
+  {
+    "name": "engage-sdk-integration",
+    "platform": "android",
+    "relativePath": "android-skills/play/engage-sdk-integration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\play\\engage-sdk-integration\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Helps developers integrate, debug, and resolve Play Engage SDK implementation\r"
+  },
+  {
+    "name": "entering-text",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/actions/entering-text/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\actions\\entering-text\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive Jetpack Compose text fields from tests with the text-specific actions — performTextInput (insert at cursor via the InsertTextAtCursor semantics action), performTextReplacement (clear + replace via SetText), performTextClearance (replace with empty string), performTextInputSelection (set TextRange selection), and performImeAction (fire the configured IME action such as Next, Done, Search). Covers the auto-focus path, the enabled / editable / focusable preconditions, the append vs replace gotcha that produces \"helloworld\" instead of \"world\", and the IME-action focus chain (Next advances focus to the next focusable). Use when the developer asks \"how do I type into a TextField in a test\", \"test an IME Next button\", \"test a clear-text action\", \"BasicTextField won't accept input\", \"text input duplicated in test\", or reports \"Failed to perform text input\" / \"Failed to perform IME action\" / \"Default ImeAction\" errors.\r"
+  },
+  {
+    "name": "extracting-logs-with-logcat",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/observability/extracting-logs-with-logcat/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\observability\\extracting-logs-with-logcat\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to read device logs for test failures, debug, smoke testing, and CI repros. Covers `adb logcat` (stream), `adb logcat -d` (dump and exit), `adb logcat -c` (clear), buffer selection (`-b main|system|crash|events|radio|kernel|all`), priority ladder (V/D/I/W/E/F/S), filter expressions like `MyApp:D *:S`, format flags (`-v threadtime`, `-v json` on Android 11+), `--pid $(adb shell pidof -s pkg)`, time/count filters (`-T '01-01 12:00:00.000'`, `-t 100`), buffer rotation (`-r <kbytes>`, `-n <count>`, `-f <file>`), buffer sizing (`-G`, `-g`), and stripping `Log.d` calls in release builds via R8 `-assumenosideeffects`. If the user mentions \"logcat filter only my app\", \"events buffer am_proc_start\", \"logcat json format\", \"grep logcat expensive\", \"missing logs after restart\", \"stripping Log.d release\", or \"logcat -f writes to host or device\", use this skill.\r"
+  },
+  {
+    "name": "extracting-test-artifacts",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/transfer/extracting-test-artifacts/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\transfer\\extracting-test-artifacts\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to move files between host and device with `adb pull` and `adb push`, including the modern `-z` (compression), `-Z` (no compression), `--sync`, and `-a` (preserve attrs) flags. Covers the path-permission rules — `/data/local/tmp/` is freely writable, `/sdcard/` (alias `/storage/emulated/0/`) is shell-writable with scoped-storage rules on API 30+, `/data/data/<pkg>/` requires `run-as <pkg>` on debuggable builds, and `/sdcard/Android/data/<pkg>/files/` is package-owned but pullable. Includes `adb shell run-as <pkg> cat <path>` for text grabs, `adb exec-out run-as <pkg> tar cf - <path> | tar xf -` for binary-clean directory grabs, the `connected_android_test_additional_output/` Gradle output dir, and the `androidx.test:services` `useTestStorageService` flag for the modern artefact-collection API. If the user mentions \"adb pull permission denied data data\", \"run-as\", \"scoped storage shell\", \"tar through adb\", \"test storage service\", or \"exec-out vs shell for binary\", use this skill.\r"
+  },
+  {
+    "name": "finding-nodes-by-tag-text-content",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/finders/finding-nodes-by-tag-text-content/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\finders\\finding-nodes-by-tag-text-content\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to locate Compose semantics nodes from a UI test using `onNodeWithTag`, `onNodeWithText`, `onNodeWithContentDescription`, `onAllNodes*`, and `onRoot`. Covers the count contract (single-node finders fail on 0 or >1 matches; collection finders never throw on 0), the merged-vs-unmerged tree distinction, and why tagging in production beats text-matching from tests. Use when the developer reports \"no node matched\", \"multiple nodes matched\", \"tag not found\", \"useUnmergedTree\", \"Modifier.testTag\", or asks how to find a Button/Text/Icon in a Compose test. If the developer mentions onNodeWithText, onNodeWithTag, onNodeWithContentDescription, onAllNodesWithTag, onRoot, or merged tree vs unmerged tree, use this skill.\r"
+  },
+  {
+    "name": "injecting-input-and-state",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/control/injecting-input-and-state/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\control\\injecting-input-and-state\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive an Android device from the host shell — inject taps, swipes, text, key events, and drag-and-drop via `adb shell input`; resize the display with `wm size` / `wm density`; flip hermetic-test settings with `settings put global window_animation_scale 0`; reset app state with `pm clear` vs `am force-stop`; launch Activities with `am start -n pkg/.Activity`; and use the modern `cmd <service>` wrapper (`cmd wifi`, `cmd connectivity`, `cmd uimode night`, `cmd locale set-app-locales`) instead of the deprecated `svc` aliases on API 30+. If the user mentions \"input tap\", \"input swipe\", \"input text spaces\", \"KEYCODE_BACK\", \"wm size for screen-size matrix\", \"settings put animation_scale\", \"force-stop vs pm clear\", \"svc wifi no-op\", \"cmd wifi set-wifi-enabled\", or \"am start intent extras\", use this skill.\r"
+  },
+  {
+    "name": "injecting-mouse-and-keyboard",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/actions/injecting-mouse-and-keyboard/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\actions\\injecting-mouse-and-keyboard\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive Jetpack Compose UI from tests with non-touch input — performMouseInput (click, rightClick, doubleClick, tripleClick, longClick, animateMoveTo, dragAndDrop, smoothScroll, enter / exit, press / release / scroll), performKeyInput (keyDown, keyUp, isKeyDown, modifier-state vals isCtrlDown / isShiftDown / isAltDown / isMetaDown / isFnDown / isCapsLockOn / isNumLockOn / isScrollLockOn, helpers pressKey, withKeyDown, withKeysDown, withKeyToggled, withKeysToggled), performKeyPress for direct KeyEvent injection, and performMultiModalInput for hover-then-click flows. Covers MouseButton (Primary, Secondary, Tertiary), ScrollWheel (Horizontal, Vertical), and the repeat-key behaviour driven by advanceEventTime. Use when the developer asks \"how do I right-click in a Compose test\", \"test a Ctrl+S shortcut\", \"send a keyboard shortcut\", \"simulate hover\", \"test a tooltip\", \"scroll the mouse wheel\", or \"drag and drop with a mouse\" on desktop or Compose Multiplatform.\r"
+  },
+  {
+    "name": "injecting-touch-gestures",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/actions/injecting-touch-gestures/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\actions\\injecting-touch-gestures\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to drive Jetpack Compose UI with synthetic touch events through performTouchInput and the TouchInjectionScope DSL — click, longClick, doubleClick, swipe, swipeUp / swipeDown / swipeLeft / swipeRight, swipeWithVelocity, pinch, multiTouchSwipe, plus the low-level down / moveTo / moveBy / move / up / cancel primitives. Covers node-local coordinates, the geometry helpers (center, topLeft, bottomRight, percentOffset), event batching, splitting a gesture across multiple performTouchInput blocks, and why performGesture must not be used. Use when the developer asks \"how do I simulate a swipe\", \"drag a node by 100 pixels\", \"long-press in a Compose test\", \"pinch to zoom\", \"test a fling with velocity\", or reports \"performGesture is deprecated\", a Thread.sleep mid-gesture, or a flaky drag test using hardcoded screen coordinates.\r"
+  },
+  {
+    "name": "installing-and-managing-apps",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/apps/installing-and-managing-apps/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\apps\\installing-and-managing-apps\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to install, uninstall, list, inspect, and reset Android apps via `adb install` (with `-r` reinstall, `-d` allow-downgrade, `-t` allow test packages, `-g` grant all runtime permissions, `--user` per-user install, `adb install-multiple` for split APKs) and the on-device `pm` tool (`pm list packages [-f|-d|-e|-s|-3|-i|-u]`, `pm path`, `pm clear`, `pm grant` / `pm revoke`, `pm enable` / `pm disable`, `pm uninstall [-k]`, `cmd package dump-profiles`). Calls out the canonical hermetic-reset pattern (`pm clear` wipes data; `am force-stop` does NOT) and the common install errors (`INSTALL_FAILED_USER_RESTRICTED`, `INSTALL_FAILED_VERSION_DOWNGRADE`, signing-conflict). Use when the user mentions \"reset app between tests\", `pm clear`, `am force-stop` confusion, install fails after debugger, split APK install, runtime permission grants, multi-user profile installs, or \"how do I list third-party apps\".\r"
+  },
+  {
+    "name": "launching-activities-with-activityscenario",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/scenarios/launching-activities-with-activityscenario/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\scenarios\\launching-activities-with-activityscenario\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to launch, drive, and tear down an Activity from an instrumentation test using `ActivityScenario` and the JUnit4 wrapper `ActivityScenarioRule`. Covers `ActivityScenario.launch<A>()`, `launch(intent)`, `launchActivityForResult`, `moveToState(Lifecycle.State.*)`, `recreate()`, `onActivity { }`, the `Closeable` / `use { }` idiom, and the manifest declaration trap. Establishes that `androidx.test.ext.junit.rules.ActivityScenarioRule` is the single canonical FQN — `androidx.test.rule.ActivityScenarioRule` does NOT exist; the package only ships the deprecated `ActivityTestRule`. Use when the user reports `ActivityNotFoundException`, `ActivityTestRule deprecated`, \"how do I rotate the activity in a test\", \"how do I read setResult from a test\", \"how do I survive recreate\", \"Cannot run onActivity since Activity is not alive\", or \"test deadlocks on launch\".\r"
+  },
+  {
+    "name": "launching-fragments-with-fragmentscenario",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/scenarios/launching-fragments-with-fragmentscenario/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\scenarios\\launching-fragments-with-fragmentscenario\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to test a `Fragment` in isolation using `FragmentScenario`, `launchFragmentInContainer<F>()`, and `launchFragment<F>()`. Covers the `androidx.fragment:fragment-testing` + `androidx.fragment:fragment-testing-manifest` artifact split, the `EmptyFragmentActivity` host (`android:Theme.WithActionBar` parent — not AppCompat), the `themeResId` override, the `FragmentFactory` survival across `recreate()` via the ViewModelStore-backed holder, the `containerViewId = android.R.id.content` vs `0` distinction (in-container vs headless), and the `findNavController()` limitation. Use when the user reports `You need to use a Theme.AppCompat theme (or descendant)`, `Fragment ... does not have a NavController set`, `Cannot set initial Lifecycle state to DESTROYED for FragmentScenario`, or asks \"how do I test a fragment in isolation\" / \"headless fragment test\".\r"
+  },
+  {
+    "name": "leanback-to-compose-tv-migration",
+    "platform": "android",
+    "relativePath": "android-skills/tv/leanback-to-compose-tv-migration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\tv\\leanback-to-compose-tv-migration\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides instructions and architectural patterns for migrating Android\r"
+  },
+  {
+    "name": "media3-cast-integration",
+    "platform": "android",
+    "relativePath": "android-skills/media/media3-cast-integration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\media\\media3-cast-integration\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Implements Google Cast support in Android apps using Jetpack Media3.\r"
+  },
+  {
+    "name": "migrate-xml-views-to-jetpack-compose",
+    "platform": "android",
+    "relativePath": "android-skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\jetpack-compose\\migration\\migrate-xml-views-to-jetpack-compose\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides a structured workflow for migrating an Android XML View to Jetpack\r"
+  },
+  {
+    "name": "migrating-from-android-test-classes",
+    "platform": "android",
+    "relativePath": "android-testing-skills/platform/legacy/migrating-from-android-test-classes/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\platform\\legacy\\migrating-from-android-test-classes\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to migrate a codebase off the deprecated `android.test.*` testing classes that ship in the Android platform SDK onto AndroidX Test. Covers `InstrumentationTestRunner` → `AndroidJUnitRunner`; `InstrumentationTestCase`/`AndroidTestCase` → `@RunWith(AndroidJUnit4)` + `InstrumentationRegistry`/`ApplicationProvider`; `ActivityInstrumentationTestCase2` → `ActivityScenario`/`ActivityScenarioRule` + Espresso; `ServiceTestCase`/`ProviderTestCase2` → `ServiceTestRule`/`ProviderTestRule`; `MoreAsserts` → Truth/Hamcrest; `ViewAsserts`/`TouchUtils` → Espresso matchers/actions; `android.test.UiThreadTest`/`FlakyTest`/`suitebuilder.annotation.*` → `androidx.test.*`; `android.test.mock.*` → real test contexts or Mockito; and JUnit3 `extends TestCase` → JUnit4 `@Test`. Use when the user sees `@Deprecated` on `android.test.*`, asks how to replace `ActivityInstrumentationTestCase2` / `InstrumentationTestCase` / `MoreAsserts` / `TouchUtils`, or \"old Android tests won't run on AndroidJUnitRunner\".\r"
+  },
+  {
+    "name": "mocking-with-mockito",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/mocking/mocking-with-mockito/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\mocking\\mocking-with-mockito\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to wire Mockito (the dominant Android mocking framework, exclusively used by androidx itself) into a JVM unit-test suite. Covers `org.mockito:mockito-core:5.x` plus the `org.mockito.kotlin:mockito-kotlin:5.x` Kotlin DSL — `mock<T>()`, `whenever`, `argumentCaptor<T>()`, `any()` / `anyOrNull()` / `eq()`, `MockitoJUnit.rule()` vs `MockitoAnnotations.openMocks(this)` lifecycle, the inline mock-maker for Kotlin final classes (`mock-maker-inline` plugin file), `@SdkSuppress(minSdkVersion = 28)` for instrumented final-class mocks, and the suspend-stubbing escape hatch via `runBlocking`. Use when the user mentions `whenever`, `Cannot mock final class`, `InvalidUseOfMatchersException`, `@Mock null`, `MockitoJUnitRunner`, `argumentCaptor`, `mock-maker-inline`, or asks how to mock with mockito-kotlin.\r"
+  },
+  {
+    "name": "mocking-with-mockk",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/mocking/mocking-with-mockk/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\mocking\\mocking-with-mockk\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to wire MockK (the Kotlin-first mocking framework) into a JVM unit-test suite, especially when coroutines, singleton/`object` mocking, or constructor mocking dominate. Covers `io.mockk:mockk-jvm:1.14.x` (and `mockk-android` + `mockk-agent` for instrumented), `every { } returns`, `coEvery` / `coVerify` (native suspend support — the big win over Mockito), `mockk(relaxed = true)` / `relaxUnitFun = true`, `slot<T>()` capture, `verifySequence` / `verifyOrder` / `confirmVerified`, `mockkStatic` / `mockkObject` / `mockkConstructor` with `unmockkAll()` cleanup, `@MockK` / `@RelaxedMockK` / `@SpyK` / `@InjectMockKs` annotations, and the Mockito-vs-MockK decision criteria. Use when the user mentions `coEvery`, `mockkObject`, `mockkStatic`, `slot`, `MockKException`, `every returns vs coEvery`, `relaxed = true`, or asks how to mock a Kotlin `object`/singleton.\r"
+  },
+  {
+    "name": "navigation-3",
+    "platform": "android",
+    "relativePath": "android-skills/navigation/navigation-3/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\navigation\\navigation-3\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Learn how to install and migrate to Jetpack Navigation 3, and how to\r"
+  },
+  {
+    "name": "organizing-test-source-sets",
+    "platform": "android",
+    "relativePath": "android-testing-skills/fundamentals/strategies/organizing-test-source-sets/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\fundamentals\\strategies\\organizing-test-source-sets\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to organize Android test source sets — `src/test/`, `src/androidTest/`, the community `src/sharedTest/` convention, and the modern KMP-style `androidHostTest` / `androidDeviceTest` split that Compose itself adopted after AGP 7.2 broke the classic `sourceSets` wiring. Includes the `testImplementation` / `androidTestImplementation` / `debugImplementation` configuration matrix per Google's `/training/testing/local-tests` and `/training/testing/instrumented-tests` pages. Use when the user asks \"where do I put my tests\", \"test or androidTest\", \"sharedTest setup\", \"AGP 7.2 broke my sourceSets\", \"androidHostTest vs androidDeviceTest\", \"testImplementation vs androidTestImplementation vs debugImplementation\", or \"why is my Robolectric test in androidTest\".\r"
+  },
+  {
+    "name": "picking-test-doubles",
+    "platform": "android",
+    "relativePath": "android-testing-skills/fundamentals/doubles/picking-test-doubles/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\fundamentals\\doubles\\picking-test-doubles\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to pick the right test double — fake, mock, stub, spy, dummy, or Robolectric shadow — for an Android test. Encodes Google's verbatim preference order (\"fakes ... are preferred\", \"Fakes are preferred over stubs for simplicity\", \"Fakes or mocks are therefore preferred over spies\"), gives Android examples (in-memory `FakeUserRepository`, `mockk<UserRepository>()`, `ShadowSystemClock`), and a decision matrix mapping intent to the correct double. Use when the user asks \"fake or mock\", \"should I use Mockito here\", \"how do I replace this dependency in tests\", \"what's the difference between a stub and a mock\", \"spy vs mock\", or mentions `mockk`, `every { } returns`, `verify { }`, `org.mockito`, `argumentCaptor`, `Robolectric` shadows, `ShadowSystemClock`, or `FakeRepository`.\r"
+  },
+  {
+    "name": "play-billing-library-version-upgrade",
+    "platform": "android",
+    "relativePath": "android-skills/play/play-billing-library-version-upgrade/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\play\\play-billing-library-version-upgrade\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Use this skill when upgrading or migrating an Android project from any\r"
+  },
+  {
+    "name": "play-policy-insights",
+    "platform": "android",
+    "relativePath": "android-skills/play/play-policy-insights/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\play\\play-policy-insights\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Automated auditor designed to verify Android applications against Google Play Policy domains. It cross-references static code analysis with Play Store declarations to generate deterministic compliance reports, identifying undeclared data collection, architectural risks, and missing disclosures across Permissions and APIs Hygiene, User Account and Identity, and Data Safety and Privacy domains.\r"
+  },
+  {
+    "name": "printing-the-semantics-tree",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/debug/printing-the-semantics-tree/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\debug\\printing-the-semantics-tree\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to diagnose \"no node matched\", \"found N nodes\", and \"useUnmergedTree\" failures by dumping the actual semantics tree with `printToLog(tag, maxDepth)` and `printToString(maxDepth)`. Covers the output grammar (`Node #<id> at (l, t, r, b)px, Tag: '...'`, alphabetically sorted config, `Actions = [...]`, `[FlagKey]` for `Unit`-valued semantics, `MergeDescendants`, `ClearAndSetSemantics`), the framework hint that suggests `useUnmergedTree = true` when matches are found only in the unmerged tree, and `fetchSemanticsNode` / `fetchSemanticsNodes` for custom matchers. Use when the developer reports \"tag not found\", \"multiple nodes matched\", \"merged tree vs unmerged tree\", \"test fails with assertion error and a long error message\", or wants to debug a finder without adding `Thread.sleep`.\r"
+  },
+  {
+    "name": "r8-analyzer",
+    "platform": "android",
+    "relativePath": "android-skills/performance/r8-analyzer/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\performance\\r8-analyzer\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Analyzes Android build files and R8 keep rules to identify redundancies,\r"
+  },
+  {
+    "name": "restore-credentials",
+    "platform": "android",
+    "relativePath": "android-skills/identity/restore-credentials/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\identity\\restore-credentials\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides knowledge and workflows to implement Android's Restore Credentials\r"
+  },
+  {
+    "name": "running-instrumented-tests-via-adb",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/tests/running-instrumented-tests-via-adb/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\tests\\running-instrumented-tests-via-adb\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to run instrumented Android tests directly through `adb shell am instrument -w -r` without going through Gradle. Covers the required `-w` (wait — REQUIRED for meaningful exit codes) and `-r` (raw output) flags, the `-e` argument table (`class`, `class#method`, `package`, `size`, `numShards`/`shardIndex`, `debug`, `annotation` / `notAnnotation`, `listener`, `clearPackageData`, `targetInstrumentation`), the canonical runners `AndroidJUnitRunner` and `AndroidTestOrchestrator`, the orchestrator wrapping pattern (target = orchestrator, `-e targetInstrumentation <pkg>/<runner>`), and the output framing (`INSTRUMENTATION_STATUS_CODE` 1=start, 0=ok, -1=error, -2=failure, -3=ignored, -4=assumption-failure; `INSTRUMENTATION_RESULT`; `INSTRUMENTATION_CODE`). Use when the user mentions `am instrument`, `AndroidJUnitRunner`, \"run tests from CI without Gradle\", \"Orchestrator\", `clearPackageData`, `targetInstrumentation`, exit codes from `am instrument`, or `INSTRUMENTATION_STATUS_CODE`.\r"
+  },
+  {
+    "name": "running-instrumented-tests-with-androidjunit4",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/runner/running-instrumented-tests-with-androidjunit4/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\runner\\running-instrumented-tests-with-androidjunit4\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to stand up an Android instrumentation test source set with the canonical `AndroidJUnit4` runner, the correct `AndroidJUnitRunner` Gradle wiring, and supporting infrastructure (Test Orchestrator, runtime permission grants, size annotations, SDK suppression, hermetic animation defaults). Covers `androidx.test:core:1.7.0` / `:runner:1.7.0` / `:rules:1.7.0` / `androidx.test.ext:junit:1.3.0` coordinates, `androidx.test.platform.app.InstrumentationRegistry`, and the `androidTestUtil` configuration trap for `androidx.test:orchestrator`. Use when the user reports `Test runner not found`, `AndroidJUnit4 deprecated`, `InstrumentationRegistry deprecated`, asks \"why is my orchestrator not running\", \"how do I pass `-e` args to the test\", \"how do I grant a runtime permission in a test\", or \"instrumented test won't compile\".\r"
+  },
+  {
+    "name": "running-tests-on-gradle-managed-devices",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/managed-devices/running-tests-on-gradle-managed-devices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\managed-devices\\running-tests-on-gradle-managed-devices\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to run instrumented Android tests on Gradle Managed Devices (GMD) — emulators that Gradle provisions, boots, runs tests on, and tears down, so CI and every developer get the same device without managing an emulator by hand. Covers the `android.testOptions.managedDevices { localDevices { create(...) { device; apiLevel; systemImageSource } } }` DSL, `ManagedVirtualDevice`, device `groups`, the generated tasks (`<deviceName>DebugAndroidTest`, `<groupName>GroupDebugAndroidTest`, `allDevicesCheck`), Automated Test Device (ATD) images (`aosp-atd`/`google-atd`) for lighter headless CI, test sharding across managed-device copies, where the HTML report and extra outputs land, and how this differs from `connectedAndroidTest` and `adb shell am instrument`. Use when the user mentions \"Gradle Managed Devices\", \"managedDevices\", \"allDevicesCheck\", \"ManagedVirtualDevice\", \"pixel2api30DebugAndroidTest\", \"ATD image\", \"automated test device\", or \"reproducible emulator for tests\".\r"
+  },
+  {
+    "name": "scripting-adb-for-ci",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/automation/scripting-adb-for-ci/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\automation\\scripting-adb-for-ci\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to wire `adb` reliably into CI — bash idioms, exit codes, parallel device fan-out with `xargs -P`, port forwarding (`adb forward` LOCAL REMOTE vs `adb reverse` REMOTE LOCAL — opposite argument order, the most common scripting bug), test-runner status codes (`-1` error, `-2` failure, `-3` ignored, `-4` assumption-failure), `am instrument -w -r` with `--num-shards` / `--shard-index`, the `timeout` wrapper (since `adb -t` is transport-id, NOT timeout), retry-on-transient-error with `adb kill-server`, idempotent setup (`pm clear` + animations to 0), `trap` cleanup, capture-on-failure (`screencap` + `logcat -d`), and Test Orchestrator wiring through `androidTestUtil(\"androidx.test:orchestrator:1.6.1\")` (NOT `androidTestImplementation`). If the user mentions \"adb forward vs reverse argument order\", \"am instrument exit code 0 even on failure\", \"adb timeout flag\", \"retry adb kill-server\", \"trap cleanup adb\", or \"androidTestUtil orchestrator\", use this skill.\r"
+  },
+  {
+    "name": "setting-up-host-vs-device-tests",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/setup/setting-up-host-vs-device-tests/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\setup\\setting-up-host-vs-device-tests\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to choose between host (Robolectric/JVM) and device (instrumentation) tests for Jetpack Compose, and to configure each correctly. Covers the `androidHostTest` (a.k.a. `src/test/`) vs `androidDeviceTest` (a.k.a. `src/androidTest/`) source set split, what each flavor can and cannot drive (RenderThread, screenshots, accessibility), the `@RunWith(AndroidJUnit4::class) @Config(minSdk = 23)` setup for Robolectric, and why `Thread.sleep` is forbidden everywhere except screenshot tests waiting on the RenderThread. Use when the user reports \"tests pass locally but fail on CI\", asks \"Robolectric vs instrumentation\", mentions screenshot tests, ripple animations, accessibility checks throwing on Robolectric, or \"should this test live in test/ or androidTest/\".\r"
+  },
+  {
+    "name": "structuring-a-compose-test",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/patterns/structuring-a-compose-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\patterns\\structuring-a-compose-test\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to structure a Jetpack Compose UI test class the way androidx itself writes them — `@MediumTest` + `@RunWith(AndroidJUnit4::class)`, a single `createComposeRule(StandardTestDispatcher())` rule, hoisted `mutableStateOf` declared above `setContent { }`, and the Test → Find → Assert → Act → Re-assert flow. Covers when to use `createAndroidComposeRule<MyActivity>()` for custom Activities, how to drive state from outside the composition via `runOnIdle { }`, why state must NOT be hoisted inside `setContent`, and why `@get:Rule createComposeRule()` and `runComposeUiTest { }` MUST NOT both appear in the same test. Use when the developer asks \"how do I write a Compose test\", \"where do I declare state\", \"how do I name the test class\", \"MediumTest vs LargeTest\", \"rule.setContent inside @Before\", or shows a test class that won't compile or doesn't drive state from outside.\r"
+  },
+  {
+    "name": "styles",
+    "platform": "android",
+    "relativePath": "android-skills/jetpack-compose/theming/styles/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\jetpack-compose\\theming\\styles\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Use this skill to integrate the Jetpack Compose Styles API into an Android\r"
+  },
+  {
+    "name": "synchronizing-with-idle",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/synchronization/synchronizing-with-idle/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\synchronization\\synchronizing-with-idle\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to choose the right idle-synchronization primitive in Compose UI tests — waitForIdle, awaitIdle, waitUntil(conditionDescription, timeoutMillis, condition), waitUntilNodeCount, waitUntilExactlyOneExists, waitUntilAtLeastOneExists, waitUntilDoesNotExist, runOnIdle, runOnUiThread, runWhenIdle, awaitAndRunWhenIdle, hasPendingWork, and IdlingResource. Explains what \"idle\" means (no pending recomposition or draw, every IdlingResource isIdleNow), the wall-clock vs test-clock timeout split, the Espresso/Robolectric strategy bridge, and why direct state reads from the test thread race the recomposer. If the user mentions \"test is flaky\", \"test passes locally fails on CI\", \"Thread.sleep waiting for state\", \"Espresso IdlingResource\", \"ComposeTimeoutException waitUntil\", \"AndroidComposeUiTestTimeoutException\", waitUntilExactlyOneExists, runOnIdle, runWhenIdle, or \"register IdlingResource\", use this skill.\r"
+  },
+  {
+    "name": "testing-animations-deterministically",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/synchronization/testing-animations-deterministically/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\synchronization\\testing-animations-deterministically\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to write non-flaky Compose animation tests by setting mainClock.autoAdvance = false and stepping frames by hand with advanceTimeByFrame and advanceTimeBy(durationMillis). Explains why InfiniteAnimationPolicy cancels indeterminate animations the moment the test starts unless autoAdvance is disabled, why the first frame after a state toggle does not initialize playTime, and why state mutations during the paused-clock window must go through runOnUiThread instead of runOnIdle. If the user mentions \"animation never finishes\", \"InfiniteAnimationPolicy CancellationException\", \"Crossfade test flaky\", \"indeterminate progress indicator\", \"Thread.sleep(500) waiting for animation\", advanceTimeByFrame, advanceTimeBy, or autoAdvance, use this skill.\r"
+  },
+  {
+    "name": "testing-coroutines-with-runtest",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/coroutines/testing-coroutines-with-runtest/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\coroutines\\testing-coroutines-with-runtest\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to test suspend functions and coroutine-using classes on the JVM with kotlinx-coroutines-test. Covers runTest, TestScope, StandardTestDispatcher vs UnconfinedTestDispatcher, virtual time via TestCoroutineScheduler (advanceTimeBy, advanceUntilIdle, runCurrent), the canonical MainDispatcherRule wrapper for Dispatchers.setMain/resetMain, the TestResult Promise contract on KMP, and the runBlockingTest -> runTest migration. If the user mentions runTest, runBlockingTest deprecated, advanceUntilIdle, advanceTimeBy, TestScope, StandardTestDispatcher, UnconfinedTestDispatcher, MainDispatcherRule, \"Module with the Main dispatcher is missing\", \"test hangs forever\", dispatchTimeoutMs, viewModelScope test, or a ViewModel that posts state from a coroutine, use this skill.\r"
+  },
+  {
+    "name": "testing-flows-with-turbine",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/coroutines/testing-flows-with-turbine/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\coroutines\\testing-flows-with-turbine\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to assert Flow emissions in tests with Cash App Turbine. Covers flow.test entry, ReceiveTurbine API (awaitItem, awaitComplete, awaitError, expectMostRecentItem, skipItems, expectNoEvents, cancel and friends, plus the non-suspending takeItem/takeComplete/takeError), turbineScope/testIn for multi-flow tests, the standalone Turbine<T> channel (add/close/asChannel/ensureAllEventsConsumed) for verifying non-Flow callbacks and listeners, the hot vs cold cancellation contract (StateFlow/SharedFlow never auto-complete), Turbine's wall-clock timeout decoupled from runTest virtual time, and the decision matrix between Turbine and raw flow.toList. If the user mentions Turbine, awaitItem, awaitComplete, expectMostRecentItem, takeItem, \"test hangs on collect\", \"SharedFlow never completes\", \"StateFlow first emission\", \"TurbineAssertionError\", \"withTurbineTimeout\", \"Turbine() channel\", \"capture a callback in a test\", or asserts a ViewModel's StateFlow/SharedFlow, use this skill.\r"
+  },
+  {
+    "name": "testing-lazy-lists",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/patterns/testing-lazy-lists/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\patterns\\testing-lazy-lists\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to test `LazyColumn`, `LazyRow`, and `LazyVerticalGrid` correctly — tag the container with `Modifier.testTag(...)`, tag each item by its key, scroll via the semantic action (`hasScrollAction()`, `performScrollToIndex`, `performScrollToKey`) or via `Modifier.testTag` plus `performTouchInput { swipeUp() }`, and verify visibility with `assertIsDisplayed` (NOT `assertExists`, since off-screen lazy items still exist as semantic nodes in some configurations). Covers `LazyListState.layoutInfo.visibleItemsInfo` as the highest-signal probe, `mainClock.autoAdvance = false` for animated item placement, and the parameterized vertical/horizontal base-class pattern. Use when the developer asks \"how do I scroll a LazyColumn in a test\", \"assertExists vs assertIsDisplayed\", \"scroll to a key\", \"test item placement animation\", or sees a test pass when an item is off-screen.\r"
+  },
+  {
+    "name": "testing-setup",
+    "platform": "android",
+    "relativePath": "android-skills/testing/testing-setup/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\testing\\testing-setup\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Analyze and create a testing strategy for native Android apps - install\r"
+  },
+  {
+    "name": "testing-state-restoration",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/patterns/testing-state-restoration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\patterns\\testing-state-restoration\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": ">-\r"
+  },
+  {
+    "name": "testing-with-espresso-interop",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/interop/testing-with-espresso-interop/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\interop\\testing-with-espresso-interop\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to mix Compose finders and Espresso `onView` in the same test — for Android `Dialog` windows, IME (soft keyboard) state, `ComposeView` inside an Android View hierarchy, or focus interactions that cross the Compose/View boundary. Covers `createAndroidComposeRule<A>()` setup, the `EspressoLink` bridge that auto-registers Compose's `IdlingResource` with Espresso, the `onRootWithViewInteraction` API, and why `Espresso.onView(...)` MUST run from the test thread (not from `runOnIdle` / `runOnUiThread`). Use when the developer mentions \"Espresso onView and Compose at the same time\", \"ComposeView inside a View\", \"soft keyboard test\", \"Dialog focus\", \"compose interop test\", or shows a test that calls Espresso from inside `runOnIdle` and deadlocks.\r"
+  },
+  {
+    "name": "traversing-the-semantics-tree",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/finders/traversing-the-semantics-tree/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\finders\\traversing-the-semantics-tree\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to navigate from one Compose semantics node to its relatives via `onParent`, `onChildren`, `onChild`, `onChildAt`, `onSibling`, `onSiblings`, `onAncestors`, plus the collection helpers `onFirst`, `onLast`, `filter`, `filterToOne`, and the `[index]` operator. Covers when to traverse vs when to add a stable `testTag`, the LazyColumn/LazyRow caveat (only currently composed children appear), the absence of a singular `onAncestor`, and the sticky `useUnmergedTree` flag across navigation. Use when the developer mentions `onChildren`, `onChild`, `onParent`, `onSiblings`, `onAncestors`, `filterToOne`, `onFirst`, `onLast`, brittle child-index chains, or asks how to find the second child of a Row, the parent of a Text, or any sibling of a node. If the developer is dot-chaining navigation through a layout, use this skill.\r"
+  },
+  {
+    "name": "understanding-adb-architecture",
+    "platform": "android",
+    "relativePath": "android-testing-skills/adb/architecture/understanding-adb-architecture/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\adb\\architecture\\understanding-adb-architecture\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to reason about the three-piece ADB topology (client CLI, host server on TCP 5037, on-device daemon `adbd`), the lifecycle commands `adb start-server` / `adb kill-server` / `adb reconnect`, ADB environment variables (`ADB_TRACE`, `ADB_VENDOR_KEYS`, `ANDROID_ADB_SERVER_PORT`, `ANDROID_SERIAL`, `ADB_LOCAL_TRANSPORT_MAX_PORT`, `ADB_MDNS_AUTO_CONNECT`, `ADB_MDNS_OPENSCREEN`, `ADB_LIBUSB`, `ADB_BURST_MODE`), the host RSA key pair under `~/.android/`, the server log location, and version mismatches between Android Studio's bundled `platform-tools` and a system-installed `adb`. Use when the user mentions `daemon not running; starting now`, `server version doesn't match`, port 5037 collisions, ADB_TRACE, vendor keys, mDNS Openscreen vs Bonjour, libusb regressions, \"adb is being weird\", or asks \"what does adb actually do\".\r"
+  },
+  {
+    "name": "understanding-the-testing-pyramid",
+    "platform": "android",
+    "relativePath": "android-testing-skills/fundamentals/concepts/understanding-the-testing-pyramid/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\fundamentals\\concepts\\understanding-the-testing-pyramid\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to size an Android test suite using Google's small / medium / big scope vocabulary and the qualitative pyramid. Explains why most apps should hold \"many small tests and relatively few big tests\", how scope (small/medium/big) is orthogonal to execution location (local vs instrumented), and where the older 70/20/10 numeric ratio actually comes from. Use when the user asks \"how many unit vs UI tests should I write\", \"what's the testing pyramid\", \"all my tests are instrumented and CI is slow\", \"test pyramid 70 20 10\", \"Android small medium large tests\", \"Robolectric counts as which layer\", or mentions Unit / Component / Feature / Application / Release Candidate framing from the strategies page.\r"
+  },
+  {
+    "name": "using-robolectric-correctly",
+    "platform": "android",
+    "relativePath": "android-testing-skills/jvm-tests/robolectric/using-robolectric-correctly/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\jvm-tests\\robolectric\\using-robolectric-correctly\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to run Android-aware unit tests on the JVM with Robolectric — the right runner choice (AndroidJUnit4 vs RobolectricTestRunner), @Config sdk/qualifiers/application, the includeAndroidResources requirement, common shadows (ShadowApplication, ShadowLog, ShadowLooper, ShadowPackageManager, ShadowSystemClock), looper draining (shadowOf(Looper.getMainLooper()).idle()), and when NOT to reach for Robolectric (screenshot tests, RenderThread, accessibility services). Also covers the AGP 7.2+ sharedTest reality check and the migration to KMP androidHostTest/androidDeviceTest. If the user mentions Robolectric, AndroidJUnit4 host test, RobolectricTestRunner, @Config, includeAndroidResources, ShadowLooper.idle, shadowOf, sharedTest broken on AGP 7.2, ParameterizedRobolectricTestRunner, \"test passes on JVM fails on device\", or \"Resources NotFoundException\" in unit tests, use this skill.\r"
+  },
+  {
+    "name": "validating-compose-stability",
+    "platform": "android",
+    "relativePath": "android-testing-skills/compose/stability/validating-compose-stability/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\compose\\stability\\validating-compose-stability\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": ">-\r"
+  },
+  {
+    "name": "verified-email",
+    "platform": "android",
+    "relativePath": "android-skills/identity/verified-email/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\identity\\verified-email\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Provides a complete workflow for implementing verified email retrieval\r"
+  },
+  {
+    "name": "wear-compose-m3",
+    "platform": "android",
+    "relativePath": "android-skills/wear/wear-compose-m3/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-skills\\wear\\wear-compose-m3\\SKILL.md",
+    "sourceRepository": "https://github.com/android/skills",
+    "sourceCommit": "ea05a53683d1fb1fc701c3ad91f494d25d4fc7c6",
+    "description": "Expert guidance for working with Wear OS Compose Material3. Use this\r"
+  },
+  {
+    "name": "writing-espresso-tests",
+    "platform": "android",
+    "relativePath": "android-testing-skills/instrumentation/espresso/writing-espresso-tests/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\instrumentation\\espresso\\writing-espresso-tests\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to write Espresso 3.7.0 tests against Android Views — `onView(matcher).perform(action).check(matches(...))`, `onData(...)` for `AdapterView`, `RecyclerViewActions`, `Intents.intended/intending`, and `IdlingResource` registration. Covers the full `ViewMatchers` / `ViewActions` / `ViewAssertions` catalog, the `RootMatchers.DEFAULT` exclusion of dialogs and popups (the `inRoot(isDialog())` requirement), the `BottomNavigationViewActions` doesn't-exist gotcha in 3.7.0 contrib, and the `PickerActions.setDate(year, month, day)` 1-12 month convention. Use when the user reports `NoMatchingViewException`, `AmbiguousViewMatcherException`, `PerformException`, asks \"how do I click in a dialog\", \"Espresso typeText doesn't fire\", \"intent stub for camera\", or \"Espresso vs UiAutomator\".\r"
+  },
+  {
+    "name": "writing-tests-with-kotlin-test",
+    "platform": "android",
+    "relativePath": "android-testing-skills/kotlin/kotlin-test/writing-tests-with-kotlin-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\android-testing-skills\\kotlin\\kotlin-test\\writing-tests-with-kotlin-test\\SKILL.md",
+    "sourceRepository": "https://github.com/skydoves/android-testing-skills",
+    "sourceCommit": "8665ed59643c90eb1056a256a6ddec161aa1cfa1",
+    "description": "Use this skill to write tests with the `kotlin.test` library — the multiplatform assertion + annotation API that compiles the same in `commonTest` and on the JVM (JUnit4 or JUnit5), Android, JS, Native, and Wasm. Covers the `kotlin.test` annotations (`@Test`, `@Ignore`, `@BeforeTest`, `@AfterTest`) and how they typealias onto the underlying framework; the `assert*` functions (`assertEquals`/`assertNotEquals`, `assertSame`, `assertNull`/`assertNotNull`, `assertIs`/`assertIsNot`, `assertContentEquals`, `assertContains`, `assertTrue`/`assertFalse`, `fail`, `expect`, `assertFails`, `assertFailsWith`); the `@OnlyInputTypes` compile-time type check; the `Asserter`/`AsserterContributor`/`DefaultAsserter` extension point that routes JVM failures to `org.junit.Assert` for clickable diffs; and the `kotlin(\"test\")` capability that auto-selects JUnit4 vs JUnit5. Use when the user mentions `kotlin.test`, `import kotlin.test.*`, `@BeforeTest`, `assertFailsWith`, `assertContentEquals`, `assertIs`, or `kotlin(\"test\")`.\r"
+  },
+  {
+    "name": "api-review",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/api-review/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\api-review\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Reviews the specified code against the canonical API Design guidelines. Use this skill when the user asks for an API review or to check code against API design principles.\r"
+  },
+  {
+    "name": "code-documentation",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/code-documentation/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\code-documentation\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Guide for writing effective code documentation, including docstrings, JSDoc, dartdoc, and implementation comments. Use this skill when writing new code, adding features, or improving existing documentation in Dart, Python, or TypeScript to ensure clarity and maintainability.\r"
+  },
+  {
+    "name": "code-review",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/code-review/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\code-review\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Performs a comprehensive, multi-step code review of pull requests or local code changes, using iterative refinement (generation, critique, synthesis) to ensure high-quality, actionable feedback. Use when you need to review code changes thoroughly.\r"
+  },
+  {
+    "name": "dart-add-unit-test",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-add-unit-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-add-unit-test\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Write and organize unit tests for functions, methods, and classes using `package:test`. Use when creating new logic or fixing bugs to ensure code remains correct and regression-free.\r"
+  },
+  {
+    "name": "dart-best-practices",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-build-cli-app",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-build-cli-app/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-build-cli-app\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Entrypoint structure, exit codes, cross-platform scripts. Use when building command line utilities, scripts, or applications.\r"
+  },
+  {
+    "name": "dart-collect-coverage",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-collect-coverage/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-collect-coverage\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Collect coverage using the coverage packge and create an LCOV report\r"
+  },
+  {
+    "name": "dart-doc-validation",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-doc-validation/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-doc-validation\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-fix-runtime-errors",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-fix-runtime-errors/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-fix-runtime-errors\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Uses get_runtime_errors and lsp to fetch an active stack trace, locate the failing line, apply a fix, and verify resolution via hot_reload.\r"
+  },
+  {
+    "name": "dart-generate-test-mocks",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-generate-test-mocks/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-generate-test-mocks\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Define and generate mock objects for external dependencies using `package:mockito` and `build_runner`. Use when unit testing classes that depend on complex external services like APIs or databases.\r"
+  },
+  {
+    "name": "dart-long-lines",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-long-lines/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-long-lines\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-matcher-best-practices",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-matcher-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-matcher-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-migrate-to-checks-package",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-migrate-to-checks-package/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-migrate-to-checks-package\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-modern-features",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-modern-features/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-modern-features\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-multiline-strings",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-multiline-strings/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-multiline-strings\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-package-maintenance",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-package-maintenance/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-package-maintenance\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-resolve-package-conflicts",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-resolve-package-conflicts/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-resolve-package-conflicts\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Workflow for fixing package version conflicts. Use this when `pub get` fails due to incompatible package versions.\r"
+  },
+  {
+    "name": "dart-run-static-analysis",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-run-static-analysis/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-run-static-analysis\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Execute `dart analyze` to identify warnings and errors, and use `dart fix --apply` to automatically resolve mechanical lint issues. Use during development to ensure code quality and before committing changes.\r"
+  },
+  {
+    "name": "dart-setup-ffi-assets",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-setup-ffi-assets/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-setup-ffi-assets\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Guides agents in compiling and packaging C/C++ source code into dynamic or static libraries (Code Assets) using Dart's Native Assets hook system (via hook/build.dart and hook/link.dart utilizing package:hooks and package:native_toolchain_c). Use when a user asks to: 'setup native assets', 'compile C/C++ source code', 'bundle dynamic libraries', 'build native C code', 'link native assets', 'implement build.dart or link.dart hooks', or 'integrate C/C++ interop in Dart/Flutter'. Helps agents avoid manual toolchain orchestration and configures secure hash-validated binary downloads or advanced linker tree-shaking with package:record_use mapping.\"\r"
+  },
+  {
+    "name": "dart-test-coverage",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-test-coverage/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-test-coverage\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-test-fundamentals",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/dart-test-fundamentals/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\dart-test-fundamentals\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "dart-use-ffigen",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-use-ffigen/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-use-ffigen\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Guide agents to use `package:ffigen` to automatically generate FFI bindings instead of writing them manually. Use this skill when a task involves writing new FFI bindings, extending C/Objective-C/Swift integrations, or replacing hand-crafted `dart:ffi` setups.\r"
+  },
+  {
+    "name": "dart-use-pattern-matching",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-use-pattern-matching/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-use-pattern-matching\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Use switch expressions and pattern matching where appropriate\r"
+  },
+  {
+    "name": "dart-use-primary-constructors",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-use-primary-constructors/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-use-primary-constructors\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": ">\r"
+  },
+  {
+    "name": "dart-write-documentation",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/dart-write-documentation/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\dart-write-documentation\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Rules and formatting guidelines for writing Dart /// API documentation and doc comments. Use when documenting Dart code, writing doc comments for any Dart declaration (libraries, classes, methods, variables, etc.), or when instructed to follow the Effective Dart documentation guidelines.\"\r"
+  },
+  {
+    "name": "flutter-add-integration-test",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-add-integration-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-add-integration-test\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Configures Flutter Driver for app interaction and converts MCP actions into permanent integration tests. Use when adding integration testing to a project, exploring UI components via MCP, or automating user flows with the integration_test package.\r"
+  },
+  {
+    "name": "flutter-add-widget-preview",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-add-widget-preview/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-add-widget-preview\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Adds interactive widget previews to the project using the previews.dart system. Use when creating new UI components or updating existing screens to ensure consistent design and interactive testing.\r"
+  },
+  {
+    "name": "flutter-add-widget-test",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-add-widget-test/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-add-widget-test\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Implement a component-level test using `WidgetTester` to verify UI rendering and user interactions (tapping, scrolling, entering text). Use when validating that a specific widget displays correct data and responds to events as expected.\r"
+  },
+  {
+    "name": "flutter-apply-architecture-best-practices",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-apply-architecture-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-apply-architecture-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Architects a Flutter application using the recommended layered approach (UI, Logic, Data). Use when structuring a new project or refactoring for scalability.\r"
+  },
+  {
+    "name": "flutter-build-responsive-layout",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-build-responsive-layout/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-build-responsive-layout\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Use `LayoutBuilder`, `MediaQuery`, or `Expanded/Flexible` to create a layout that adapts to different screen sizes. Use when you need the UI to look good on both mobile and tablet/desktop form factors.\r"
+  },
+  {
+    "name": "flutter-fix-layout-issues",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-fix-layout-issues/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-fix-layout-issues\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Fixes Flutter layout errors (overflows, unbounded constraints) using Dart and Flutter MCP tools. Use when addressing \"RenderFlex overflowed\", \"Vertical viewport was given unbounded height\", or similar layout issues.\r"
+  },
+  {
+    "name": "flutter-implement-json-serialization",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-implement-json-serialization/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-implement-json-serialization\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Create model classes with `fromJson` and `toJson` methods using `dart:convert`. Use when manually mapping JSON keys to class properties for simple data structures.\r"
+  },
+  {
+    "name": "flutter-setup-declarative-routing",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-setup-declarative-routing/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-setup-declarative-routing\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Configure `MaterialApp.router` using a package like `go_router` for advanced URL-based navigation. Use when developing web applications or mobile apps that require specific deep linking and browser history support.\r"
+  },
+  {
+    "name": "flutter-setup-localization",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-setup-localization/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-setup-localization\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Add `flutter_localizations` and `intl` dependencies, enable \"generate true\" in `pubspec.yaml`, and create an `l10n.yaml` configuration file. Use when initializing localization support for a new Flutter project.\r"
+  },
+  {
+    "name": "flutter-use-http-package",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/skills/flutter-use-http-package/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\skills\\flutter-use-http-package\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Use the `http` package to execute GET, POST, PUT, or DELETE requests. Use when you need to fetch from or send data to a REST API.\r"
+  },
+  {
+    "name": "grill-with-docs",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/grill-with-docs/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\grill-with-docs\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.\r"
+  },
+  {
+    "name": "natural-writing",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/natural-writing/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\natural-writing\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Contains well-defined rules for creating natural, accurate, and readable writing. Use whenever authoring longer text, like analysis documents, PR or CL descriptions, or documentation.\r"
+  },
+  {
+    "name": "profile-dart-code",
+    "platform": "flutter/dart",
+    "relativePath": "dart-flutter-dash-skills/skills/profile-dart-code/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\dart-flutter-dash-skills\\skills\\profile-dart-code\\SKILL.md",
+    "sourceRepository": "https://github.com/kevmoo/dash_skills",
+    "sourceCommit": "bc6506b0a1c6baa7a51252799e08cf46faf51ba4",
+    "description": "|-\r"
+  },
+  {
+    "name": "unix-cli-best-practices",
+    "platform": "flutter/dart",
+    "relativePath": "flutter-skills/.agents/agents/reidbaker-agent/skills/unix-cli-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\flutter-skills\\.agents\\agents\\reidbaker-agent\\skills\\unix-cli-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/flutter/skills",
+    "sourceCommit": "864cf8797b190ddb81e4875db6dd6bab89641f62",
+    "description": "Safe, portable, and efficient command-line patterns for macOS/BSD Unix tools (grep, find, sed, awk, xargs, mdfind, pbcopy, open) and modern alternatives (ripgrep, fd). Covers common shell scripting and one-liner use cases including fast searching, text processing, codebase navigation, and parallel execution.\r"
+  },
+  {
+    "name": "swiftui-expert-skill",
+    "platform": "ios/swift",
+    "relativePath": "swiftui-agent-skill-avdlee/skills/swiftui-expert-skill/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\swiftui-agent-skill-avdlee\\skills\\swiftui-expert-skill\\SKILL.md",
+    "sourceRepository": "https://github.com/AvdLee/SwiftUI-Agent-Skill",
+    "sourceCommit": "4c6a97d15aa5e023538c3cb06b5192f241dd451d",
+    "description": "Use when writing, reviewing, or refactoring SwiftUI code for iOS or macOS, including state management and `@Observable` data flow, view composition and invalidation/performance, lists and `ForEach` identity, environment usage, localization, animations, Liquid Glass adoption, migrating soft-deprecated APIs, or Instruments `.trace` capture/analysis for hangs, hitches, CPU hotspots, or\r"
+  },
+  {
+    "name": "swiftui-pro",
+    "platform": "ios/swift",
+    "relativePath": "swiftui-agent-skill-twostraws/swiftui-pro/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\swiftui-agent-skill-twostraws\\swiftui-pro\\SKILL.md",
+    "sourceRepository": "https://github.com/twostraws/swiftui-agent-skill",
+    "sourceCommit": "be297ff80dddec529af1f9b1f1f114aab6c9d11c",
+    "description": "Comprehensively reviews SwiftUI code for best practices on modern APIs, maintainability, and performance. Use when reading, writing, or reviewing SwiftUI projects.\r"
+  },
+  {
+    "name": "swiftui-pro",
+    "platform": "ios/swift",
+    "relativePath": "swiftui-agent-skill-twostraws/swiftui-pro/skills/swiftui-pro/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\swiftui-agent-skill-twostraws\\swiftui-pro\\skills\\swiftui-pro\\SKILL.md",
+    "sourceRepository": "https://github.com/twostraws/swiftui-agent-skill",
+    "sourceCommit": "be297ff80dddec529af1f9b1f1f114aab6c9d11c",
+    "description": "Comprehensively reviews SwiftUI code for best practices on modern APIs, maintainability, and performance. Use when reading, writing, or reviewing SwiftUI projects.\r"
+  },
+  {
+    "name": "update-swiftui-apis",
+    "platform": "ios/swift",
+    "relativePath": "swiftui-agent-skill-avdlee/.agents/skills/update-swiftui-apis/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\swiftui-agent-skill-avdlee\\.agents\\skills\\update-swiftui-apis\\SKILL.md",
+    "sourceRepository": "https://github.com/AvdLee/SwiftUI-Agent-Skill",
+    "sourceCommit": "4c6a97d15aa5e023538c3cb06b5192f241dd451d",
+    "description": "Scan Apple's SwiftUI documentation for deprecated APIs and update the SwiftUI Expert Skill with modern replacements. Use when asked to \"update latest APIs\", \"refresh deprecated SwiftUI APIs\", \"check for new SwiftUI deprecations\", \"scan for API changes\", or after a new iOS/Xcode release. Requires the Sosumi MCP to be available.\r"
+  },
+  {
+    "name": "agent-device",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/plugins/vendored/.agents/skills/agent-device/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\plugins\\vendored\\.agents\\skills\\agent-device\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Automates interactions for Apple-platform apps (iOS, tvOS, macOS) and Android devices. Use when navigating apps, taking snapshots/screenshots, tapping, typing, scrolling, or extracting UI info across mobile, TV, and desktop targets.\r"
+  },
+  {
+    "name": "animations",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/animations/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\animations\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Production animation patterns for React Native using Reanimated 4, Skia, WebGPU, and TypeGPU. Covers CSS transitions, CSS animations, shared value animations, canvas animations with react-native-skia, GPU shader animations, layout animations, scroll-driven animations, interpolation, particle systems, procedural noise, SDF rendering, performance tuning, and accessibility. Trigger on: Reanimated, useSharedValue, useAnimatedStyle, withSpring, withTiming, withDecay, withRepeat, withSequence, CSS transition, CSS animation, layout animation, FadeIn, SlideIn, ZoomIn, LinearTransition, keyframe, interpolate, scrollTo, useFrameCallback, react-native-skia, Skia Canvas, Atlas, usePathInterpolation, usePathValue, useClock, useTexture, SKSL, interpolateColors, Picture API, canvas animation, sprite animation, WebGPU, react-native-wgpu, TypeGPU, GPU shader, WGSL, particle system, Perlin noise, SDF, Three.js, react-three-fiber, animation performance, or any request to animate UI in React Native.\"\r"
+  },
+  {
+    "name": "assess-react-native-migration",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/assess-react-native-migration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\assess-react-native-migration\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Assesses whether and how an existing mobile product should migrate to React Native. Use when auditing one or more product repositories for migration readiness, including products whose iOS, Android, and other clients live in separate directories or repositories; choosing brownfield, greenfield, or a checkpoint-based path; defining a representative trial; or preparing a baseline and ROI decision before implementation. When product scope or material evidence is unavailable, grills the stakeholder with exactly one question per turn instead of sending a questionnaire.\r"
+  },
+  {
+    "name": "audio",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/audio/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\audio\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for audio in React Native using react-native-audio-api. Covers audio playback (buffer sources, oscillators, streaming), recording (file, callback, graph), audio effects (gain, filters, delay, convolver, panner, waveshaper), real-time analysis and visualization, audio worklets (custom synthesis, UIRuntime/AudioRuntime), system integration (sessions, interruptions, permissions), and testing. Trigger on: react-native-audio-api, AudioContext, AudioRecorder, AudioBuffer, AudioBufferSourceNode, AudioBufferQueueSourceNode, OscillatorNode, StreamerNode, GainNode, BiquadFilterNode, DelayNode, ConvolverNode, StereoPannerNode, WaveShaperNode, AnalyserNode, AudioParam, AudioManager, PlaybackNotificationManager, RecordingNotificationManager, WorkletNode, WorkletSourceNode, WorkletProcessingNode, audio playback, record audio, microphone, waveform, audio visualization, audio streaming, audio worklet, or any React Native feature that captures, processes, or emits sound.\"\r"
+  },
+  {
+    "name": "create-react-native-library",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/create-react-native-library/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\create-react-native-library\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Scaffolds React Native libraries with create-react-native-library for standalone libraries or local native modules and views. Use when creating or working on React Native libraries or adding native functionality in an existing app.\r"
+  },
+  {
+    "name": "detour-onboarding",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/detour/detour-onboarding/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\detour\\detour-onboarding\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Complete onboarding guide for developers who are new to Detour, the open-source deferred deep linking SDK by Software Mansion. Use this skill whenever a user asks what Detour is, how to get started with Detour, how to set up deep linking with Detour, how to install the Detour SDK, how to configure the Detour dashboard, or how deferred deep linking works. Also use it when the user has no prior deep linking setup and wants to add deep links to their app. Covers everything from zero to production: account setup, dashboard configuration, Universal Links and App Links, platform SDK integration for React Native, iOS, Android, and Flutter, analytics, and architecture.\"\r"
+  },
+  {
+    "name": "dogfood",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/plugins/vendored/.agents/skills/dogfood/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\plugins\\vendored\\.agents\\skills\\dogfood\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "'Systematically explore and test a mobile app on iOS/Android with agent-device to find bugs, UX issues, and other problems. Use when asked to \"dogfood\", \"QA\", \"exploratory test\", \"find issues\", \"bug hunt\", or \"test this app\" on mobile. Produces a structured report with reproducible evidence: screenshots, optional repro videos, and detailed steps for every issue.'\r"
+  },
+  {
+    "name": "eas-app-stores",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-app-stores/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-app-stores\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Deploy Expo apps to the app stores with EAS - build and submit to the iOS App Store, Google Play Store, and TestFlight, configure eas.json build and submit profiles, manage app versions and build numbers, and publish App Store metadata and ASO. Use whenever the user wants to deploy, release, or ship an app to production or the app stores, is preparing a production build, running eas build or eas submit, shipping to TestFlight, bumping version or build numbers, or setting up store listing metadata. For deploying an Expo website or API routes, use the eas-hosting skill.\r"
+  },
+  {
+    "name": "eas-hosting",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-hosting/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-hosting\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Deploy Expo websites and Expo Router API routes to EAS Hosting - export the web bundle, run eas deploy for production and PR preview URLs, manage environment secrets and custom domains, and work within the Cloudflare Workers runtime. Also covers authoring API routes (+api.ts handlers, HTTP methods, request handling, CORS). Use when deploying an Expo web app or API routes, setting up EAS Hosting, or configuring hosting environments and domains. Not for native builds or store releases - use the eas-app-stores skill for those.\r"
+  },
+  {
+    "name": "eas-observe",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-observe/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-observe\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Use for anything related to EAS Observe - adding `expo-observe` to an Expo project (AppMetricsRoot/ObserveRoot HOC, markInteractive and ObserveInteractiveMarker, the useObserve hook, the Expo Router / React Navigation integrations for per-route metrics, user-defined events via `Observe.logEvent`, error reporting via ObserveErrorBoundary and `Observe.reportError`, and runtime config such as sampleRate and dispatchInDebug), querying via the EAS CLI (`eas observe:metrics-summary`, `observe:metrics`, `observe:routes`, `observe:events`, `observe:session`, `observe:versions`), interpreting the resulting metrics (cold/warm launch, TTR, TTI, navigation cold/warm TTR, update download, and the TTI frameRate/device/network params for triaging slow startups), or shipping an Observe integration inside a third-party package.\r"
+  },
+  {
+    "name": "eas-simulator",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-simulator/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-simulator\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Run and control a user's app on a remote iOS/Android simulator hosted on EAS cloud. Read before running any `eas simulator:*` commands - it has the current syntax for this experimental API. Use whenever the user needs a simulator they can't run locally - 'run my app on a cloud simulator', 'use eas simulator to run/install/screenshot my app', 'I'm on Linux/Cursor and need an iOS device', 'no sim on this box / headless CI', 'let an agent click through my app and screenshot it', 'test my dev build on a remote sim with live reload', 'stream a sim to my browser' - even when they don't say 'EAS Simulator' or 'cloud'. On a host WITHOUT a local simulator (Linux, CI, cloud sandbox) it's the default; on macOS, do NOT auto-trigger for a plain 'run on the simulator' - use it only for a cloud/remote/shareable sim, an iOS version they lack, or an agent-driven session. NOT for local sims (expo run:ios, Xcode, Android Studio), EAS Build/Update, web preview, or physical devices.\"\r"
+  },
+  {
+    "name": "eas-update-insights",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-update-insights/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-update-insights\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Check the health of published EAS Update: crash rates, install/launch counts, unique users, payload size, and the split between embedded and OTA users per channel. Use when the user asks how an update is performing, whether a rollout is healthy, how many users are on the embedded build vs OTA, or wants to gate CI on update health.\"\r"
+  },
+  {
+    "name": "eas-workflows",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/eas-workflows/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\eas-workflows\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "EAS service (paid). Helps understand and write EAS workflow YAML files for Expo projects. Use this skill when the user asks about CI/CD or workflows in an Expo or EAS context, mentions .eas/workflows/, or wants help with EAS build pipelines or deployment automation.\r"
+  },
+  {
+    "name": "enable-worklets-bundle-mode",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/enable-worklets-bundle-mode/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\enable-worklets-bundle-mode\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Enable react-native-worklets Bundle Mode (imports inside worklets, third party libraries on worklet runtimes) in an Expo, RN\r"
+  },
+  {
+    "name": "expo-animation",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-animation/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-animation\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Build animations in React Native and Expo, making the decisions in the order that determines whether they feel right — should it animate, which thread it runs on, which properties, spring or timing, how the gesture hands off, how it degrades. Writes the implementation with Reanimated, Gesture Handler, Expo Router and expo-haptics. Use when animating anything in an Expo app, adding gestures, sheets, screen transitions, press feedback or haptics, or fixing motion that stutters on device. For web animation use `animate`.\r"
+  },
+  {
+    "name": "expo-app-clip",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-app-clip/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-app-clip\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Add an iOS App Clip target to an Expo app. Use when the user mentions App Clip, AASA, apple-app-site-association, appclips, smart app banner, or wants to ship a lightweight iOS Clip invoked from a URL alongside their parent app.\r"
+  },
+  {
+    "name": "expo-brownfield",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-brownfield/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-brownfield\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Integrate Expo and React Native into an existing native iOS or Android app. Use when the user mentions brownfield, embedding React Native in a native app, AAR/XCFramework, or adding Expo to an existing Kotlin/Swift project. Covers both the isolated approach and the integrated approach.\r"
+  },
+  {
+    "name": "expo-data-fetching",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-data-fetching/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-data-fetching\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Use when implementing or debugging ANY network request, API call, or data fetching. Covers fetch API, React Query, SWR, error handling, caching, offline support, and Expo Router data loaders (`useLoaderData`).\r"
+  },
+  {
+    "name": "expo-design-system",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-design-system/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-design-system\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Build and maintain a design system inside an Expo app - a reusable theme of design tokens (color, spacing, typography, radius, shadow, motion), reusable component structure with variant/size/state prop conventions, and rules for when to extract a repeated view into a shared component. Use when creating or organizing theme files and design tokens (theme.ts / theme/), extending an existing theme or styling library (NativeWind, Tamagui, Restyle, Unistyles) in its own idiom, standardizing styles so screens (including AI-generated ones) look consistent and polished, building an in-app component library, or auditing an app for design-system drift (hardcoded colors, spacing, fonts). For platform styling specifics (semantic colors, HIG rules, native controls) use expo-native-ui; for Tailwind/CSS setup use expo-tailwind-setup; for folder layout of a new app use expo-project-structure.\r"
+  },
+  {
+    "name": "expo-dev-client",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-dev-client/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-dev-client\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Build and distribute Expo development clients locally or via TestFlight for internal testing. For production TestFlight releases and store submission, use the eas-app-stores skill.\r"
+  },
+  {
+    "name": "expo-dom",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-dom/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-dom\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Use Expo DOM components to run web code in a webview on native and as-is on web. Migrate web code to native incrementally. For the end-to-end migration of a whole web app, use the expo-web-to-native skill.\r"
+  },
+  {
+    "name": "expo-examples",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-examples/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-examples\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Expo's official example projects - the expo/examples repo of ~70 `with-*` integrations (Stripe, Clerk, Supabase, OpenAI, maps, Reanimated, SQLite, Skia, NativeWind, and more). Use when integrating a third-party library or service into an existing Expo app and you want the canonical, version-matched pattern to adapt, or when scaffolding a new project from one with `npx create-expo --example`.\r"
+  },
+  {
+    "name": "expo-horizon",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/expo-horizon/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\expo-horizon\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's guide for migrating Expo SDK apps to Meta Quest using expo-horizon packages. Use when adding Meta Quest or Meta Horizon OS support to an existing Expo or React Native project. Trigger on: Meta Quest, Horizon OS, Quest 2, Quest 3, Quest 3S, VR app, expo-horizon-core, expo-horizon-location, expo-horizon-notifications, build flavors for Quest, panel sizing, VR headtracking, Horizon App ID, quest build variant, isHorizonDevice, isHorizonBuild, migrate expo-location to Quest, migrate expo-notifications to Quest, Meta Horizon Store publishing, or any task involving running an Expo app on Meta Quest hardware.\"\r"
+  },
+  {
+    "name": "expo-migrate-module",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo-experiments/skills/expo-migrate-module/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo-experiments\\skills\\expo-migrate-module\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Migrate an existing Apple/Swift Expo native module from the Expo Modules API 1.0 definition DSL to the 2.0 macro API (sometimes called v2) while preserving its JavaScript and TypeScript contract. Use when converting or incrementally adopting @ExpoModule, @JS, @Event, @SharedObject, or @Record in an existing module. Do not use for creating a new module, general Expo SDK upgrades, or Android/Kotlin migrations.\r"
+  },
+  {
+    "name": "expo-module",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-module/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-module\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Guide for creating and writing Expo native modules and views using the Expo Modules API (Swift, Kotlin, TypeScript). Covers module definition DSL, native views, shared objects, config plugins, lifecycle hooks, autolinking, and type system. Use when building or modifying native modules for Expo. Not for migrating an existing Swift module from the definition DSL to the Expo Modules API 2.0 macros; use expo-migrate-module (from the expo-experiments plugin) for that.\r"
+  },
+  {
+    "name": "expo-native-ui",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-native-ui/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-native-ui\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Build beautiful, native-feeling Expo screens. Covers Apple HIG styling, semantic colors, native controls, SF Symbols, media, animations, visual effects, gradients, storage, and responsive layout. For routing and navigation, use the expo-router skill.\r"
+  },
+  {
+    "name": "expo-overview",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-overview/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-overview\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Entry point and router for every Expo or EAS task. Load this skill first — before writing code and before choosing another expo-* / eas-* skill — when the request, PRD, or spec mentions Expo, EAS, Expo Go, or an expo-* package, or the project has an `expo` dependency in `package.json`. Within that gate it also covers app specs and designs to implement (tabs, stacks, maps, lists, navigation, building from a screenshot), and phrasings like 'implement a mobile app', 'make my app look native', 'add navigation', 'fetch some data', 'upgrade my SDK', 'add Expo to my existing native app', 'ship to the App Store', or 'I'm new to Expo, where do I start'. A fully specified request (SDK pinned, libraries named, layout given) still routes through here — the shared setup rules still apply. Do NOT load it when neither signal is present: a bare React Native project with no `expo` dependency is not Expo work. Detects the real goal, routes to the right expo-* / eas-* skill, and owns the shared setup rules.\"\r"
+  },
+  {
+    "name": "expo-project-structure",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-project-structure/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-project-structure\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Folder structure for a new Expo app. Use when scaffolding or laying out a new Expo project with Expo Router, or deciding where a file should live in one. For new projects only — never restructure an existing app to match.\r"
+  },
+  {
+    "name": "expo-router",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-router/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-router\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Navigation and routing for Expo Router. Covers file-based routes, groups and dynamic routes, folder organization, Link with previews and context menus, native Stack, page titles, modals and form sheets, NativeTabs, headers and toolbars, and header search bars.\r"
+  },
+  {
+    "name": "expo-skill-eval",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/.claude/skills/expo-skill-eval/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\.claude\\skills\\expo-skill-eval\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Evaluate Expo skills in this repo end-to-end - trigger accuracy, generated code quality, and runtime screenshots on iOS simulator and Android emulator via Expo Go (web optional). Use when the user wants to eval an Expo skill, test that a skill produces working code, benchmark a skill with device screenshots, or verify a skill's output renders correctly.\r"
+  },
+  {
+    "name": "expo-skill-feedback",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-skill-feedback/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-skill-feedback\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "'Submit feedback on an Expo skill—or Expo itself—and control bundled anonymous usage telemetry (off by default / opt-in). Submit feedback with: npx --yes submit-expo-feedback@latest \"ACTIONABLE_FEEDBACK\". Optionally add either or both: --category \"CATEGORY\" and --subject \"SUBJECT\". Replace the uppercase placeholders before running. Use when a skill was useful, confusing, broken, missing context, or worth improving; when Expo, Expo CLI, EAS CLI, docs, or MCP worked well or fell short; when an AI agent repeatedly failed, got stuck, or needed the user to take over an Expo task (report it as an eval candidate); or when the user explicitly asks to enable or disable telemetry (tracking), check its status, or understand what it collects.'\r"
+  },
+  {
+    "name": "expo-tailwind-setup",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-tailwind-setup/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-tailwind-setup\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Set up Tailwind CSS v4 in Expo with react-native-css and NativeWind v5 for universal styling\r"
+  },
+  {
+    "name": "expo-ui",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-ui/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-ui\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Build native UI with the @expo/ui package: real SwiftUI on iOS and Jetpack Compose on Android. Default to @expo/ui for sheets (BottomSheet), pickers, sliders, toggles, menus, and grouped-form sections — do NOT reach for Reanimated, @gorhom/bottom-sheet, or RN built-in Picker/Switch; use @expo/ui instead. Fall back to RN built-ins only when @expo/ui is missing the component. NOTE: @expo/ui List renders native grouped rows like an iOS Settings screen — it is NOT a virtualized list; use FlatList/FlashList for large datasets. Covers universal components (Host, Column, Row, Button, Text, List, BottomSheet, FieldGroup, Switch, Slider, Picker, Menu), drop-in replacements for RN community libraries, and platform-specific SwiftUI/Jetpack Compose trees. Not for Expo Router navigation, Reanimated, or data fetching.\"\r"
+  },
+  {
+    "name": "expo-upgrade",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-upgrade/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-upgrade\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Guidelines for upgrading Expo SDK versions and fixing dependency issues\r"
+  },
+  {
+    "name": "expo-web-to-native",
+    "platform": "react-native/expo",
+    "relativePath": "expo-skills/plugins/expo/skills/expo-web-to-native/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\expo-skills\\plugins\\expo\\skills\\expo-web-to-native\\SKILL.md",
+    "sourceRepository": "https://github.com/expo/skills",
+    "sourceCommit": "50f59f837ddb7595d8c6683c693207e265d58c43",
+    "description": "Framework (OSS). Migrate an existing web React app to a native iOS/Android app with Expo. Use when the user wants to turn a website into a mobile app, port a Next.js/Vite/CRA React codebase to React Native, reuse web code on native incrementally, or asks how web idioms (the DOM, CSS, React Router, localStorage, window) map to native. This is the end-to-end migration guide; use the `expo-dom` skill for the DOM-component mechanism itself.\r"
+  },
+  {
+    "name": "fishjam",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's Fishjam — hosted WebRTC platform for video, audio, and one-to-many livestreaming. MUST USE before writing, reviewing, or debugging ANY code that talks to a Fishjam instance from a backend (Node, Python) or a client (React web, React Native / Expo). Routes to platform fundamentals and the right SDK sub-skill. Trigger on: 'Fishjam', 'fishjam.io', 'fishjam.swmansion.com', 'fishjam dashboard', 'Fishjam ID', 'management token', 'peer token', 'sandbox API', 'livestream room', '@fishjam-cloud/js-server-sdk', 'fishjam-server-sdk', '@fishjam-cloud/react-client', '@fishjam-cloud/react-native-client', '@fishjam-cloud/ts-client', 'FishjamClient', 'FishjamProvider', 'FishjamNotifier', 'FishjamAgent', 'createPeer', 'createRoom', 'createAgent', 'createLivestreamStreamerToken', 'createMoqToken', 'refreshPeerToken', 'webhook', 'gemini fishjam', 'vapi fishjam', 'fishjam expo plugin'.\"\r"
+  },
+  {
+    "name": "fishjam-js-server-sdk",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/references/js-server-sdk/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\references\\js-server-sdk\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Node.js / TypeScript server SDK for Fishjam — backends that create rooms, mint peer tokens, listen to server notifications, and run agents. Use when writing a Node.js / Express / Fastify / Hono / NestJS backend that talks to Fishjam, sets up a webhook receiver, runs an AI agent, or generates livestream tokens. Trigger on: '@fishjam-cloud/js-server-sdk', 'FishjamClient', 'FishjamWSNotifier', 'FishjamAgent', 'createPeer', 'createRoom', 'createAgent', 'createVapiAgent', 'createLivestreamStreamerToken', 'createLivestreamViewerToken', 'refreshPeerToken', 'subscribeTracks', 'subscribePeer', 'createMoqToken', 'ServerMessage', 'roomCreated', 'peerAdded', 'trackAdded', 'fishjam backend Node', 'express fishjam', 'fastify fishjam', 'gemini agent fishjam', 'vapi fishjam'. Covers REST, WebSocket notifier, webhook protobuf decoding, FishjamAgent, and Gemini Live integration.\"\r"
+  },
+  {
+    "name": "fishjam-platform",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/references/platform/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\references\\platform\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Fishjam platform fundamentals — domain model and auth shared by all SDKs. Covers glossary (room, peer, track, agent, streamer, viewer), the four room types (conference / audio_only / livestream / audio_only_livestream), two-tier auth (management vs peer tokens), Sandbox vs production, WebSocket-vs-webhook notifications and the 18-event taxonomy, REST endpoint list, and the end-to-end auth/join flow. Read this first for any Fishjam task. Trigger on: 'Fishjam', 'fishjam.io', 'fishjam.swmansion.com', 'fishjam dashboard', 'management token', 'peer token', 'sandbox API', 'useSandbox', 'room manager', 'livestream room', 'audio-only room', 'conference room', 'Fishjam ID', 'room types', 'auth flow', 'webhook', 'webhookUrl', 'FishjamWSNotifier', 'FishjamNotifier', 'notifier vs webhook', 'ServerMessage', 'peerAdded', 'peerConnected', 'roomCreated', 'refreshPeerToken', 'rest endpoint', 'OpenAPI', 'llms.txt'.\"\r"
+  },
+  {
+    "name": "fishjam-python-server-sdk",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/references/python-server-sdk/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\references\\python-server-sdk\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Python server SDK for Fishjam — backends that create rooms, mint peer tokens, receive server notifications, and run voice agents. Use when writing a Python backend (FastAPI, Flask, Starlette, aiohttp) that talks to Fishjam, decorates a notification handler, decodes a Fishjam webhook, or builds an AI voice agent in Python. Trigger on: 'fishjam-server-sdk', 'pip install fishjam-server-sdk', 'from fishjam import', 'fishjam.FishjamClient', 'FishjamNotifier', 'on_server_notification', 'receive_binary', 'fishjam Agent', 'AgentSession', 'PeerOptions', 'RoomOptions', 'AgentOptions', 'AgentOutputOptions', 'OutgoingAudioTrackOptions', 'create_room', 'create_peer', 'create_agent', 'create_vapi_agent', 'create_livestream_streamer_token', 'create_moq_token', 'subscribe_peer', 'fastapi fishjam', 'flask fishjam', 'fishjam python', 'gemini fishjam python'. Python 3.10+. The REST client is synchronous; notifier and agent are async.\"\r"
+  },
+  {
+    "name": "fishjam-react-client",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/references/react-client/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\references\\react-client\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Browser-only React SDK for Fishjam — joining rooms, capturing camera/microphone/screen, displaying peers, and acting as a livestream streamer or viewer in a React web app. Use whenever the user is writing a React app in a browser that calls Fishjam APIs, sets up FishjamProvider, or uses any Fishjam React hook. Trigger on: '@fishjam-cloud/react-client', 'FishjamProvider', 'useConnection', 'useCamera', 'useMicrophone', 'useScreenShare', 'usePeers', 'useDataChannel', 'useVAD', 'useLivestreamStreamer', 'useLivestreamViewer', 'useCustomSource', 'useInitializeDevices', 'useUpdatePeerMetadata', 'useSandbox', 'PeerWithTracks', 'joinRoom', 'peerToken', 'fishjamId', 'fishjam react', '@fishjam-cloud/ts-client', 'FishjamClient ts-client'. Covers the provider, the full hook catalog, simulcast configuration, custom sources, data channels, VAD, livestream WHEP playback, device persistence, and reconnection. Briefly notes when to drop down to @fishjam-cloud/ts-client for non-React or worker contexts.\"\r"
+  },
+  {
+    "name": "fishjam-react-native-client",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/fishjam/references/react-native-client/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\fishjam\\references\\react-native-client\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "React Native / Expo SDK for Fishjam — video/audio streaming on iOS and Android. Use when writing a React Native or Expo app that calls Fishjam, configures the Fishjam Expo plugin, sets up permissions, runs background streaming, integrates CallKit, or renders RTCView. Trigger on: '@fishjam-cloud/react-native-client', 'fishjam expo plugin', 'FishjamProvider mobile', 'useCameraPermissions', 'useMicrophonePermissions', 'useForegroundService', 'useCallKit', 'useCallKitEvent', 'useCallKitService', 'RTCView', 'RTCPIPView', 'ScreenCapturePickerView', 'startPIP', 'stopPIP', 'AudioDeviceType', 'useAudioOutput', '@fishjam-cloud/react-native-webrtc', 'fishjam react native', 'expo fishjam', 'fishjam ios', 'fishjam android', 'broadcast extension'. Re-exports @fishjam-cloud/react-client hooks plus mobile-only: permissions, foreground service, iOS broadcast extension, audio routing, CallKit, Expo config plugin.\"\r"
+  },
+  {
+    "name": "gestures",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/gestures/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\gestures\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for gestures in React Native apps using React Native Gesture Handler. Use when implementing tap, pan, pinch, rotation, swipe, long press, fling, hover, drag, or any touch interaction. Trigger on: 'gesture handler', 'GestureDetector', 'tap gesture', 'pan gesture', 'pinch gesture', 'rotation gesture', 'long press', 'fling', 'hover gesture', 'swipe', 'pinch to zoom', 'drag', 'touch handling', 'Pressable', 'RectButton', 'Swipeable', 'Touchable', 'DrawerLayout', 'VirtualGestureDetector', or any request to handle user touch input in a React Native app.\"\r"
+  },
+  {
+    "name": "github-actions",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/github-actions/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\github-actions\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "GitHub Actions workflow patterns for React Native iOS simulator and Android emulator cloud builds with downloadable artifacts. Use when setting up CI build pipelines or downloading GitHub Actions artifacts via gh CLI and GitHub API.\r"
+  },
+  {
+    "name": "jsi",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/jsi/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\jsi\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "React Native JSI (JavaScript Interface) — C++ API for interacting with the JS runtime. Use whenever the user asks about or writes C++ code that touches JSI types or patterns: jsi::Runtime, jsi::Value, jsi::Object, jsi::Function, jsi::Array, jsi::ArrayBuffer, jsi::String, jsi::Symbol, jsi::BigInt, jsi::PropNameID, jsi::HostObject, jsi::HostFunction, jsi::NativeState, jsi::WeakObject, jsi::Scope, JSIException, JSINativeException, JSError, HostFunctionType, createFromHostFunction, getHostObject, setNativeState, evaluateJavaScript, queueMicrotask, drainMicrotasks, setRuntimeData, getRuntimeData, ISerialization, rt.global(), jsi.h, jsi-inl.h, JSI binding, C++ native module, calling JS from C++, calling C++ from JS, HostObject destructor, shared_ptr, CallInvoker, invokeAsync, folly::dynamic with JSI, zero-copy ArrayBuffer, TurboModule C++ layer, Nitro Module, jsi::WithRuntimeDecorator, or any question about the boundary between C++ and the JavaScript engine in React Native.\"\r"
+  },
+  {
+    "name": "migrate-to-detour",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/detour/migrate-to-detour/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\detour\\migrate-to-detour\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Use when the user mentions migrating deep links, switching away from Branch or AppsFlyer, replacing their deep linking SDK, setting up Detour deep linking for the first time, or asks how Branch/AppsFlyer concepts map to Detour. Covers the complete migration end to end - Detour Dashboard configuration, Universal Links and App Links setup, SDK swap with code examples, and analytics migration. Works across Android, iOS, React Native, and Flutter.\"\r"
+  },
+  {
+    "name": "moq-kit",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/moq-kit/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\moq-kit\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's moq-kit — native Swift (iOS) and Kotlin (Android) SDKs for Media over QUIC (moq-lite) live streaming: sub-second-latency playback, camera/microphone/screen publishing, and realtime data tracks over a MoQ relay. MUST USE before writing, reviewing, or debugging ANY code that imports MoQKit (Swift) or com.swmansion.moqkit (Kotlin); for React Native apps use the react-native-moq skill instead. Trigger on: 'moq-kit', 'MoQKit', 'Media over QUIC', 'moq-lite', 'MoQ relay', 'moq-ffi', 'BroadcastSubscription', 'DataTrackEmitter', 'CameraCapture', 'MicrophoneCapture', 'MultiCameraCapture', 'ScreenCapture', 'TrackSubscription', 'AudioDataStream', 'MoQReplayKitBroadcastSampleHandler', or a Session/Player/Publisher/Catalog from moq-kit.\"\r"
+  },
+  {
+    "name": "multithreading",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/multithreading/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\multithreading\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for multithreading in React Native apps using react-native-worklets. Use when running JavaScript on multiple threads, offloading heavy computation from the JS thread, communicating between runtimes, or sharing data across threads. Trigger on: 'worklet', 'worklets', 'react-native-worklets', 'runOnUI', 'runOnJS', 'scheduleOnUI', 'scheduleOnRN', 'scheduleOnRuntime', 'createWorkletRuntime', 'background thread', 'UI thread', 'worker runtime', 'Serializable', 'Synchronizable', 'multithreading', 'parallel execution', 'offload computation', 'background processing', 'Bundle Mode', or any request to move work off the JS thread in a React Native app.\"\r"
+  },
+  {
+    "name": "on-device-ai",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/on-device-ai/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\on-device-ai\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Build on-device AI features in React Native and Expo apps with React Native ExecuTorch. Use when adding AI to a mobile app without cloud dependencies — chatbots, image classification, object detection, OCR, semantic or instance segmentation, style transfer, image generation, pose estimation, speech-to-text, text-to-speech, voice activity detection, semantic search with embeddings, tokenization, privacy / PII redaction, or vision-language image understanding. Also use when mentioning offline / on-device / privacy AI, reducing cloud cost or latency, or managing ML models. Covers initExecutorch and every hook (useLLM, useClassification, useObjectDetection, useOCR, useSemanticSegmentation, useInstanceSegmentation, useStyleTransfer, useTextToImage, useImageEmbeddings, usePoseEstimation, useSpeechToText, useTextToSpeech, useVAD, useTextEmbeddings, useTokenizer, usePrivacyFilter, useExecutorchModule), tool calling, structured output, VLMs, Expo and bare resource-fetcher adapters, and error handling.\r"
+  },
+  {
+    "name": "pulsar-haptics",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/pulsar-haptics/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\pulsar-haptics\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": ">\r"
+  },
+  {
+    "name": "radon-mcp",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/radon-mcp/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\radon-mcp\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Best practices for using Radon IDE's MCP tools when developing, debugging, and inspecting React Native and Expo apps. Use when interacting with a running app through Radon IDE - viewing screenshots, reading logs, inspecting the component tree, debugging network requests, reloading the app, or querying React Native documentation and library info. Trigger on: 'debug React Native', 'fix UI', 'network issues', 'build issues', 'Radon IDE', 'view screenshot', 'app logs', 'component tree', 'network inspector', 'reload app', 'React Native docs', 'library description', 'emulator', 'development viewport', 'view_screenshot', 'view_application_logs', 'view_component_tree', 'reload_application', 'view_network_logs', 'view_network_request_details', 'query_documentation', 'get_library_description', and every request involving live app inspection, debugging or development in a Radon IDE session.\"\r"
+  },
+  {
+    "name": "react-native-best-practices",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/react-native-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\react-native-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Provides React Native performance optimization guidelines for FPS, TTI, bundle size, memory leaks, re-renders, and animations. Applies to tasks involving Hermes optimization, JS thread blocking, bridge overhead, FlashList, native modules, or debugging jank and frame drops.\r"
+  },
+  {
+    "name": "react-native-best-practices",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for production React Native and Expo apps on the New Architecture. MUST USE before writing, reviewing, or debugging ANY code in a React Native or Expo project. If the working directory contains a package.json with react-native, expo, or expo-router as a dependency, this skill applies. Trigger on: any code task in a React Native/Expo project, 'React Native', 'Expo', 'New Architecture', 'Reanimated', 'Gesture Handler', 'react-native-svg', 'ExecuTorch', 'react-native-audio-api', 'react-native-enriched', 'Worklet', 'Fabric', 'TurboModule', 'WebGPU', 'react-native-wgpu', 'TypeGPU', 'GPU shader', 'WGSL', 'svg', 'animation', 'gesture', 'audio', 'rich text', 'AI model', 'multithreading', 'chart', 'vector', 'image filter', 'shared value', 'useSharedValue', 'runOnJS', 'scheduleOnRN', 'thread', 'worklet', 'Bundle Mode', or any question involving UI, graphics, native modules, or React Native threading and animation behavior. Also use when a more specific sub-skill matches.\"\r"
+  },
+  {
+    "name": "react-native-brownfield-migration",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/react-native-brownfield-migration/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\react-native-brownfield-migration\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Implements an accepted incremental brownfield migration from native iOS or Android to React Native or Expo using @callstack/react-native-brownfield. Use after the brownfield path has been selected, when setting up the integration, packaging XCFramework or AAR artifacts, or adding React Native surfaces to native hosts.\r"
+  },
+  {
+    "name": "react-native-moq",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-moq/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-moq\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's react-native-moq — Media over QUIC (MoQ) live streaming for React Native: sub-second-latency video/audio playback, camera/mic/screen publishing, and realtime data tracks over a MoQ relay. MUST USE before writing, reviewing, or debugging ANY code that uses react-native-moq or react-native-moq-ui. Trigger on: 'react-native-moq', 'MoQ', 'Media over QUIC', 'moq relay', 'moq-kit', 'useSession', 'useBroadcasts', 'useVideoPlayer', 'useAudioPlayer', 'usePublisher', 'useCamera', 'useMultiCamera', 'useMicrophone', 'useScreenBroadcast', 'useDataTrack', 'useDataMessages', 'useAudioChunks', 'useAudioSource', 'useVideoSource', 'VideoView', 'PublisherView', 'VideoPlayerView', 'BroadcastPickerView', 'createSession', 'createPublisher', 'subscribeBroadcasts'.\"\r"
+  },
+  {
+    "name": "react-native-testing",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/plugins/vendored/.agents/skills/react-native-testing/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\plugins\\vendored\\.agents\\skills\\react-native-testing\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": ">\r"
+  },
+  {
+    "name": "react-native-tv-best-practices",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/react-native-tv-best-practices/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\react-native-tv-best-practices\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Reviews React Native TV apps for focus/D-pad navigation, 10-foot UI layout, TV playback/DRM integration, low-memory TV performance, and TV accessibility. Use when building, debugging, or reviewing react-native-tvos, Expo TV, Amazon Vega/Kepler, or React Native web TV targets where the issue depends on remote input, TV focus, TV packaging, TV hardware, or TV playback constraints.\r"
+  },
+  {
+    "name": "react-navigation",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/react-navigation/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\react-navigation\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Provides React Navigation UI patterns for stacks, tabs, drawers etc. Use when building navigation UIs with React Navigation, configuring headers, bottom sheets or handling safe areas and insets.\r"
+  },
+  {
+    "name": "rich-text",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/rich-text/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\rich-text\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for rich text in React Native using react-native-enriched and react-native-enriched-markdown. Use when building rich text editors, formatted text inputs, Markdown renderers, or any feature requiring inline styling, mentions, links, structured text editing, or Markdown display. Trigger on: 'rich text editor', 'rich text input', 'text editor', 'react-native-enriched', 'react-native-enriched-markdown', 'EnrichedTextInput', 'EnrichedMarkdownText', 'formatted text input', 'WYSIWYG', 'mentions input', 'text formatting toolbar', 'markdown renderer', 'markdown display', 'render markdown', 'display markdown natively', 'LaTeX math', 'GFM tables', or any request to build rich text editing or Markdown rendering in React Native.\"\r"
+  },
+  {
+    "name": "rnrepo",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/rnrepo/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\rnrepo\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Best practices for integrating and using RNRepo — Software Mansion's infrastructure for pre-built React Native library artifacts that reduces native build times by up to 2×. Use when setting up, configuring, or troubleshooting RNRepo in a React Native or Expo project. Trigger on: 'RNRepo', 'rnrepo', 'slow builds', 'build times', 'prebuilt artifacts', 'prebuilt libraries', '@rnrepo/expo-config-plugin', '@rnrepo/build-tools', 'prebuilds-plugin', 'rnrepo.config.json', 'DISABLE_RNREPO', 'packages.rnrepo.org', 'Maven prebuild', 'CocoaPods prebuild', 'xcframework prebuild', 'prebuild AAR', 'build from source', 'native compilation slow', 'Gradle plugin slow', 'pod install slow', 'CI build times'.\"\r"
+  },
+  {
+    "name": "svg",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/react-native-best-practices/references/svg/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\react-native-best-practices\\references\\svg\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": "Software Mansion's best practices for SVG rendering in React Native apps using React Native SVG. Use when rendering vector graphics, icons, charts, illustrations, or any SVG content. Trigger on: 'react-native-svg', 'SVG', 'vector graphics', 'render icon', 'draw shape', 'chart', 'path', 'Svg component', 'SvgUri', 'SvgXml', 'SvgCss', 'FilterImage', 'SVG filter', or any request to display scalable vector content in a React Native app.\"\r"
+  },
+  {
+    "name": "typegpu",
+    "platform": "react-native/expo",
+    "relativePath": "software-mansion-react-native-skills/skills/typegpu/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\software-mansion-react-native-skills\\skills\\typegpu\\SKILL.md",
+    "sourceRepository": "https://github.com/software-mansion-labs/skills",
+    "sourceCommit": "7ed7cbad9b97049209ba0647a31fa7e852485e43",
+    "description": ">-\r"
+  },
+  {
+    "name": "upgrading-react-native",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/skills/upgrading-react-native/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\skills\\upgrading-react-native\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Upgrades React Native apps to newer versions by applying rn-diff-purge template diffs, updating package.json dependencies, migrating native iOS and Android configuration, resolving CocoaPods and Gradle changes, and handling breaking API updates. Use when upgrading React Native, bumping RN version, updating from RN 0.x to 0.y, or migrating Expo SDK alongside a React Native upgrade.\r"
+  },
+  {
+    "name": "validate-skills",
+    "platform": "react-native/expo",
+    "relativePath": "callstack-react-native-skills/.claude/skills/validate-skills/SKILL.md",
+    "localPath": "D:\\Pickandsync\\PackNSync1.0\\external-agent-skills\\callstack-react-native-skills\\.claude\\skills\\validate-skills\\SKILL.md",
+    "sourceRepository": "https://github.com/callstackincubator/agent-skills",
+    "sourceCommit": "2766baa46ca0fe7c16cc5ab4d0077ccec2e95fb9",
+    "description": "Validates skills in this repo against agentskills.io spec and Claude Code best practices. Use via /validate-skills command.\r"
+  }
+]

@@ -21,3 +21,9 @@ backend/uploads/
 # Nested accidental clone (was a broken gitlink/submodule)
 /PickAndSync/
 
+# Temp and backup directories
+node_modules.*/
+**/node_modules.*/
+.tmp-*/
+*.tgz
+agent-work/
