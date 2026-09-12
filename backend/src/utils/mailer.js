@@ -198,7 +198,8 @@ export async function sendMail({ to, subject, html, text }) {
         return false;
     }
 
-    const provider = String(process.env.EMAIL_PROVIDER || 'auto').toLowerCase();
+    const defaultProvider = process.env.NODE_ENV === 'production' ? 'zeptomail-api' : 'auto';
+    const provider = String(process.env.EMAIL_PROVIDER || defaultProvider).toLowerCase();
     const errors = [];
 
     if (provider === 'zeptomail-api' || (provider === 'auto' && zeptoMailApiConfigured())) {

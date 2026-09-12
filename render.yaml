@@ -59,7 +59,7 @@ services:
       - key: ZEPTOMAIL_TOKEN
         sync: false
       - key: EMAIL_PROVIDER
-        value: auto
+        value: zeptomail-api
       - key: ZEPTOMAIL_REGION
         value: in
       - key: ZEPTOMAIL_API_URL
