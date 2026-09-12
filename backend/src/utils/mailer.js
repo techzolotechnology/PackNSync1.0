@@ -58,6 +58,21 @@ function withTimeout(promise, ms, label) {
     ]);
 }
 
+function providerErrorMessage(data, fallback) {
+    if (!data || typeof data !== 'object') return fallback;
+
+    const direct =
+        data.message
+        || data.error?.message
+        || data.error
+        || data.details
+        || data.data?.message;
+
+    if (direct) return typeof direct === 'string' ? direct : JSON.stringify(direct);
+
+    return JSON.stringify(data).slice(0, 500) || fallback;
+}
+
 /**
  * ZeptoMail HTTP API — preferred on hosts (e.g. Render) that block outbound SMTP.
  * Uses the ZeptoMail Send Mail API token, not the SMTP password.
@@ -93,7 +108,7 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-        const msg = data?.message || data?.error?.message || `ZeptoMail HTTP ${res.status}`;
+        const msg = providerErrorMessage(data, `ZeptoMail HTTP ${res.status}`);
         throw new Error(msg);
     }
     return true;

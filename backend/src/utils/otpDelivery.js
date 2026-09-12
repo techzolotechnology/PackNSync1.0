@@ -23,12 +23,20 @@ function logDevOtp(label, contact, otpCode) {
 
 function emailDeliveryMessage(err) {
     const message = String(err?.message || err || '');
+    const safeMessage = message
+        .replace(/Zoho-enczapikey\s+[A-Za-z0-9._-]+/gi, 'Zoho-enczapikey [hidden]')
+        .replace(/(password|token|secret|key)=([^&\s]+)/gi, '$1=[hidden]')
+        .slice(0, 220);
 
-    if (/verified|not authorized|sender|from address|domain/i.test(message)) {
+    if (/not configured|missing|required/i.test(message)) {
+        return 'Email provider is not configured. Please add ZEPTOMAIL_TOKEN or SMTP settings in Render.';
+    }
+
+    if (/verified|not authorized|sender|from address|from_address|domain|mail agent|bounce address/i.test(message)) {
         return 'Email sender is not verified in ZeptoMail. Please verify EMAIL_FROM/domain in ZeptoMail and try again.';
     }
 
-    if (/invalid.*token|unauthorized|authentication|auth|535|credential|login/i.test(message)) {
+    if (/invalid.*token|unauthorized|authentication|auth|535|credential|login|access denied|401|403/i.test(message)) {
         return 'Email provider credentials are invalid. Please check ZEPTOMAIL_TOKEN or SMTP credentials in Render.';
     }
 
@@ -36,7 +44,7 @@ function emailDeliveryMessage(err) {
         return 'Could not connect to the email provider from Render. Use ZeptoMail API token delivery instead of SMTP.';
     }
 
-    return 'Could not send the OTP email right now. Please check Render email-provider logs and try again.';
+    return `Email provider rejected the OTP email: ${safeMessage || 'unknown provider error'}`;
 }
 
 async function sendEmailOtp(email, otpCode) {
