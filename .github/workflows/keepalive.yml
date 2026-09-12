@@ -14,12 +14,11 @@ jobs:
     steps:
       - name: Health check
         env:
-          # Prefer socket base URL secret (no /api suffix), e.g. https://packandsync-api.onrender.com
-          BASE: ${{ secrets.VITE_SOCKET_URL }}
+          BASE: https://api.pickandsync.com
         run: |
           if [ -z "$BASE" ]; then
-            BASE="https://p01--striped-throne--64bsjhwpv9v8.code.run"
-            echo "VITE_SOCKET_URL secret missing — using default $BASE"
+            BASE="https://api.pickandsync.com"
+            echo "Using default $BASE"
           fi
           BASE="${BASE%/}"
           echo "Pinging $BASE/health"

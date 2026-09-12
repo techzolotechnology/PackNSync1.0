@@ -39,10 +39,9 @@ jobs:
       - name: Build frontend
         run: npm run build --workspace=frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
+          VITE_API_URL: https://api.pickandsync.com/api
+          VITE_SOCKET_URL: https://api.pickandsync.com
           VITE_BASE: ./
-        # Secrets optional for CI — empty falls back to Vite defaults / relative /api
 
       - name: Backend syntax check
         run: node --check backend/src/index.js
