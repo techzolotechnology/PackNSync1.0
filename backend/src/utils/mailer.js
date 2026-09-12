@@ -11,8 +11,7 @@ export function smtpConfigured() {
 }
 
 export function zeptoMailApiConfigured() {
-    const token = zeptoMailToken();
-    return Boolean(token && !String(token).includes('your_zeptomail'));
+    return zeptoMailTokenCandidates().length > 0;
 }
 
 export function emailConfigured() {
@@ -31,12 +30,21 @@ function parseFrom(from) {
     return { name: 'PickAndSync', address: from };
 }
 
-function zeptoMailToken() {
-    return String(process.env.ZEPTOMAIL_TOKEN || '')
+function normalizeZeptoMailToken(value) {
+    return String(value || '')
         .trim()
         .replace(/^Zoho-enczapikey\s+/i, '')
         .replace(/^=+/, '')
         .trim();
+}
+
+function zeptoMailTokenCandidates() {
+    return [
+        ['ZEPTOMAIL_TOKEN', process.env.ZEPTOMAIL_TOKEN],
+        ['ZEPTOMAIL_API', process.env.ZEPTOMAIL_API],
+    ]
+        .map(([label, value]) => [label, normalizeZeptoMailToken(value)])
+        .filter(([, token]) => token && !String(token).includes('your_zeptomail'));
 }
 
 function cleanDisplayName(value) {
@@ -117,8 +125,8 @@ function providerErrorMessage(data, fallback) {
  * Uses the ZeptoMail Send Mail API token, not the SMTP password.
  */
 async function sendViaZeptoMailHttp({ to, subject, html, text }) {
-    const token = zeptoMailToken();
-    if (!zeptoMailApiConfigured()) {
+    const tokens = zeptoMailTokenCandidates();
+    if (!tokens.length) {
         throw new Error('ZeptoMail token not configured');
     }
 
@@ -130,43 +138,49 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
     const endpoint = zeptoMailEndpoint();
     const requestId = `pickandsync-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-    const res = await withTimeout(
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: `Zoho-enczapikey ${token}`,
-                'User-Agent': 'PickAndSync/1.0',
-                'X-Request-Id': requestId,
-            },
-            body: JSON.stringify({
-                from,
-                to: [{ email_address: { address: to, name: to } }],
-                subject,
-                htmlbody: html,
-                textbody: text || undefined,
-            }),
-        }),
-        SEND_TIMEOUT_MS,
-        'ZeptoMail HTTP',
-    );
+    const errors = [];
 
-    const responseText = await res.text().catch(() => '');
-    let data = null;
-    if (responseText) {
-        try {
-            data = JSON.parse(responseText);
-        } catch {
-            data = responseText;
+    for (const [label, token] of tokens) {
+        const res = await withTimeout(
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: `Zoho-enczapikey ${token}`,
+                    'User-Agent': 'PickAndSync/1.0',
+                    'X-Request-Id': requestId,
+                },
+                body: JSON.stringify({
+                    from,
+                    to: [{ email_address: { address: to, name: to } }],
+                    subject,
+                    htmlbody: html,
+                    textbody: text || undefined,
+                }),
+            }),
+            SEND_TIMEOUT_MS,
+            'ZeptoMail HTTP',
+        );
+
+        const responseText = await res.text().catch(() => '');
+        let data = null;
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                data = responseText;
+            }
         }
-    }
-    if (!res.ok) {
+
+        if (res.ok) return true;
+
         const status = [res.status, res.statusText].filter(Boolean).join(' ');
         const msg = providerErrorMessage(data || responseText, `ZeptoMail HTTP ${status}`);
-        throw new Error(`${msg} (request id: ${requestId})`);
+        errors.push(`${label}: ${msg}`);
     }
-    return true;
+
+    throw new Error(`${errors.join(' | ')} (request id: ${requestId})`);
 }
 
 async function sendViaSmtp({ to, subject, html, text }) {
