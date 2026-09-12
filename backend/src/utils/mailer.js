@@ -59,7 +59,9 @@ function withTimeout(promise, ms, label) {
 }
 
 function providerErrorMessage(data, fallback) {
-    if (!data || typeof data !== 'object') return fallback;
+    if (!data) return fallback;
+    if (typeof data === 'string') return data.trim() || fallback;
+    if (typeof data !== 'object') return fallback;
 
     const direct =
         data.message
@@ -70,7 +72,8 @@ function providerErrorMessage(data, fallback) {
 
     if (direct) return typeof direct === 'string' ? direct : JSON.stringify(direct);
 
-    return JSON.stringify(data).slice(0, 500) || fallback;
+    const serialized = JSON.stringify(data);
+    return serialized && serialized !== '{}' ? serialized.slice(0, 500) : fallback;
 }
 
 /**
@@ -106,9 +109,18 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
         'ZeptoMail HTTP',
     );
 
-    const data = await res.json().catch(() => ({}));
+    const responseText = await res.text().catch(() => '');
+    let data = null;
+    if (responseText) {
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            data = responseText;
+        }
+    }
     if (!res.ok) {
-        const msg = providerErrorMessage(data, `ZeptoMail HTTP ${res.status}`);
+        const status = [res.status, res.statusText].filter(Boolean).join(' ');
+        const msg = providerErrorMessage(data || responseText, `ZeptoMail HTTP ${status}`);
         throw new Error(msg);
     }
     return true;
