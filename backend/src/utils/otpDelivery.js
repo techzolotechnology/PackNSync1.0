@@ -36,7 +36,7 @@ function emailDeliveryMessage(err) {
         return 'Email sender is not verified in ZeptoMail. Please verify EMAIL_FROM/domain in ZeptoMail and try again.';
     }
 
-    if (/ZeptoMail API:.*(invalid.*token|access denied|unauthorized|401|403)|TM_4001|SERR_157/i.test(message)) {
+    if (/ZeptoMail API:.*(invalid.*token|access denied|unauthorized|401|403)|ZEPTOMAIL_.*access denied|TM_4001|SERR_157/i.test(message)) {
         return 'ZeptoMail API token is invalid. In Render, replace ZEPTOMAIL_TOKEN with a Send Mail API token from ZeptoMail, then redeploy.';
     }
 

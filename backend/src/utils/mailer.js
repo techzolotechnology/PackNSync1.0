@@ -33,8 +33,12 @@ function parseFrom(from) {
 function normalizeZeptoMailToken(value) {
     return String(value || '')
         .trim()
+        .replace(/^['"`]+|['"`]+$/g, '')
+        .replace(/^Authorization:\s*/i, '')
         .replace(/^Zoho-enczapikey\s+/i, '')
+        .replace(/^Zoho-enczapikey/i, '')
         .replace(/^=+/, '')
+        .replace(/^['"`]+|['"`]+$/g, '')
         .trim();
 }
 
