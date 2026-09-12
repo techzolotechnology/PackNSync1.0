@@ -21,6 +21,24 @@ function logDevOtp(label, contact, otpCode) {
     console.log('');
 }
 
+function emailDeliveryMessage(err) {
+    const message = String(err?.message || err || '');
+
+    if (/verified|not authorized|sender|from address|domain/i.test(message)) {
+        return 'Email sender is not verified in ZeptoMail. Please verify EMAIL_FROM/domain in ZeptoMail and try again.';
+    }
+
+    if (/invalid.*token|unauthorized|authentication|auth|535|credential|login/i.test(message)) {
+        return 'Email provider credentials are invalid. Please check ZEPTOMAIL_TOKEN or SMTP credentials in Render.';
+    }
+
+    if (/timeout|timed out|econn|enotfound|esocket|network|connect/i.test(message)) {
+        return 'Could not connect to the email provider from Render. Use ZeptoMail API token delivery instead of SMTP.';
+    }
+
+    return 'Could not send the OTP email right now. Please check Render email-provider logs and try again.';
+}
+
 async function sendEmailOtp(email, otpCode) {
     const blockedDomain = /\@(example\.com|test\.com|localhost|packandsync\.local)$/i.test(email);
     const allowConsoleFallback =
@@ -63,10 +81,7 @@ async function sendEmailOtp(email, otpCode) {
     } catch (err) {
         console.error('[Email] delivery failed:', err.message || err);
         if (process.env.NODE_ENV === 'production') {
-            throw new AppError(
-                'Could not send the OTP email right now. Please try again in a moment.',
-                502,
-            );
+            throw new AppError(emailDeliveryMessage(err), 502);
         }
         logDevOtp('Email (delivery failed)', email, otpCode);
         return 'console';
