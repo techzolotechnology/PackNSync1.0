@@ -10,9 +10,13 @@ export function smtpConfigured() {
     return Boolean(host && user && pass && !String(pass).includes('your_zeptomail'));
 }
 
+export function zeptoMailApiConfigured() {
+    const token = process.env.ZEPTOMAIL_TOKEN;
+    return Boolean(token && !String(token).includes('your_zeptomail'));
+}
+
 export function emailConfigured() {
-    const token = process.env.ZEPTOMAIL_TOKEN || process.env.SMTP_PASS;
-    return smtpConfigured() || Boolean(token && !String(token).includes('your_zeptomail'));
+    return zeptoMailApiConfigured() || smtpConfigured();
 }
 
 export function getEmailFrom() {
@@ -56,11 +60,11 @@ function withTimeout(promise, ms, label) {
 
 /**
  * ZeptoMail HTTP API — preferred on hosts (e.g. Render) that block outbound SMTP.
- * Uses SMTP_PASS / ZEPTOMAIL_TOKEN as the send-mail token.
+ * Uses the ZeptoMail Send Mail API token, not the SMTP password.
  */
 async function sendViaZeptoMailHttp({ to, subject, html, text }) {
-    const token = process.env.ZEPTOMAIL_TOKEN || process.env.SMTP_PASS;
-    if (!token || String(token).includes('your_zeptomail')) {
+    const token = process.env.ZEPTOMAIL_TOKEN;
+    if (!zeptoMailApiConfigured()) {
         throw new Error('ZeptoMail token not configured');
     }
 
@@ -119,33 +123,34 @@ async function sendViaSmtp({ to, subject, html, text }) {
     }
 }
 
-/**
- * Send an email via ZeptoMail HTTP (preferred) or SMTP fallback.
- * @returns {Promise<boolean>} true if sent
- */
 export async function sendMail({ to, subject, html, text }) {
     if (!emailConfigured()) {
         return false;
     }
 
-    // Prefer HTTPS API — Render and many PaaS block SMTP ports 465/587.
-    if (process.env.SMTP_HTTP_ONLY !== 'true') {
+    const provider = String(process.env.EMAIL_PROVIDER || 'auto').toLowerCase();
+    const errors = [];
+
+    if (provider === 'zeptomail-api' || (provider === 'auto' && zeptoMailApiConfigured())) {
         try {
             await sendViaZeptoMailHttp({ to, subject, html, text });
             return true;
         } catch (err) {
-            console.error('[ZeptoMail HTTP]', err.message || err);
-            if (process.env.SMTP_HTTP_ONLY === '1' || process.env.DISABLE_SMTP === 'true') {
-                throw err;
-            }
+            errors.push(`ZeptoMail API: ${err.message || err}`);
+            console.error('[ZeptoMail API]', err.message || err);
+            if (provider === 'zeptomail-api') throw err;
         }
     }
 
-    try {
-        await sendViaSmtp({ to, subject, html, text });
-        return true;
-    } catch (err) {
-        console.error('[SMTP]', err.message || err);
-        throw err;
+    if (provider !== 'zeptomail-api' && process.env.DISABLE_SMTP !== 'true') {
+        try {
+            await sendViaSmtp({ to, subject, html, text });
+            return true;
+        } catch (err) {
+            errors.push(`SMTP: ${err.message || err}`);
+            console.error('[SMTP]', err.message || err);
+        }
     }
+
+    throw new Error(errors.join(' | ') || 'No email provider could send this message');
 }

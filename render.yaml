@@ -58,6 +58,8 @@ services:
         sync: false
       - key: ZEPTOMAIL_TOKEN
         sync: false
+      - key: EMAIL_PROVIDER
+        value: auto
       - key: EMAIL_FROM
         value: PickAndSync <noreply@pickandsync.com>
       - key: CASHFREE_CLIENT_ID
