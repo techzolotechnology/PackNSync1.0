@@ -11,7 +11,7 @@ export function smtpConfigured() {
 }
 
 export function zeptoMailApiConfigured() {
-    const token = process.env.ZEPTOMAIL_TOKEN;
+    const token = zeptoMailToken();
     return Boolean(token && !String(token).includes('your_zeptomail'));
 }
 
@@ -29,6 +29,21 @@ function parseFrom(from) {
         return { name: match[1].trim() || 'PickAndSync', address: match[2].trim() };
     }
     return { name: 'PickAndSync', address: from };
+}
+
+function zeptoMailToken() {
+    return String(process.env.ZEPTOMAIL_TOKEN || '')
+        .trim()
+        .replace(/^Zoho-enczapikey\s+/i, '')
+        .replace(/^=+/, '')
+        .trim();
+}
+
+function cleanDisplayName(value) {
+    return String(value || '')
+        .replace(/[^\w\s.-]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function zeptoMailEndpoint() {
@@ -102,13 +117,18 @@ function providerErrorMessage(data, fallback) {
  * Uses the ZeptoMail Send Mail API token, not the SMTP password.
  */
 async function sendViaZeptoMailHttp({ to, subject, html, text }) {
-    const token = process.env.ZEPTOMAIL_TOKEN;
+    const token = zeptoMailToken();
     if (!zeptoMailApiConfigured()) {
         throw new Error('ZeptoMail token not configured');
     }
 
-    const from = parseFrom(getEmailFrom());
+    const parsedFrom = parseFrom(getEmailFrom());
+    const from = {
+        address: parsedFrom.address,
+        name: cleanDisplayName(parsedFrom.name) || 'PickAndSync',
+    };
     const endpoint = zeptoMailEndpoint();
+    const requestId = `pickandsync-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const res = await withTimeout(
         fetch(endpoint, {
@@ -117,9 +137,11 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
                 Authorization: `Zoho-enczapikey ${token}`,
+                'User-Agent': 'PickAndSync/1.0',
+                'X-Request-Id': requestId,
             },
             body: JSON.stringify({
-                from: { address: from.address, name: from.name },
+                from,
                 to: [{ email_address: { address: to, name: to } }],
                 subject,
                 htmlbody: html,
@@ -142,7 +164,7 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
     if (!res.ok) {
         const status = [res.status, res.statusText].filter(Boolean).join(' ');
         const msg = providerErrorMessage(data || responseText, `ZeptoMail HTTP ${status}`);
-        throw new Error(msg);
+        throw new Error(`${msg} (request id: ${requestId})`);
     }
     return true;
 }
