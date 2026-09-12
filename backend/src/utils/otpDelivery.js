@@ -36,8 +36,16 @@ function emailDeliveryMessage(err) {
         return 'Email sender is not verified in ZeptoMail. Please verify EMAIL_FROM/domain in ZeptoMail and try again.';
     }
 
+    if (/ZeptoMail API:.*(invalid.*token|access denied|unauthorized|401|403)|TM_4001|SERR_157/i.test(message)) {
+        return 'ZeptoMail API token is invalid. In Render, replace ZEPTOMAIL_TOKEN with a Send Mail API token from ZeptoMail, then redeploy.';
+    }
+
+    if (/SMTP:.*(535|authentication|auth|credential|login|username|password)|Invalid login/i.test(message)) {
+        return 'ZeptoMail SMTP login is invalid. In Render, check SMTP_USER=emailapikey and replace SMTP_PASS with the ZeptoMail SMTP password.';
+    }
+
     if (/invalid.*token|unauthorized|authentication|auth|535|credential|login|access denied|401|403/i.test(message)) {
-        return 'Email provider credentials are invalid. Please check ZEPTOMAIL_TOKEN or SMTP credentials in Render.';
+        return 'Email provider credentials are invalid. Check whether Render is using ZEPTOMAIL_TOKEN or SMTP_PASS, then replace that secret.';
     }
 
     if (/timeout|timed out|econn|enotfound|esocket|network|connect/i.test(message)) {
