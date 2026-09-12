@@ -26,6 +26,7 @@ export const requestOtp = async (req, res) => {
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiresAt = new Date(Date.now() + 10 * 60000);
+    const channel = await deliverOtp({ contact: email, otpCode });
 
     if (isRegister) {
         user = await prisma.user.create({
@@ -37,8 +38,6 @@ export const requestOtp = async (req, res) => {
             data: { otpCode, otpExpiresAt },
         });
     }
-
-    const channel = await deliverOtp({ contact: email, otpCode });
 
     res.json({
         success: true,
