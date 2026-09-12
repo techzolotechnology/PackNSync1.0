@@ -31,6 +31,20 @@ function parseFrom(from) {
     return { name: 'PickAndSync', address: from };
 }
 
+function zeptoMailEndpoint() {
+    if (process.env.ZEPTOMAIL_API_URL) return process.env.ZEPTOMAIL_API_URL;
+
+    const region = String(process.env.ZEPTOMAIL_REGION || 'in').toLowerCase();
+    const hostByRegion = {
+        in: 'api.zeptomail.in',
+        us: 'api.zeptomail.com',
+        eu: 'api.zeptomail.eu',
+        au: 'api.zeptomail.com.au',
+    };
+    const host = hostByRegion[region] || hostByRegion.in;
+    return `https://${host}/v1.1/email`;
+}
+
 function createTransport() {
     const port = Number(process.env.SMTP_PORT || 465);
     const secure = port === 465;
@@ -60,7 +74,14 @@ function withTimeout(promise, ms, label) {
 
 function providerErrorMessage(data, fallback) {
     if (!data) return fallback;
-    if (typeof data === 'string') return data.trim() || fallback;
+    if (typeof data === 'string') {
+        const text = data.trim();
+        if (!text) return fallback;
+        if (/^<!doctype html>|^<html[\s>]/i.test(text)) {
+            return `${fallback}. ZeptoMail returned an HTML page instead of API JSON. Check ZEPTOMAIL_API_URL and use the API endpoint for your ZeptoMail data center.`;
+        }
+        return text;
+    }
     if (typeof data !== 'object') return fallback;
 
     const direct =
@@ -87,7 +108,7 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
     }
 
     const from = parseFrom(getEmailFrom());
-    const endpoint = process.env.ZEPTOMAIL_API_URL || 'https://api.zeptomail.in/v1.1/email';
+    const endpoint = zeptoMailEndpoint();
 
     const res = await withTimeout(
         fetch(endpoint, {

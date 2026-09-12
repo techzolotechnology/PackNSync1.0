@@ -60,6 +60,8 @@ services:
         sync: false
       - key: EMAIL_PROVIDER
         value: auto
+      - key: ZEPTOMAIL_REGION
+        value: in
       - key: EMAIL_FROM
         value: PickAndSync <noreply@pickandsync.com>
       - key: CASHFREE_CLIENT_ID
