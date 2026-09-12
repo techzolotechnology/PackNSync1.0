@@ -62,6 +62,8 @@ services:
         value: auto
       - key: ZEPTOMAIL_REGION
         value: in
+      - key: ZEPTOMAIL_API_URL
+        value: https://api.zeptomail.com/v1.1/email
       - key: EMAIL_FROM
         value: PickAndSync <noreply@pickandsync.com>
       - key: CASHFREE_CLIENT_ID

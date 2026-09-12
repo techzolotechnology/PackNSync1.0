@@ -36,7 +36,7 @@ function zeptoMailEndpoint() {
 
     const region = String(process.env.ZEPTOMAIL_REGION || 'in').toLowerCase();
     const hostByRegion = {
-        in: 'api.zeptomail.in',
+        in: 'api.zeptomail.com',
         us: 'api.zeptomail.com',
         eu: 'api.zeptomail.eu',
         au: 'api.zeptomail.com.au',
