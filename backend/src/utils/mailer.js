@@ -10,6 +10,11 @@ export function smtpConfigured() {
     return Boolean(host && user && pass && !String(pass).includes('your_zeptomail'));
 }
 
+export function emailConfigured() {
+    const token = process.env.ZEPTOMAIL_TOKEN || process.env.SMTP_PASS;
+    return smtpConfigured() || Boolean(token && !String(token).includes('your_zeptomail'));
+}
+
 export function getEmailFrom() {
     return process.env.EMAIL_FROM || DEFAULT_FROM;
 }
@@ -119,7 +124,7 @@ async function sendViaSmtp({ to, subject, html, text }) {
  * @returns {Promise<boolean>} true if sent
  */
 export async function sendMail({ to, subject, html, text }) {
-    if (!smtpConfigured() && !(process.env.ZEPTOMAIL_TOKEN || process.env.SMTP_PASS)) {
+    if (!emailConfigured()) {
         return false;
     }
 

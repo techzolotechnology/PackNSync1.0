@@ -1,5 +1,5 @@
 import { AppError } from './AppError.js';
-import { sendMail, smtpConfigured } from './mailer.js';
+import { emailConfigured, sendMail } from './mailer.js';
 import { otpEmail } from './emailTemplates.js';
 
 /** Normalize contact for DB lookup/storage */
@@ -23,8 +23,29 @@ function logDevOtp(label, contact, otpCode) {
 
 async function sendEmailOtp(email, otpCode) {
     const blockedDomain = /\@(example\.com|test\.com|localhost|packandsync\.local)$/i.test(email);
+    const allowConsoleFallback =
+        process.env.NODE_ENV !== 'production' && process.env.OTP_CONSOLE_FALLBACK === 'true';
 
-    if (!smtpConfigured() || blockedDomain || process.env.OTP_CONSOLE_FALLBACK === 'true') {
+    if (blockedDomain) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new AppError('Please use a real email address to receive the OTP.', 400);
+        }
+        logDevOtp('Email', email, otpCode);
+        return 'console';
+    }
+
+    if (!emailConfigured()) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new AppError(
+                'Email OTP delivery is not configured. Please add the mail provider settings and try again.',
+                502,
+            );
+        }
+        logDevOtp('Email', email, otpCode);
+        return 'console';
+    }
+
+    if (allowConsoleFallback) {
         logDevOtp('Email', email, otpCode);
         return 'console';
     }
@@ -41,7 +62,7 @@ async function sendEmailOtp(email, otpCode) {
         return 'email';
     } catch (err) {
         console.error('[Email] delivery failed:', err.message || err);
-        if (process.env.NODE_ENV === 'production' && process.env.OTP_CONSOLE_FALLBACK !== 'true') {
+        if (process.env.NODE_ENV === 'production') {
             throw new AppError(
                 'Could not send the OTP email right now. Please try again in a moment.',
                 502,
