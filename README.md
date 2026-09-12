@@ -50,7 +50,7 @@ flowchart TD
 
 All clients talk to the same Express backend:
 
-- Website, Android, Expo web, and packaged desktop default to `https://packandsync-api.onrender.com/api`.
+- Website, Android, Expo web, and packaged desktop default to `https://api.pickandsync.com/api`.
 - Local website development reaches that API through Vite's same-origin proxy.
 - Website and desktop can deliberately override it with `VITE_API_URL` and `VITE_SOCKET_URL`.
 - Mobile can deliberately override it with `EXPO_PUBLIC_API_URL`.

@@ -44,4 +44,4 @@ Output goes to `desktop/release`.
 
 ## Backend
 
-Website, Android, Expo web, and desktop all default to the common deployed API at `https://packandsync-api.onrender.com/api`. Local website development reaches it through Vite's same-origin proxy. For deliberate local-backend testing, set `VITE_DEV_BACKEND_ORIGIN`; build-time client overrides remain available through `VITE_API_URL`/`VITE_SOCKET_URL` or `EXPO_PUBLIC_API_URL`.
+Website, Android, Expo web, and desktop all default to the common deployed API at `https://api.pickandsync.com/api`. Local website development reaches it through Vite's same-origin proxy. For deliberate local-backend testing, set `VITE_DEV_BACKEND_ORIGIN`; build-time client overrides remain available through `VITE_API_URL`/`VITE_SOCKET_URL` or `EXPO_PUBLIC_API_URL`.

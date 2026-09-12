@@ -31,7 +31,7 @@ GitHub (push main)
 1. Go to [render.com](https://render.com) → **New** → **Blueprint**
 2. Connect this GitHub repo (it will read `render.yaml`)
 3. After the service is live, copy the API URL, e.g.  
-   `https://packandsync-api.onrender.com`
+   `https://api.pickandsync.com`
 4. In Render → your web service → **Settings** → **Deploy Hook** → copy the URL
 5. Set env vars on Render (at least):
    - `FRONTEND_URL` = your GitHub Pages URL  
@@ -45,8 +45,8 @@ Repo → **Settings** → **Secrets and variables** → **Actions** → **New re
 
 | Secret | Example | Required |
 |--------|---------|----------|
-| `VITE_API_URL` | `https://packandsync-api.onrender.com/api` | **Yes** |
-| `VITE_SOCKET_URL` | `https://packandsync-api.onrender.com` | **Yes** |
+| `VITE_API_URL` | `https://api.pickandsync.com/api` | **Yes** |
+| `VITE_SOCKET_URL` | `https://api.pickandsync.com` | **Yes** |
 | `RENDER_DEPLOY_HOOK_URL` | `https://api.render.com/deploy/srv-...` | Recommended |
 | `VITE_GOOGLE_MAPS_API_KEY` | your Maps key | Optional |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` / test | Optional |
@@ -70,7 +70,7 @@ Manual deploy: **Actions** → **Deploy** → **Run workflow**.
 | | Local | Production |
 |--|--------|------------|
 | Website | `http://localhost:5173` | `https://<org>.github.io/<repo>/` |
-| API | Vite proxy to the common deployed API | `https://packandsync-api.onrender.com/api` |
+| API | Vite proxy to the common deployed API | `https://api.pickandsync.com/api` |
 
 All clients default to the common deployed API. Frontend builds can override it with `VITE_API_URL` / `VITE_SOCKET_URL`; local Vite proxy development can deliberately target another backend with `VITE_DEV_BACKEND_ORIGIN`.
 

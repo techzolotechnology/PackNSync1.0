@@ -1,6 +1,6 @@
 const DEFAULT_BACKEND_ORIGIN =
     (typeof window !== 'undefined' && window.__PICKANDSYNC_CONFIG__?.SOCKET_URL)
-    || 'https://packandsync-api.onrender.com';
+    || 'https://api.pickandsync.com';
 
 function trimTrailingSlash(value) {
     return String(value || '').trim().replace(/\/+$/, '');
