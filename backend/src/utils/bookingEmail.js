@@ -1,4 +1,4 @@
-import { sendMail, smtpConfigured } from './mailer.js';
+import { sendMail, emailConfigured } from './mailer.js';
 import {
     rentalBookingRequestEmail,
     rentalBookingDecisionEmail,
@@ -11,7 +11,7 @@ export async function sendBookingConfirmationEmail({ to, subject, html, text }) 
         return false;
     }
 
-    if (!smtpConfigured()) {
+    if (!emailConfigured()) {
         console.log(`[DEV] Booking email to ${to}: ${subject}`);
         if (text) console.log(text);
         return false;

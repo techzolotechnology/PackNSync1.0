@@ -43,6 +43,7 @@ function normalizeZeptoMailToken(value) {
 
 function zeptoMailTokenCandidates() {
     return [
+        ['ZEPTOMAIL_SEND_TOKEN', process.env.ZEPTOMAIL_SEND_TOKEN],
         ['ZEPTOMAIL_TOKEN', process.env.ZEPTOMAIL_TOKEN],
         ['ZEPTOMAIL_API', process.env.ZEPTOMAIL_API],
     ]
@@ -224,15 +225,34 @@ async function sendViaSmtp({ to, subject, html, text }) {
     }
 }
 
+export function describeEmailConfig() {
+    return {
+        zeptoMailApi: zeptoMailApiConfigured(),
+        smtp: smtpConfigured(),
+        provider: String(process.env.EMAIL_PROVIDER || 'auto').toLowerCase() || 'auto',
+        region: String(process.env.ZEPTOMAIL_REGION || 'in').toLowerCase(),
+    };
+}
+
 export async function sendMail({ to, subject, html, text }) {
     if (!emailConfigured()) {
-        return false;
+        throw new Error('Email provider is not configured. Add ZEPTOMAIL_TOKEN (preferred) or SMTP_HOST/SMTP_USER/SMTP_PASS.');
     }
 
     const rawProvider = String(process.env.EMAIL_PROVIDER || '').toLowerCase();
-    const provider = process.env.NODE_ENV === 'production' && (!rawProvider || rawProvider === 'auto')
+    let provider = process.env.NODE_ENV === 'production' && (!rawProvider || rawProvider === 'auto')
         ? 'zeptomail-api'
         : (rawProvider || 'auto');
+
+    if (provider === 'zeptomail-api' && !zeptoMailApiConfigured()) {
+        if (smtpConfigured()) {
+            console.warn('[mail] EMAIL_PROVIDER=zeptomail-api but ZEPTOMAIL_TOKEN is missing; falling back to SMTP');
+            provider = 'smtp';
+        } else {
+            throw new Error('ZEPTOMAIL_TOKEN is missing. Add a ZeptoMail Send Mail API token in Render, then redeploy.');
+        }
+    }
+
     const errors = [];
 
     if (provider === 'zeptomail-api' || (provider === 'auto' && zeptoMailApiConfigured())) {
@@ -242,11 +262,11 @@ export async function sendMail({ to, subject, html, text }) {
         } catch (err) {
             errors.push(`ZeptoMail API: ${err.message || err}`);
             console.error('[ZeptoMail API]', err.message || err);
-            if (provider === 'zeptomail-api') throw err;
+            if (provider === 'zeptomail-api' && process.env.DISABLE_SMTP === 'true') throw err;
         }
     }
 
-    if (provider !== 'zeptomail-api' && process.env.DISABLE_SMTP !== 'true') {
+    if (process.env.DISABLE_SMTP !== 'true' && smtpConfigured()) {
         try {
             await sendViaSmtp({ to, subject, html, text });
             return true;

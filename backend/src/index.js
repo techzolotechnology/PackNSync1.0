@@ -29,6 +29,7 @@ import { walletRouter } from './routes/wallet.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { registerSocketHandlers } from './socket/index.js';
+import { describeEmailConfig } from './utils/mailer.js';
 
 dotenv.config();
 
@@ -173,6 +174,8 @@ httpServer.listen(PORT, '0.0.0.0', () => {
     .find((net) => net?.family === 'IPv4' && !net.internal)?.address;
   console.log(`🚀 PickAndSync API running on http://localhost:${PORT}`);
   if (lan) console.log(`📱 Android/other devices: http://${lan}:${PORT}/api`);
+  const email = describeEmailConfig();
+  console.log(`[mail] provider=${email.provider} region=${email.region} zeptomailApi=${email.zeptoMailApi} smtp=${email.smtp}`);
 });
 
 export { app, io };

@@ -28,6 +28,10 @@ function emailDeliveryMessage(err) {
         .replace(/(password|token|secret|key)=([^&\s]+)/gi, '$1=[hidden]')
         .slice(0, 220);
 
+    if (/ZEPTOMAIL_TOKEN is missing|ZeptoMail token not configured/i.test(message)) {
+        return 'ZEPTOMAIL_TOKEN is missing on Render. Add the ZeptoMail Send Mail API token (not the SMTP password), save, and redeploy.';
+    }
+
     if (/not configured|missing|required/i.test(message)) {
         return 'Email provider is not configured. Please add ZEPTOMAIL_TOKEN or SMTP settings in Render.';
     }

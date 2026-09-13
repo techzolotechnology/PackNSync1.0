@@ -17,7 +17,7 @@ import {
     refundDebit,
     markWithdrawSuccess,
 } from '../utils/wallet.js';
-import { sendMail, smtpConfigured } from '../utils/mailer.js';
+import { sendMail, emailConfigured } from '../utils/mailer.js';
 import { walletTopupEmail } from '../utils/emailTemplates.js';
 
 const MIN_TOPUP = 10;
@@ -247,7 +247,7 @@ async function sendWalletTopupEmail({ userId, amount, balance, orderId }) {
     });
     const subject = `Wallet topped up — ₹${Number(amount).toLocaleString('en-IN')}`;
 
-    if (!smtpConfigured()) {
+    if (!emailConfigured()) {
         console.log(`[DEV] Wallet top-up email to ${user.email}: ${subject}`);
         console.log(text);
         return;

@@ -58,12 +58,14 @@ services:
         sync: false
       - key: ZEPTOMAIL_TOKEN
         sync: false
+      - key: ZEPTOMAIL_SEND_TOKEN
+        sync: false
       - key: EMAIL_PROVIDER
         value: zeptomail-api
       - key: ZEPTOMAIL_REGION
         value: in
       - key: ZEPTOMAIL_API_URL
-        value: https://api.zeptomail.com/v1.1/email
+        value: https://api.zeptomail.in/v1.1/email
       - key: EMAIL_FROM
         value: PickAndSync <noreply@pickandsync.com>
       - key: CASHFREE_CLIENT_ID
