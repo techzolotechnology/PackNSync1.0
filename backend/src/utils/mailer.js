@@ -35,8 +35,7 @@ function normalizeZeptoMailToken(value) {
         .trim()
         .replace(/^['"`]+|['"`]+$/g, '')
         .replace(/^Authorization:\s*/i, '')
-        .replace(/^Zoho-enczapikey\s+/i, '')
-        .replace(/^Zoho-enczapikey/i, '')
+        .replace(/^Zoho-enczapikey\s*:?\s*/i, '')
         .replace(/^=+/, '')
         .replace(/^['"`]+|['"`]+$/g, '')
         .trim();
@@ -58,18 +57,30 @@ function cleanDisplayName(value) {
         .trim();
 }
 
-function zeptoMailEndpoint() {
-    if (process.env.ZEPTOMAIL_API_URL) return process.env.ZEPTOMAIL_API_URL;
+function normalizeEndpoint(value) {
+    const endpoint = String(value || '').trim().replace(/\/+$/, '');
+    if (!endpoint) return '';
+    return endpoint.endsWith('/v1.1/email') ? endpoint : `${endpoint}/v1.1/email`;
+}
 
+function zeptoMailEndpointCandidates() {
     const region = String(process.env.ZEPTOMAIL_REGION || 'in').toLowerCase();
     const hostByRegion = {
-        in: 'api.zeptomail.com',
+        in: 'api.zeptomail.in',
+        india: 'api.zeptomail.in',
         us: 'api.zeptomail.com',
         eu: 'api.zeptomail.eu',
         au: 'api.zeptomail.com.au',
     };
     const host = hostByRegion[region] || hostByRegion.in;
-    return `https://${host}/v1.1/email`;
+    const endpoints = [
+        normalizeEndpoint(process.env.ZEPTOMAIL_API_URL),
+        `https://${host}/v1.1/email`,
+        'https://api.zeptomail.in/v1.1/email',
+        'https://api.zeptomail.com/v1.1/email',
+    ].filter(Boolean);
+
+    return [...new Set(endpoints)];
 }
 
 function createTransport() {
@@ -139,49 +150,51 @@ async function sendViaZeptoMailHttp({ to, subject, html, text }) {
         address: parsedFrom.address,
         name: cleanDisplayName(parsedFrom.name) || 'PickAndSync',
     };
-    const endpoint = zeptoMailEndpoint();
+    const endpoints = zeptoMailEndpointCandidates();
     const requestId = `pickandsync-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const errors = [];
 
-    for (const [label, token] of tokens) {
-        const res = await withTimeout(
-            fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Zoho-enczapikey ${token}`,
-                    'User-Agent': 'PickAndSync/1.0',
-                    'X-Request-Id': requestId,
-                },
-                body: JSON.stringify({
-                    from,
-                    to: [{ email_address: { address: to, name: to } }],
-                    subject,
-                    htmlbody: html,
-                    textbody: text || undefined,
+    for (const endpoint of endpoints) {
+        for (const [label, token] of tokens) {
+            const res = await withTimeout(
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Zoho-enczapikey ${token}`,
+                        'User-Agent': 'PickAndSync/1.0',
+                        'X-Request-Id': requestId,
+                    },
+                    body: JSON.stringify({
+                        from,
+                        to: [{ email_address: { address: to, name: to } }],
+                        subject,
+                        htmlbody: html,
+                        textbody: text || undefined,
+                    }),
                 }),
-            }),
-            SEND_TIMEOUT_MS,
-            'ZeptoMail HTTP',
-        );
+                SEND_TIMEOUT_MS,
+                'ZeptoMail HTTP',
+            );
 
-        const responseText = await res.text().catch(() => '');
-        let data = null;
-        if (responseText) {
-            try {
-                data = JSON.parse(responseText);
-            } catch {
-                data = responseText;
+            const responseText = await res.text().catch(() => '');
+            let data = null;
+            if (responseText) {
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
+                    data = responseText;
+                }
             }
+
+            if (res.ok) return true;
+
+            const status = [res.status, res.statusText].filter(Boolean).join(' ');
+            const msg = providerErrorMessage(data || responseText, `ZeptoMail HTTP ${status}`);
+            errors.push(`${label} @ ${new URL(endpoint).host}: ${msg}`);
         }
-
-        if (res.ok) return true;
-
-        const status = [res.status, res.statusText].filter(Boolean).join(' ');
-        const msg = providerErrorMessage(data || responseText, `ZeptoMail HTTP ${status}`);
-        errors.push(`${label}: ${msg}`);
     }
 
     throw new Error(`${errors.join(' | ')} (request id: ${requestId})`);
