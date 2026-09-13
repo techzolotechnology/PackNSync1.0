@@ -225,56 +225,63 @@ async function sendViaSmtp({ to, subject, html, text }) {
     }
 }
 
+function normalizeEmailProvider() {
+    const raw = String(process.env.EMAIL_PROVIDER || 'auto').trim().toLowerCase();
+    if (!raw || raw === 'auto') {
+        return process.env.NODE_ENV === 'production' ? 'zeptomail-api' : 'auto';
+    }
+    if (raw === 'zeptomail' || raw === 'zeptomail_api' || raw === 'api') return 'zeptomail-api';
+    return raw;
+}
+
 export function describeEmailConfig() {
     return {
         zeptoMailApi: zeptoMailApiConfigured(),
         smtp: smtpConfigured(),
-        provider: String(process.env.EMAIL_PROVIDER || 'auto').toLowerCase() || 'auto',
-        region: String(process.env.ZEPTOMAIL_REGION || 'in').toLowerCase(),
+        provider: normalizeEmailProvider(),
+        region: String(process.env.ZEPTOMAIL_REGION || 'in').trim().toLowerCase(),
+        from: getEmailFrom(),
     };
 }
 
 export async function sendMail({ to, subject, html, text }) {
-    if (!emailConfigured()) {
-        throw new Error('Email provider is not configured. Add ZEPTOMAIL_TOKEN (preferred) or SMTP_HOST/SMTP_USER/SMTP_PASS.');
+    const config = describeEmailConfig();
+    const smtpAllowed = process.env.DISABLE_SMTP !== 'true';
+    const methods = [];
+
+    if (config.provider === 'smtp') {
+        if (config.smtp && smtpAllowed) methods.push('smtp');
+        if (config.zeptoMailApi) methods.push('zepto');
+    } else {
+        if (config.zeptoMailApi) methods.push('zepto');
+        if (config.smtp && smtpAllowed) methods.push('smtp');
     }
 
-    const rawProvider = String(process.env.EMAIL_PROVIDER || '').toLowerCase();
-    let provider = process.env.NODE_ENV === 'production' && (!rawProvider || rawProvider === 'auto')
-        ? 'zeptomail-api'
-        : (rawProvider || 'auto');
-
-    if (provider === 'zeptomail-api' && !zeptoMailApiConfigured()) {
-        if (smtpConfigured()) {
-            console.warn('[mail] EMAIL_PROVIDER=zeptomail-api but ZEPTOMAIL_TOKEN is missing; falling back to SMTP');
-            provider = 'smtp';
-        } else {
-            throw new Error('ZEPTOMAIL_TOKEN is missing. Add a ZeptoMail Send Mail API token in Render, then redeploy.');
-        }
+    if (!methods.length) {
+        throw new Error(
+            `Email provider is not configured (provider=${config.provider}, zeptoMailApi=${config.zeptoMailApi}, smtp=${config.smtp}). Add ZEPTOMAIL_TOKEN or SMTP_PASS in Render.`,
+        );
     }
 
     const errors = [];
 
-    if (provider === 'zeptomail-api' || (provider === 'auto' && zeptoMailApiConfigured())) {
+    for (const method of methods) {
         try {
-            await sendViaZeptoMailHttp({ to, subject, html, text });
+            if (method === 'zepto') {
+                await sendViaZeptoMailHttp({ to, subject, html, text });
+            } else {
+                await sendViaSmtp({ to, subject, html, text });
+            }
             return true;
         } catch (err) {
-            errors.push(`ZeptoMail API: ${err.message || err}`);
-            console.error('[ZeptoMail API]', err.message || err);
-            if (provider === 'zeptomail-api' && process.env.DISABLE_SMTP === 'true') throw err;
+            const label = method === 'zepto' ? 'ZeptoMail API' : 'SMTP';
+            errors.push(`${label}: ${err.message || err}`);
+            console.error(`[${label}]`, err.message || err);
         }
     }
 
-    if (process.env.DISABLE_SMTP !== 'true' && smtpConfigured()) {
-        try {
-            await sendViaSmtp({ to, subject, html, text });
-            return true;
-        } catch (err) {
-            errors.push(`SMTP: ${err.message || err}`);
-            console.error('[SMTP]', err.message || err);
-        }
-    }
-
-    throw new Error(errors.join(' | ') || 'No email provider could send this message');
+    throw new Error(
+        errors.join(' | ')
+        || `No email provider could send this message (provider=${config.provider}, zeptoMailApi=${config.zeptoMailApi}, smtp=${config.smtp}, from=${config.from})`,
+    );
 }

@@ -123,7 +123,18 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const email = describeEmailConfig();
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    email: {
+      provider: email.provider,
+      region: email.region,
+      zeptoMailApi: email.zeptoMailApi,
+      smtp: email.smtp,
+      from: email.from,
+    },
+  });
 });
 
 app.get('/api/config', (req, res) => {

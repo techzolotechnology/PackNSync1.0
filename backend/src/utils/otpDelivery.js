@@ -56,6 +56,10 @@ function emailDeliveryMessage(err) {
         return 'Could not connect to the email provider from Render. Use ZeptoMail API token delivery instead of SMTP.';
     }
 
+    if (/No email provider could send this message/i.test(message)) {
+        return 'OTP email was not sent because ZeptoMail API and SMTP were skipped. Set ZEPTOMAIL_TOKEN (Send Mail API token) in Render and keep EMAIL_PROVIDER=zeptomail-api, then redeploy.';
+    }
+
     return `Email provider rejected the OTP email: ${safeMessage || 'unknown provider error'}`;
 }
 
