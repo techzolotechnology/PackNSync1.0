@@ -29,6 +29,27 @@ const DEFAULT_FORM = {
     isPublic: true,
 };
 
+function normalizeDraftForm(draft) {
+    const source = draft && typeof draft === 'object' ? draft : {};
+    const textFields = ['title', 'description', 'destination', 'coverImageUrl', 'startDate', 'endDate', 'meetingPoint'];
+    const form = { ...DEFAULT_FORM, ...source };
+
+    for (const field of textFields) {
+        form[field] = typeof source[field] === 'string' ? source[field] : DEFAULT_FORM[field];
+    }
+
+    form.maxParticipants = Math.min(50, Math.max(2, Number(source.maxParticipants) || DEFAULT_FORM.maxParticipants));
+    form.budgetEstimate = source.budgetEstimate == null || source.budgetEstimate === ''
+        ? ''
+        : String(source.budgetEstimate);
+    form.joinMode = JOIN_OPTIONS.some((option) => option.id === source.joinMode)
+        ? source.joinMode
+        : DEFAULT_FORM.joinMode;
+    form.isPublic = form.joinMode !== 'invite';
+
+    return form;
+}
+
 function loadDraft() {
     try {
         const raw = localStorage.getItem(DRAFT_KEY);
@@ -38,12 +59,7 @@ function loadDraft() {
         const step = Number.isInteger(parsed.step)
             ? Math.min(Math.max(parsed.step, 0), STEPS.length - 1)
             : 0;
-        const form = {
-            ...DEFAULT_FORM,
-            ...(parsed.form && typeof parsed.form === 'object' ? parsed.form : {}),
-        };
-        form.maxParticipants = Number(form.maxParticipants) || 6;
-        form.isPublic = form.joinMode !== 'invite';
+        const form = normalizeDraftForm(parsed.form);
         return { step, form };
     } catch {
         return null;
@@ -238,9 +254,13 @@ export default function CreateTripPage() {
             });
             toast.success('Trip posted — others can join and split costs.');
             clearDraft();
-            navigate(`/trips/${res.data.data.id}`);
+            const tripId = res.data?.data?.id;
+            if (!tripId) {
+                throw new Error('The trip was created, but its details could not be opened.');
+            }
+            navigate(`/trips/${tripId}`);
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create trip.');
+            toast.error(err.response?.data?.message || err.message || 'Failed to create trip.');
         } finally {
             setIsLoading(false);
         }
