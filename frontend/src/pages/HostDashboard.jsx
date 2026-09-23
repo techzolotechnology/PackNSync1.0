@@ -13,9 +13,10 @@ const FALLBACK_THUMB = STOCK.carHero;
 const FALLBACK_BIKE_THUMB = STOCK.bikeHero;
 
 const VEHICLE_TYPES = [
-    { id: 'CAR', label: 'Car', makeHint: 'Toyota', modelHint: 'Innova', seats: 5 },
-    { id: 'BIKE', label: 'Bike', makeHint: 'Royal Enfield', modelHint: 'Classic 350', seats: 2 },
-    { id: 'SCOOTER', label: 'Scooter', makeHint: 'Honda', modelHint: 'Activa 6G', seats: 2 },
+    { id: 'CAR', label: 'Car', makeHint: 'Toyota', modelHint: 'Innova', seats: 5, defaultFuel: 'Petrol', actualType: 'CAR' },
+    { id: 'CNG_CAR', label: 'CNG Car', makeHint: 'Maruti Suzuki', modelHint: 'WagonR CNG / Ertiga CNG', seats: 5, defaultFuel: 'CNG', actualType: 'CAR' },
+    { id: 'BIKE', label: 'Bike', makeHint: 'Royal Enfield', modelHint: 'Classic 350', seats: 2, defaultFuel: 'Petrol', actualType: 'BIKE' },
+    { id: 'SCOOTER', label: 'Scooter', makeHint: 'Honda', modelHint: 'Activa 6G', seats: 2, defaultFuel: 'Petrol', actualType: 'SCOOTER' },
 ];
 
 const initialVehicleForm = {
@@ -33,7 +34,8 @@ function isTwoWheeler(type) {
     return type === 'BIKE' || type === 'SCOOTER';
 }
 
-function typeLabel(type) {
+function typeLabel(type, fuelType) {
+    if (fuelType === 'CNG' && type === 'CAR') return 'CNG Car';
     return VEHICLE_TYPES.find((t) => t.id === type)?.label || type || 'Car';
 }
 
@@ -122,16 +124,17 @@ export default function HostDashboard() {
         }
     };
 
-    const setVehicleType = (type) => {
-        const preset = VEHICLE_TYPES.find((t) => t.id === type);
+    const setVehicleType = (typeId) => {
+        const preset = VEHICLE_TYPES.find((t) => t.id === typeId);
+        const resolvedType = preset?.actualType || typeId;
         setFormData((f) => ({
             ...f,
-            type,
+            type: resolvedType,
             seats: preset?.seats ?? f.seats,
-            transmission: isTwoWheeler(type)
+            transmission: isTwoWheeler(resolvedType)
                 ? (f.transmission === 'Diesel' ? 'Automatic' : f.transmission === 'Manual' ? 'Manual' : f.transmission)
                 : f.transmission,
-            fuelType: isTwoWheeler(type) && f.fuelType === 'Diesel' ? 'Petrol' : f.fuelType,
+            fuelType: preset?.defaultFuel || (isTwoWheeler(resolvedType) && f.fuelType === 'Diesel' ? 'Petrol' : f.fuelType),
         }));
     };
 
@@ -321,7 +324,7 @@ export default function HostDashboard() {
                                             />
                                             <div className="host-v-meta">
                                                 <h3>{title}</h3>
-                                                <span className="host-type-badge">{typeLabel(vehicle.type)}</span>
+                                                <span className="host-type-badge">{typeLabel(vehicle.type, vehicle.fuelType)}</span>
                                                 <span className={`host-v-status ${booked ? 'booked' : listing ? 'available' : 'idle'}`}>
                                                     {booked ? 'Booked' : listing ? 'Available' : 'Not listed'}
                                                 </span>
@@ -392,30 +395,45 @@ export default function HostDashboard() {
             {showAddForm && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                        <h3>Add {typeLabel(formData.type).toLowerCase()}</h3>
+                        <h3>Add {typeLabel(formData.type, formData.fuelType).toLowerCase()}</h3>
                         <form onSubmit={handleAddVehicle}>
                             <div className="host-type-chips" role="group" aria-label="Vehicle type">
-                                {VEHICLE_TYPES.map((t) => (
-                                    <button
-                                        key={t.id}
-                                        type="button"
-                                        className={`host-type-chip ${formData.type === t.id ? 'active' : ''}`}
-                                        onClick={() => setVehicleType(t.id)}
-                                    >
-                                        {t.label}
-                                    </button>
-                                ))}
+                                {VEHICLE_TYPES.map((t) => {
+                                    const isActive = t.id === 'CNG_CAR'
+                                        ? formData.type === 'CAR' && formData.fuelType === 'CNG'
+                                        : t.id === 'CAR'
+                                            ? formData.type === 'CAR' && formData.fuelType !== 'CNG'
+                                            : formData.type === t.id;
+                                    return (
+                                        <button
+                                            key={t.id}
+                                            type="button"
+                                            className={`host-type-chip ${isActive ? 'active' : ''}`}
+                                            onClick={() => setVehicleType(t.id)}
+                                        >
+                                            {t.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                             <input
                                 type="text"
-                                placeholder={`Make (e.g. ${VEHICLE_TYPES.find((t) => t.id === formData.type)?.makeHint})`}
+                                placeholder={`Make (e.g. ${
+                                    formData.type === 'CAR' && formData.fuelType === 'CNG'
+                                        ? 'Maruti Suzuki'
+                                        : VEHICLE_TYPES.find((t) => t.id === formData.type)?.makeHint || 'Toyota'
+                                })`}
                                 value={formData.make}
                                 onChange={(e) => setFormData({ ...formData, make: e.target.value })}
                                 required
                             />
                             <input
                                 type="text"
-                                placeholder={`Model (e.g. ${VEHICLE_TYPES.find((t) => t.id === formData.type)?.modelHint})`}
+                                placeholder={`Model (e.g. ${
+                                    formData.type === 'CAR' && formData.fuelType === 'CNG'
+                                        ? 'WagonR CNG / Ertiga CNG'
+                                        : VEHICLE_TYPES.find((t) => t.id === formData.type)?.modelHint || 'Innova'
+                                })`}
                                 value={formData.model}
                                 onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                                 required

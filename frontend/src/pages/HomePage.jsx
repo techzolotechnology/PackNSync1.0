@@ -23,6 +23,7 @@ const CATEGORIES = {
     ],
     cars: [
         { value: '', label: 'Any car' },
+        { value: 'cng', label: 'CNG Cars' },
         { value: 'suv', label: 'SUVs' },
         { value: 'luxury', label: 'Luxury Sedans' },
         { value: 'electric', label: 'Electric' },

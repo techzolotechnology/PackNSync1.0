@@ -14,6 +14,7 @@ const TWO_WHEELER_TYPES = ['BIKE', 'SCOOTER'];
 export function normalizeVehicleType(raw) {
     const type = String(raw || 'CAR').trim().toUpperCase();
     if (type === 'TWO_WHEELER' || type === 'MOTORCYCLE') return 'BIKE';
+    if (type === 'CNG_CAR' || type === 'CNG') return 'CAR';
     if (ALLOWED_VEHICLE_TYPES.has(type)) return type;
     return 'CAR';
 }

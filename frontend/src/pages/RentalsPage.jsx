@@ -22,6 +22,14 @@ const CAR_CATEGORIES = [
         match: (v) => /bmw|mercedes|audi|jaguar|lexus|city|sedan|honda/i.test(`${v.make} ${v.model}`),
     },
     {
+        id: 'cng',
+        label: 'CNG Cars',
+        accent: 'teal',
+        icon: 'cng',
+        thumb: CAR_FALLBACKS[0],
+        match: (v) => /cng/i.test(`${v.fuelType || ''} ${v.make || ''} ${v.model || ''}`),
+    },
+    {
         id: 'suv',
         label: 'SUVs',
         accent: 'orange',
@@ -91,6 +99,15 @@ const getDays = (startDate, endDate) => {
 };
 
 function CategoryIcon({ type }) {
+    if (type === 'cng') {
+        return (
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+                <rect x="3" y="4" width="11" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M6 8h5M14 9h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V9l-2-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="8.5" cy="14" r="1.5" fill="currentColor" />
+            </svg>
+        );
+    }
     if (type === 'ev') {
         return (
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">

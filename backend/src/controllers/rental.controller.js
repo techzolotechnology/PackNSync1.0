@@ -80,7 +80,7 @@ const endOfUtcDay = (value) => {
 
 // GET /api/rentals/listings
 export const getListings = async (req, res) => {
-    const { location, minPrice, maxPrice, type, kind, startDate, endDate } = req.query;
+    const { location, minPrice, maxPrice, type, kind, startDate, endDate, fuelType } = req.query;
 
     const where = { isActive: true };
     if (location) where.location = { contains: location, mode: 'insensitive' };
@@ -103,6 +103,10 @@ export const getListings = async (req, res) => {
         } else {
             where.vehicle = { ...(where.vehicle || {}), type: typeNorm };
         }
+    }
+
+    if (fuelType) {
+        where.vehicle = { ...(where.vehicle || {}), fuelType: { equals: String(fuelType).trim(), mode: 'insensitive' } };
     }
 
     if (startDate) {
