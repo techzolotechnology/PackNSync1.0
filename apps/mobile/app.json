@@ -2,7 +2,9 @@
   "expo": {
     "name": "PickAndSync",
     "slug": "packandsync",
+    "owner": "kartikgauttam",
     "version": "1.0.0",
+    "sdkVersion": "51.0.0",
     "orientation": "default",
     "scheme": "packandsync",
     "icon": "./assets/icon.png",
@@ -19,11 +21,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#007bff"
-      }
+      },
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "buildToolsVersion": "34.0.0"
     },
     "web": {
       "bundler": "metro",
       "output": "single"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1c33f722-bd62-4a95-8e81-a23d3c1d5b67"
+      }
     }
   }
 }

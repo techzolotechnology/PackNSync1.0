@@ -1,4 +1,7 @@
-const DEFAULT_BACKEND_ORIGIN = 'https://api.pickandsync.com';
+const DEFAULT_BACKEND_ORIGIN =
+  process.env.EXPO_PUBLIC_API_URL
+    ? ''
+    : 'https://packandsync-api.onrender.com';
 
 function trimTrailingSlash(value) {
   return String(value || '').trim().replace(/\/+$/, '');
