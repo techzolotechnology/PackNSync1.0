@@ -1,19 +1,21 @@
-import { Loader } from '@googlemaps/js-api-loader';
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
 
-let loaderInstance = null;
+let optionsConfigured = false;
 let mapsPromise = null;
 
-function getLoader() {
-    if (!API_KEY) return null;
-    if (!loaderInstance) {
-        loaderInstance = new Loader({
-            apiKey: API_KEY,
-            version: 'weekly',
+function ensureOptions() {
+    if (!API_KEY || optionsConfigured) return;
+    try {
+        setOptions({
+            key: API_KEY,
+            v: 'weekly',
         });
+        optionsConfigured = true;
+    } catch (err) {
+        console.warn('[googleMapsLoader] Failed to set options:', err);
     }
-    return loaderInstance;
 }
 
 /** Load the Maps JS API once; returns `google.maps` or null when no API key. */
@@ -23,13 +25,13 @@ export function loadGoogleMaps() {
         return Promise.resolve(window.google.maps);
     }
     if (!mapsPromise) {
-        const loader = getLoader();
-        mapsPromise = loader
-            .load()
+        ensureOptions();
+        mapsPromise = importLibrary('maps')
             .then(() => window.google?.maps ?? null)
             .catch((err) => {
                 mapsPromise = null;
-                throw err;
+                console.warn('[googleMapsLoader] Failed to load Google Maps:', err);
+                return null;
             });
     }
     return mapsPromise;
@@ -37,9 +39,17 @@ export function loadGoogleMaps() {
 
 /** Import a Maps library after the core API is loaded. */
 export async function importGoogleMapsLibrary(name) {
-    const maps = await loadGoogleMaps();
-    if (!maps) return null;
-    return maps.importLibrary(name);
+    if (!API_KEY) return null;
+    ensureOptions();
+    if (window.google?.maps?.importLibrary) {
+        return window.google.maps.importLibrary(name);
+    }
+    try {
+        return await importLibrary(name);
+    } catch (err) {
+        console.warn(`[googleMapsLoader] Failed to import library ${name}:`, err);
+        return null;
+    }
 }
 
 export function hasGoogleMapsApiKey() {
@@ -49,3 +59,4 @@ export function hasGoogleMapsApiKey() {
 export function getGoogleMapsApiKey() {
     return API_KEY;
 }
+
