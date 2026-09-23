@@ -44,6 +44,7 @@ export const getWallet = async (req, res) => {
             id: wallet.id,
             balance: wallet.balance,
             currency: wallet.currency,
+            cashfreeConfigured: cashfreeConfigured(),
             cashfreeMode: cashfreeMode(),
             mockMode: cashfreeMockEnabled(),
             payoutsReady: payoutsConfigured() || cashfreeMockEnabled(),
@@ -125,7 +126,14 @@ export const createTopup = async (req, res) => {
             where: { id: pending.id },
             data: { status: 'FAILED', description: 'Cashfree not configured' },
         });
-        throw new AppError('Cashfree is not configured on the server.', 503);
+        const relatedKeys = Object.keys(process.env).filter(
+            (k) => k.toLowerCase().includes('cashfree') || k.toLowerCase().includes('cf_')
+        );
+        console.error('[Cashfree] Top-up failed: credentials not configured. Related env keys found on server:', relatedKeys);
+        throw new AppError(
+            'Cashfree is not configured on the server. Please verify CASHFREE_CLIENT_ID (or CASHFREE_APP_ID) and CASHFREE_CLIENT_SECRET (or CASHFREE_SECRET_KEY) in Render environment variables and ensure the backend service has restarted.',
+            503
+        );
     }
 
     const returnUrl = `${frontendBase()}/wallet?topup=return&order_id={order_id}`;

@@ -5,8 +5,37 @@
 
 const API_VERSION = process.env.CASHFREE_API_VERSION || '2023-08-01';
 
+function cleanEnv(val) {
+    if (!val) return '';
+    return String(val).trim().replace(/^["']|["']$/g, '');
+}
+
+export function getClientId() {
+    return cleanEnv(
+        process.env.CASHFREE_CLIENT_ID ||
+        process.env.CASHFREE_APP_ID ||
+        process.env.CF_CLIENT_ID ||
+        process.env.CF_APP_ID ||
+        process.env.CASHFREE_PG_APP_ID ||
+        process.env.CASHFREE_KEY_ID ||
+        process.env.CASHFREE_KEY
+    );
+}
+
+export function getClientSecret() {
+    return cleanEnv(
+        process.env.CASHFREE_CLIENT_SECRET ||
+        process.env.CASHFREE_SECRET_KEY ||
+        process.env.CF_CLIENT_SECRET ||
+        process.env.CF_SECRET_KEY ||
+        process.env.CASHFREE_PG_SECRET_KEY ||
+        process.env.CASHFREE_API_KEY ||
+        process.env.CASHFREE_SECRET
+    );
+}
+
 export function cashfreeConfigured() {
-    return Boolean(process.env.CASHFREE_CLIENT_ID && process.env.CASHFREE_CLIENT_SECRET);
+    return Boolean(getClientId() && getClientSecret());
 }
 
 export function cashfreeMockEnabled() {
@@ -17,8 +46,15 @@ export function cashfreeMockEnabled() {
 }
 
 export function cashfreeMode() {
-    const env = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
-    return env === 'production' || env === 'prod' ? 'production' : 'sandbox';
+    const raw = cleanEnv(process.env.CASHFREE_ENV || process.env.CF_ENV).toLowerCase();
+    if (raw === 'production' || raw === 'prod') return 'production';
+    if (raw === 'sandbox' || raw === 'test') return 'sandbox';
+    // If not explicitly set, auto-detect: sandbox keys in Cashfree typically start with TEST
+    const id = getClientId().toUpperCase();
+    if (id && !id.startsWith('TEST')) {
+        return 'production';
+    }
+    return 'sandbox';
 }
 
 function pgBaseUrl() {
@@ -37,8 +73,8 @@ function pgHeaders() {
     return {
         'Content-Type': 'application/json',
         'x-api-version': API_VERSION,
-        'x-client-id': process.env.CASHFREE_CLIENT_ID,
-        'x-client-secret': process.env.CASHFREE_CLIENT_SECRET,
+        'x-client-id': getClientId(),
+        'x-client-secret': getClientSecret(),
     };
 }
 
@@ -105,10 +141,30 @@ export async function getPgOrder(orderId) {
     return parseJson(res);
 }
 
+export function getPayoutClientId() {
+    return cleanEnv(
+        process.env.CASHFREE_PAYOUT_CLIENT_ID ||
+        process.env.CASHFREE_PAYOUT_APP_ID ||
+        process.env.CF_PAYOUT_CLIENT_ID ||
+        process.env.CF_PAYOUT_APP_ID ||
+        getClientId()
+    );
+}
+
+export function getPayoutClientSecret() {
+    return cleanEnv(
+        process.env.CASHFREE_PAYOUT_CLIENT_SECRET ||
+        process.env.CASHFREE_PAYOUT_SECRET_KEY ||
+        process.env.CF_PAYOUT_CLIENT_SECRET ||
+        process.env.CF_PAYOUT_SECRET_KEY ||
+        getClientSecret()
+    );
+}
+
 export function payoutsConfigured() {
     return Boolean(
-        process.env.CASHFREE_PAYOUT_CLIENT_ID
-        && process.env.CASHFREE_PAYOUT_CLIENT_SECRET
+        (process.env.CASHFREE_PAYOUT_CLIENT_ID || process.env.CASHFREE_PAYOUT_APP_ID || getClientId()) &&
+        (process.env.CASHFREE_PAYOUT_CLIENT_SECRET || process.env.CASHFREE_PAYOUT_SECRET_KEY || getClientSecret())
     );
 }
 
@@ -118,8 +174,8 @@ async function getPayoutToken() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Client-Id': process.env.CASHFREE_PAYOUT_CLIENT_ID,
-            'X-Client-Secret': process.env.CASHFREE_PAYOUT_CLIENT_SECRET,
+            'X-Client-Id': getPayoutClientId(),
+            'X-Client-Secret': getPayoutClientSecret(),
         },
     });
     const data = await parseJson(res);
