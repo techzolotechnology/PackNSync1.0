@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Component, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
@@ -96,6 +96,41 @@ function clearDraft() {
     }
 }
 
+class CreateTripErrorBoundary extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    componentDidCatch() {
+        clearDraft();
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="create-trip-page page-atmosphere page-enter">
+                    <div className="create-shell">
+                        <div className="create-panel create-error-state" role="alert">
+                            <h1 className="font-display">Let’s start this trip fresh.</h1>
+                            <p>Your saved draft was cleared because it contained invalid data. No trip was posted.</p>
+                            <button type="button" className="create-btn primary" onClick={() => window.location.reload()}>
+                                Start a new trip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
 const JOIN_OPTIONS = [
     {
         id: 'everyone',
@@ -157,7 +192,7 @@ function formatRange(start, end) {
     }
 }
 
-export default function CreateTripPage() {
+function CreateTripForm() {
     const navigate = useNavigate();
     const initial = useMemo(() => loadDraft(), []);
     const [step, setStep] = useState(() => initial?.step ?? 0);
@@ -600,5 +635,13 @@ export default function CreateTripPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function CreateTripPage() {
+    return (
+        <CreateTripErrorBoundary>
+            <CreateTripForm />
+        </CreateTripErrorBoundary>
     );
 }
