@@ -228,3 +228,9 @@
     resize: vertical;
     font: inherit;
 }
+
+.booking-fee {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+}

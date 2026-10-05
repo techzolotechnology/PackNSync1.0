@@ -3,6 +3,9 @@ import { AppError } from '../utils/AppError.js';
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
 import { publicFileUrl } from '../utils/publicUrl.js';
 import { getUserVerificationState } from '../utils/verificationHelpers.js';
+import { deleteUserAccount } from '../utils/deleteUser.js';
+import { clearCookies } from '../utils/jwt.js';
+import { ensureReferralCode, frontendBase, referralRewardAmount } from '../utils/referrals.js';
 
 const PROFILE_SELECT = {
     id: true,
@@ -115,7 +118,11 @@ export const updateUser = async (req, res) => {
         data.name = trimmed.slice(0, 60);
     }
     if (bio !== undefined) data.bio = emptyToNull(bio)?.slice(0, 280) || null;
-    if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
+    if (avatarUrl !== undefined) {
+        const url = emptyToNull(avatarUrl);
+        if (url && !/^https?:\/\//i.test(url) && !url.startsWith('/uploads/')) throw new AppError('Avatar must be an http(s) URL.', 400);
+        data.avatarUrl = url ? url.slice(0, 500) : null;
+    }
     if (city !== undefined) data.city = emptyToNull(city)?.slice(0, 80) || null;
     if (languages !== undefined) data.languages = parseList(languages);
     if (interests !== undefined) data.interests = parseList(interests);
@@ -175,14 +182,20 @@ export const deleteUser = async (req, res) => {
         throw new AppError('You can only delete your own account.', 403);
     }
 
-    await prisma.user.delete({ where: { id: req.params.id } });
+    await deleteUserAccount(req.params.id);
+    if (req.params.id === req.user.id) clearCookies(res);
     res.json({ success: true, message: 'Account deleted.' });
 };
 
 // GET /api/users/:id/trips — past & upcoming trips for a user
 export const getUserTrips = async (req, res) => {
+    const isOwn = req.user?.id === req.params.id || req.user?.role === 'ADMIN';
     const memberships = await prisma.tripMember.findMany({
-        where: { userId: req.params.id, status: 'APPROVED' },
+        where: {
+            userId: req.params.id,
+            status: 'APPROVED',
+            ...(isOwn ? {} : { trip: { isPublic: true } }),
+        },
         include: {
             trip: {
                 include: { organizer: { select: { id: true, name: true, avatarUrl: true } } },
@@ -193,4 +206,31 @@ export const getUserTrips = async (req, res) => {
 
     const trips = memberships.map((m) => m.trip);
     res.json({ success: true, data: trips });
+};
+
+// GET /api/users/me/referral — invite link + progress for the referral programme
+export const getMyReferral = async (req, res) => {
+    const code = await ensureReferralCode(req.user.id);
+    const [invited, rewarded] = await Promise.all([
+        prisma.user.count({ where: { referredById: req.user.id } }),
+        prisma.walletTransaction.count({
+            where: {
+                wallet: { userId: req.user.id },
+                type: 'ADJUST',
+                status: 'SUCCESS',
+                referenceId: { startsWith: 'referral_', endsWith: '_referrer' },
+            },
+        }),
+    ]);
+
+    res.json({
+        success: true,
+        data: {
+            code,
+            link: `${frontendBase()}/?ref=${code}`,
+            rewardAmount: referralRewardAmount(),
+            invited,
+            rewarded,
+        },
+    });
 };

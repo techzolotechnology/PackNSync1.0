@@ -128,9 +128,15 @@ export default function TripChat({ tripId, user, canChat, members = [] }) {
             toast.error(payload?.message || 'Chat error.');
         };
 
+        // A moderator removed a message: drop it from everyone's open chat.
+        const onDeleted = ({ id: deletedId, tripId: deletedTrip }) => {
+            if (deletedTrip === tripId) setMessages((prev) => prev.filter((m) => m.id !== deletedId));
+        };
+
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('new_message', onMessage);
+        socket.on('message_deleted', onDeleted);
         socket.on('user_typing', onTyping);
         socket.on('trip_presence', onPresence);
         socket.on('error', onError);
@@ -144,6 +150,7 @@ export default function TripChat({ tripId, user, canChat, members = [] }) {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('new_message', onMessage);
+            socket.off('message_deleted', onDeleted);
             socket.off('user_typing', onTyping);
             socket.off('trip_presence', onPresence);
             socket.off('error', onError);

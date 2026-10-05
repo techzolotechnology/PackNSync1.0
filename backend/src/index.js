@@ -26,6 +26,10 @@ import { rideRouter } from './routes/ride.routes.js';
 import { verificationRouter } from './routes/verification.routes.js';
 import { exploreRouter } from './routes/explore.routes.js';
 import { walletRouter } from './routes/wallet.routes.js';
+import { shareRouter } from './routes/share.routes.js';
+import { reportRouter } from './routes/report.routes.js';
+import { releaseDueEarnings } from './utils/hostEarnings.js';
+import { reconcileStuckTopups } from './controllers/wallet.controller.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { registerSocketHandlers } from './socket/index.js';
@@ -110,10 +114,17 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Body parsing
+// Stripe signs the exact raw bytes, so its webhook must skip JSON parsing.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// RC documents are identity documents: never serve them publicly.
+// Admins fetch them through GET /api/admin/rc-files/:filename.
+app.use('/uploads/rc', (_req, res) => res.status(404).end());
+// Report evidence is private too (GET /api/reports/evidence/:file).
+app.use('/uploads/reports', (_req, res) => res.status(404).end());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Logging
@@ -174,10 +185,39 @@ app.use('/api/rides', rideRouter);
 app.use('/api/verifications', verificationRouter);
 app.use('/api/explore', exploreRouter);
 app.use('/api/wallet', walletRouter);
+app.use('/api/reports', reportRouter);
+
+// Link-preview pages for shared trips (Open Graph for WhatsApp etc.)
+app.use('/share', shareRouter);
 
 // Error handling
 app.use(notFound);
 app.use(errorHandler);
+
+/**
+ * Background sweeps (every 15 min): pay out host earnings whose hold period
+ * has passed, and settle top-ups stuck in PENDING. Both are idempotent, so
+ * running them on several instances at once is safe.
+ */
+const SWEEP_MS = 15 * 60 * 1000;
+async function runSweeps() {
+    try {
+        const earnings = await releaseDueEarnings();
+        if (earnings.released) console.log(`[sweep] released ${earnings.released} host earning(s)`);
+    } catch (err) {
+        console.error('[sweep] earnings failed:', err.message || err);
+    }
+    try {
+        const topups = await reconcileStuckTopups();
+        if (topups.checked) console.log('[sweep] top-ups', topups);
+    } catch (err) {
+        console.error('[sweep] top-ups failed:', err.message || err);
+    }
+}
+if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_SWEEPS !== 'true') {
+    setTimeout(runSweeps, 60 * 1000).unref();
+    setInterval(runSweeps, SWEEP_MS).unref();
+}
 
 httpServer.listen(PORT, '0.0.0.0', () => {
   const lan = Object.values(os.networkInterfaces())

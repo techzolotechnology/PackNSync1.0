@@ -42,6 +42,12 @@ api.interceptors.response.use(
         const originalRequest = error.config;
         if (!originalRequest) return Promise.reject(error);
 
+        // Admin 2FA session missing/expired: tell the admin panel to ask for a code.
+        const mfaCode = error.response?.status === 403 ? error.response?.data?.code : null;
+        if ((mfaCode === 'MFA_REQUIRED' || mfaCode === 'MFA_SETUP_REQUIRED') && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('pns:admin-mfa', { detail: mfaCode }));
+        }
+
         const url = originalRequest.url || '';
         const isAuthRefresh = url.includes('/auth/refresh');
         const isAuthPublic = isAuthRefresh
@@ -125,12 +131,13 @@ export const tripsApi = {
     getAll: (params) => api.get('/trips', { params }),
     getMine: (params) => api.get('/trips/mine', { params }),
     getCoverSuggestions: (q) => api.get('/trips/cover-suggestions', { params: { q } }),
-    getById: (id) => api.get(`/trips/${id}`),
+    getById: (id, params) => api.get(`/trips/${id}`, { params }),
     getCarSuggestions: (id, params) => api.get(`/trips/${id}/car-suggestions`, { params }),
     create: (data) => api.post('/trips', data),
     update: (id, data) => api.put(`/trips/${id}`, data),
     delete: (id) => api.delete(`/trips/${id}`),
-    join: (id) => api.post(`/trips/${id}/join`),
+    join: (id, data = {}) => api.post(`/trips/${id}/join`, data),
+    createInvite: (id, data = {}) => api.post(`/trips/${id}/invite`, data),
     leave: (id) => api.post(`/trips/${id}/leave`),
     updateMember: (tripId, userId, data) => api.put(`/trips/${tripId}/members/${userId}`, data),
     createAnnouncement: (id, data) => api.post(`/trips/${id}/announcements`, data),
@@ -156,6 +163,7 @@ export const expensesApi = {
 
 export const usersApi = {
     getById: (id) => api.get(`/users/${id}`),
+    getReferral: () => api.get('/users/me/referral'),
     update: (id, data) => api.put(`/users/${id}`, data),
     delete: (id) => api.delete(`/users/${id}`),
     getTrips: (id) => api.get(`/users/${id}/trips`),
@@ -192,6 +200,7 @@ export const rentalsApi = {
     book: (data) => api.post('/rentals/bookings', data),
     getMyBookings: () => api.get('/rentals/bookings/my'),
     getHostBookings: () => api.get('/rentals/bookings/host'),
+    getMyEarnings: () => api.get('/rentals/earnings/my'),
     cancelBooking: (id) => api.patch(`/rentals/bookings/${id}/cancel`),
     respondToBooking: (id, status) => api.patch(`/rentals/bookings/${id}/respond`, { status }),
     payBooking: (id, data = { method: 'wallet' }) => api.post(`/rentals/bookings/${id}/pay`, data),
@@ -280,4 +289,61 @@ export const adminApi = {
     updateBookingStatus: (id, status) => api.patch(`/admin/rentals/bookings/${id}`, { status }),
     getPayments: (params) => api.get('/admin/payments', { params }),
     refundPayment: (id) => api.post(`/admin/payments/${id}/refund`),
+    getOverview: () => api.get('/admin/overview'),
+    getUserDetail: (id) => api.get(`/admin/users/${id}/detail`),
+    grantPromo: (id, amount, reason) => api.post(`/admin/users/${id}/promo`, { amount, reason }),
+    getWithdrawals: (status = 'PENDING') => api.get('/admin/wallet/withdrawals', { params: { status } }),
+    completeWithdrawal: (id, reference) => api.post(`/admin/wallet/withdrawals/${id}/complete`, { reference }),
+    rejectWithdrawal: (id, reason) => api.post(`/admin/wallet/withdrawals/${id}/reject`, { reason }),
+    getWalletTransactions: (params) => api.get('/admin/wallet/transactions', { params }),
+    getAudit: (params) => api.get('/admin/audit', { params }),
+    /** RC photos are admin-only files; fetch with auth and open as a blob. */
+    getRcFile: (path) => api.get(path.replace(/^\/api/, ''), { responseType: 'blob' }),
+    // Two-factor (Google Authenticator)
+    mfaStatus: () => api.get('/admin/2fa/status'),
+    mfaSetup: () => api.post('/admin/2fa/setup'),
+    mfaEnable: (code) => api.post('/admin/2fa/enable', { code }),
+    mfaVerify: (code) => api.post('/admin/2fa/verify', { code }),
+    mfaDisable: (code) => api.post('/admin/2fa/disable', { code }),
+    mfaBackupCodes: (code) => api.post('/admin/2fa/backup-codes', { code }),
+    resetUserMfa: (id) => api.post(`/admin/users/${id}/2fa/reset`),
+    // Host earnings & stuck top-ups
+    getEarnings: (status) => api.get('/admin/earnings', { params: { status: status || undefined } }),
+    releaseDueEarnings: () => api.post('/admin/earnings/release-due'),
+    releaseEarning: (id, note) => api.post(`/admin/earnings/${id}/release`, { note }),
+    holdEarning: (id, note) => api.post(`/admin/earnings/${id}/hold`, { note }),
+    getStuckTopups: () => api.get('/admin/wallet/stuck-topups'),
+    recheckTopup: (id) => api.post(`/admin/wallet/topups/${id}/recheck`),
+    recheckAllTopups: () => api.post('/admin/wallet/topups/recheck-all'),
+    // Reports & disputes
+    getReports: (params) => api.get('/admin/reports', { params }),
+    getReport: (id) => api.get(`/admin/reports/${id}`),
+    replyReport: (id, body) => api.post(`/admin/reports/${id}/messages`, { body }),
+    updateReport: (id, data) => api.patch(`/admin/reports/${id}`, data),
+    // Moderation
+    getTripChat: (tripId) => api.get(`/admin/trips/${tripId}/chat`),
+    deleteMessage: (id) => api.delete(`/admin/messages/${id}`),
+    deleteAnnouncement: (id) => api.delete(`/admin/announcements/${id}`),
+    editListing: (id, data) => api.patch(`/admin/rentals/listings/${id}/details`, data),
+    setVehicleImages: (id, images) => api.patch(`/admin/vehicles/${id}/images`, { images }),
+    // Broadcasts & search
+    previewBroadcast: (data) => api.post('/admin/broadcasts/preview', data),
+    sendBroadcast: (data) => api.post('/admin/broadcasts', data),
+    getBroadcasts: () => api.get('/admin/broadcasts'),
+    search: (q) => api.get('/admin/search', { params: { q } }),
+};
+
+export const reportsApi = {
+    options: () => api.get('/reports/options'),
+    mine: () => api.get('/reports/mine'),
+    get: (id) => api.get(`/reports/${id}`),
+    create: (data) => api.post('/reports', data),
+    reply: (id, body) => api.post(`/reports/${id}/messages`, { body }),
+    uploadEvidence: (file) => {
+        const form = new FormData();
+        form.append('image', file);
+        return api.post('/reports/evidence', form, { timeout: 60000 });
+    },
+    /** Evidence photos are private; fetch with auth as a blob. */
+    evidenceBlob: (url) => api.get(url.replace(/^\/api/, ''), { responseType: 'blob' }),
 };

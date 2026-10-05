@@ -1,0 +1,141 @@
+.host-calc {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.host-calc-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    background: var(--clr-bg-800);
+    padding: var(--space-1);
+    border-radius: var(--radius-full);
+}
+
+.host-calc-toggle button {
+    border: 0;
+    background: transparent;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: var(--clr-text-secondary);
+    cursor: pointer;
+}
+
+.host-calc-toggle button.active {
+    background: var(--clr-bg-600);
+    color: var(--clr-text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.host-calc-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    color: var(--clr-text-secondary);
+    font-size: 0.9rem;
+}
+
+.host-calc-field span {
+    display: flex;
+    justify-content: space-between;
+}
+
+.host-calc-field strong {
+    color: var(--clr-text-primary);
+}
+
+.host-calc-field input[type='range'] {
+    width: 100%;
+    accent-color: var(--clr-primary-500);
+}
+
+.host-calc-result {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--clr-border);
+}
+
+.host-calc-result span {
+    color: var(--clr-text-muted);
+    font-size: 0.85rem;
+}
+
+.host-calc-result strong {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--clr-text-primary);
+}
+
+.host-calc-result small {
+    color: var(--clr-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.host-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    padding: 0;
+    list-style: none;
+    counter-reset: host-step;
+}
+
+.host-steps li {
+    counter-increment: host-step;
+    background: var(--clr-bg-700);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+}
+
+.host-steps li::before {
+    content: counter(host-step);
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-full);
+    background: var(--clr-primary-500);
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+}
+
+.host-steps strong {
+    display: block;
+    color: var(--clr-text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.host-steps p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.host-faq {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.host-faq dt {
+    font-weight: 700;
+    color: var(--clr-text-primary);
+}
+
+.host-faq dd {
+    margin: var(--space-1) 0 0;
+}
+
+.host-final-cta {
+    text-align: center;
+}
+
+.host-final-cta .dst-actions {
+    justify-content: center;
+}

@@ -27,7 +27,18 @@ const statusMeta = (status, required) => {
 const overallMeta = (status) => {
     if (status?.isFullyVerified) return { label: 'KYC approved', tone: 'ok', hint: 'You’re cleared for rentals and hosting.' };
     if (status?.hasPendingKyc) return { label: 'Waiting on admin', tone: 'warn', hint: 'Documents received. An admin will approve shortly.' };
-    if (status?.hasRejectedKyc) return { label: 'Action needed', tone: 'bad', hint: 'Something was rejected — submit again via DigiLocker.' };
+    if (status?.hasRejectedKyc) {
+        const reasons = Object.values(status.latestByType || {})
+            .filter((v) => v?.status === 'REJECTED' && v.rejectionReason)
+            .map((v) => `${v.documentType}: ${v.rejectionReason}`);
+        return {
+            label: 'Action needed',
+            tone: 'bad',
+            hint: reasons.length
+                ? `Rejected — ${reasons.join('; ')}. Fix this and submit again.`
+                : 'Something was rejected — submit again via DigiLocker.',
+        };
+    }
     return { label: 'Not started', tone: 'mute', hint: 'Connect DigiLocker to submit Aadhaar and Driving License.' };
 };
 

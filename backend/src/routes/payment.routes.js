@@ -16,10 +16,14 @@ function getStripe() {
 // POST /api/payments/create-intent
 paymentRouter.post('/create-intent', authenticate, async (req, res) => {
     const { amount, currency = 'usd', tripId } = req.body;
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0 || value > 1000000) {
+        throw new AppError('Enter a valid amount.', 400);
+    }
     const stripe = getStripe();
 
     const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // in cents
+        amount: Math.round(value * 100), // in cents
         currency,
         metadata: { userId: req.user.id, tripId: tripId || '' },
     });
@@ -41,8 +45,11 @@ paymentRouter.post('/webhook', async (req, res) => {
 
     if (event.type === 'payment_intent.succeeded') {
         const intent = event.data.object;
-        await prisma.payment.create({
-            data: {
+        // upsert: Stripe retries webhooks, and a duplicate insert would 409 forever.
+        await prisma.payment.upsert({
+            where: { stripePaymentId: intent.id },
+            update: {},
+            create: {
                 userId: intent.metadata.userId,
                 tripId: intent.metadata.tripId || null,
                 stripePaymentId: intent.id,

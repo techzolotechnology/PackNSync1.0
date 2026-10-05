@@ -1,4 +1,14 @@
+import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma.js';
+
+function readCookie(header, name) {
+    if (!header) return null;
+    for (const part of String(header).split(';')) {
+        const [key, ...rest] = part.trim().split('=');
+        if (key === name) return decodeURIComponent(rest.join('='));
+    }
+    return null;
+}
 
 /** tripId -> Map(userId -> Set(socketId)) */
 const tripPresence = new Map();
@@ -73,10 +83,23 @@ async function getTripChatRecipientIds(tripId, excludeUserId) {
 
 export const registerSocketHandlers = (io) => {
     io.use(async (socket, next) => {
-        const userId = socket.handshake.auth?.userId;
-        if (!userId) return next(new Error('Unauthenticated'));
-        socket.userId = userId;
-        next();
+        // Identity comes only from a verified access token, never from a
+        // client-supplied user id.
+        const token = socket.handshake.auth?.token
+            || readCookie(socket.handshake.headers?.cookie, 'access_token');
+        if (!token) return next(new Error('Unauthenticated'));
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.sub },
+                select: { id: true, isBanned: true },
+            });
+            if (!user || user.isBanned) return next(new Error('Unauthenticated'));
+            socket.userId = user.id;
+            next();
+        } catch {
+            next(new Error('Unauthenticated'));
+        }
     });
 
     io.on('connection', (socket) => {
@@ -156,8 +179,25 @@ export const registerSocketHandlers = (io) => {
             });
         });
 
-        socket.on('vote', async ({ pollId, selectedOption, tripId }) => {
+        socket.on('vote', async ({ pollId, selectedOption } = {}) => {
             try {
+                const poll = pollId
+                    ? await prisma.poll.findUnique({ where: { id: pollId } })
+                    : null;
+                if (!poll || !poll.options.includes(selectedOption)) {
+                    socket.emit('error', { message: 'Invalid poll vote.' });
+                    return;
+                }
+                if (poll.endsAt && poll.endsAt < new Date()) {
+                    socket.emit('error', { message: 'This poll has closed.' });
+                    return;
+                }
+                const tripId = poll.tripId;
+                if (!(await canAccessTripChat(tripId, socket.userId))) {
+                    socket.emit('error', { message: 'Not allowed to vote in this trip.' });
+                    return;
+                }
+
                 await prisma.pollVote.upsert({
                     where: { pollId_userId: { pollId, userId: socket.userId } },
                     update: { selectedOption },

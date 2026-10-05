@@ -66,8 +66,10 @@ model User {
   email             String?   @unique
   phoneNumber       String?   @unique
   name              String
+  /// SHA-256 hash of the current OTP (never the plain code)
   otpCode           String?
   otpExpiresAt      DateTime?
+  otpAttempts       Int       @default(0)
   avatarUrl         String?
   bio               String?
   city              String?
@@ -77,6 +79,16 @@ model User {
   drivingYears      Int?
   travelStyle       String?
   role              Role      @default(USER)
+  /// Shareable code for the referral programme (generated on first use)
+  referralCode      String?   @unique
+  referredById      String?
+  /// Admin two-factor auth (Google Authenticator / any TOTP app)
+  totpSecret        String?
+  totpEnabled       Boolean   @default(false)
+  /// SHA-256 hashes of one-time backup codes
+  totpBackupCodes   String[]  @default([])
+  /// Last TOTP time-step accepted, so a code cannot be replayed
+  totpLastStep      Int?
   isBanned          Boolean   @default(false)
   banReason         String?
   refreshToken      String?
@@ -105,6 +117,14 @@ model User {
   driverReviewsGiven    DriverReview[] @relation("DriverReviewer")
   driverReviewsReceived DriverReview[] @relation("DriverReviewee")
   wallet                Wallet?
+  referredBy            User?          @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals             User[]         @relation("Referrals")
+  adminActions          AdminAuditLog[]
+  hostEarnings          HostEarning[]
+  reportsFiled          Report[]        @relation("ReportReporter")
+  reportsAssigned       Report[]        @relation("ReportAssignee")
+  reportMessages        ReportMessage[]
+  broadcasts            Broadcast[]
 
   @@map("users")
 }
@@ -135,8 +155,123 @@ model Trip {
   announcements    Announcement[]
   payments         Payment[]
   chatReads        TripChatRead[]
+  invite           TripInvite?
 
   @@map("trips")
+}
+
+/// Private invite link for a trip. Kept out of the Trip row so trip queries
+/// can never leak the code to non-organizers.
+model TripInvite {
+  id        String   @id @default(uuid())
+  tripId    String   @unique
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("trip_invites")
+}
+
+/// Who did what in the admin panel. Rows are kept when the admin account is deleted.
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String?
+  action     String   // e.g. USER_BAN, PAYMENT_REFUND, WITHDRAWAL_COMPLETE
+  targetType String   // USER | TRIP | BOOKING | PAYMENT | WITHDRAWAL | VERIFICATION | VEHICLE | LISTING
+  targetId   String?
+  summary    String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  admin User? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@map("admin_audit_logs")
+}
+
+/// Money owed to a host for a paid booking. Released to the host's wallet
+/// (withdrawable) once releaseAt passes, unless the booking is refunded.
+model HostEarning {
+  id          String    @id @default(uuid())
+  bookingId   String    @unique
+  hostId      String
+  amount      Float
+  platformFee Float     @default(0)
+  status      String    @default("PENDING") // PENDING | RELEASED | CANCELLED
+  releaseAt   DateTime
+  releasedAt  DateTime?
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  booking RentalBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  host    User          @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@index([status, releaseAt])
+  @@index([hostId, status])
+  @@map("host_earnings")
+}
+
+/// A customer report or dispute (safety, fraud, damage, payment …).
+model Report {
+  id              String    @id @default(uuid())
+  reporterId      String
+  category        String    // SAFETY | HARASSMENT | FRAUD | VEHICLE_DAMAGE | PAYMENT | LISTING_INACCURATE | OTHER
+  priority        String    @default("NORMAL") // HIGH | NORMAL
+  targetType      String    @default("OTHER") // USER | LISTING | TRIP | BOOKING | OTHER
+  targetId        String?
+  bookingId       String?
+  subject         String
+  description     String
+  evidence        String[]  @default([])
+  status          String    @default("OPEN") // OPEN | IN_REVIEW | RESOLVED | DISMISSED
+  resolution      String?
+  assignedAdminId String?
+  resolvedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  reporter      User            @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  assignedAdmin User?           @relation("ReportAssignee", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  booking       RentalBooking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  messages      ReportMessage[]
+
+  @@index([status, priority, createdAt])
+  @@index([reporterId, createdAt])
+  @@map("reports")
+}
+
+model ReportMessage {
+  id        String   @id @default(uuid())
+  reportId  String
+  authorId  String?
+  fromAdmin Boolean  @default(false)
+  body      String
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([reportId, createdAt])
+  @@map("report_messages")
+}
+
+/// Admin announcement sent to a segment of users (in-app notification).
+model Broadcast {
+  id         String   @id @default(uuid())
+  adminId    String?
+  title      String
+  body       String
+  audience   String   // ALL | HOSTS | ORGANIZERS | VERIFIED | CITY
+  city       String?
+  recipients Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  admin User? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@map("broadcasts")
 }
 
 model TripChatRead {
@@ -308,6 +443,8 @@ model Wallet {
   id        String   @id @default(uuid())
   userId    String   @unique
   balance   Float    @default(0)
+  /// Promotional credit (e.g. referral rewards): spendable on bookings, never withdrawable
+  promoBalance Float @default(0)
   currency  String   @default("INR")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -324,6 +461,7 @@ enum WalletTxType {
   REFUND
   WITHDRAW
   ADJUST
+  EARNING
 }
 
 enum WalletTxStatus {
@@ -384,6 +522,10 @@ model RentalListing {
   vehicleId       String
   hostId          String
   pricePerDay     Float
+  /// ISO 3166-1 alpha-2; markets are gated by RENTAL_COUNTRIES
+  country         String   @default("IN")
+  /// ISO 4217, derived from country
+  currency        String   @default("INR")
   location        String
   description     String?
   availableFrom   DateTime
@@ -396,6 +538,7 @@ model RentalListing {
   host            User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings        RentalBooking[]
 
+  @@index([country, isActive])
   @@map("rental_listings")
 }
 
@@ -405,7 +548,12 @@ model RentalBooking {
   renterId        String
   startDate       DateTime
   endDate         DateTime
+  /// What the renter pays: hostAmount + platformFee
   totalPrice      Float
+  /// Host's price for the dates (null on bookings made before commission)
+  hostAmount      Float?
+  /// PickAndSync commission added on top of the host's price
+  platformFee     Float    @default(0)
   status          String   @default("PENDING")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -413,6 +561,8 @@ model RentalBooking {
   listing         RentalListing @relation(fields: [listingId], references: [id])
   renter          User          @relation("Renter", fields: [renterId], references: [id])
   driverReview    DriverReview?
+  hostEarning     HostEarning?
+  reports         Report[]
 
   @@map("rental_bookings")
 }
@@ -461,6 +611,8 @@ model Verification {
   documentUrl     String?
   digiLockerId    String?
   status          String   @default("PENDING")
+  /// Shown to the user when an admin rejects the document
+  rejectionReason String?
   verifiedAt      DateTime?
   createdAt       DateTime @default(now())
 

@@ -30,21 +30,29 @@ vi.mock('axios', () => {
 });
 
 describe('Frontend API Mappings', () => {
-    it('should map authApi calls to correct endpoints', async () => {
+    it('should map authApi OTP calls to correct endpoints', async () => {
         const { default: api, authApi } = await import('./index.js');
-        const mockData = { email: 'test@example.com', password: 'password123' };
-        
         api.post = vi.fn().mockResolvedValue({ data: { success: true } });
-        
-        await authApi.login(mockData);
-        expect(api.post).toHaveBeenCalledWith('/auth/login', mockData);
+
+        await authApi.requestOtp({ contact: 'test@example.com' });
+        expect(api.post).toHaveBeenCalledWith('/auth/request-otp', { contact: 'test@example.com' }, expect.any(Object));
+
+        await authApi.verifyOtp({ contact: 'test@example.com', otpCode: '123456' });
+        expect(api.post).toHaveBeenCalledWith('/auth/verify-otp', { contact: 'test@example.com', otpCode: '123456' }, expect.any(Object));
     });
 
     it('should map tripsApi calls to correct endpoints', async () => {
         const { default: api, tripsApi } = await import('./index.js');
         api.get = vi.fn().mockResolvedValue({ data: [] });
-        
+        api.post = vi.fn().mockResolvedValue({ data: {} });
+
         await tripsApi.getById('trip_123');
-        expect(api.get).toHaveBeenCalledWith('/trips/trip_123');
+        expect(api.get).toHaveBeenCalledWith('/trips/trip_123', { params: undefined });
+
+        await tripsApi.getById('trip_123', { invite: 'CODE' });
+        expect(api.get).toHaveBeenCalledWith('/trips/trip_123', { params: { invite: 'CODE' } });
+
+        await tripsApi.join('trip_123', { inviteCode: 'CODE' });
+        expect(api.post).toHaveBeenCalledWith('/trips/trip_123/join', { inviteCode: 'CODE' });
     });
 });

@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
+import { logAdminAction } from '../utils/audit.js';
 
 // GET /api/admin/verifications
 export const listVerifications = async (req, res) => {
@@ -35,7 +36,7 @@ export const approveVerification = async (req, res) => {
 
     const updated = await prisma.verification.update({
         where: { id: verification.id },
-        data: { status: 'VERIFIED', verifiedAt: new Date() },
+        data: { status: 'VERIFIED', verifiedAt: new Date(), rejectionReason: null },
     });
 
     if (verification.documentType === 'RC' && verification.documentNumber) {
@@ -56,6 +57,11 @@ export const approveVerification = async (req, res) => {
         data: { verificationId: verification.id, documentType: verification.documentType },
     });
 
+    await logAdminAction(req, {
+        action: 'KYC_APPROVE', targetType: 'VERIFICATION', targetId: verification.id,
+        summary: `Approved ${verification.documentType} for ${verification.user?.name || verification.userId}`,
+    });
+
     res.json({ success: true, data: updated, message: 'Verification approved.' });
 };
 
@@ -70,7 +76,7 @@ export const rejectVerification = async (req, res) => {
         data: {
             status: 'REJECTED',
             verifiedAt: null,
-            documentUrl: reason ? `REJECTED: ${reason}` : verification.documentUrl,
+            rejectionReason: reason ? String(reason).slice(0, 300) : null,
         },
     });
 
@@ -92,6 +98,12 @@ export const rejectVerification = async (req, res) => {
             ? `Your ${verification.documentType} was rejected: ${reason}`
             : `Your ${verification.documentType} verification was rejected. Please resubmit.`,
         data: { verificationId: verification.id, documentType: verification.documentType, reason: reason || null },
+    });
+
+    await logAdminAction(req, {
+        action: 'KYC_REJECT', targetType: 'VERIFICATION', targetId: updated.id,
+        summary: `Rejected ${updated.documentType}${reason ? `: ${reason}` : ''}`,
+        metadata: { userId: updated.userId, reason: reason || null },
     });
 
     res.json({ success: true, data: updated, message: 'Verification rejected.' });
@@ -128,7 +140,7 @@ export const verifyVehicle = async (req, res) => {
         if (existing && existing.status !== 'VERIFIED') {
             await prisma.verification.update({
                 where: { id: existing.id },
-                data: { status: 'VERIFIED', verifiedAt: new Date() },
+                data: { status: 'VERIFIED', verifiedAt: new Date(), rejectionReason: null },
             });
         }
     }
@@ -139,6 +151,11 @@ export const verifyVehicle = async (req, res) => {
         title: 'Vehicle verified',
         body: `${vehicle.make} ${vehicle.model} (${vehicle.licensePlate}) is verified. You can list it for rent.`,
         data: { vehicleId: vehicle.id },
+    });
+
+    await logAdminAction(req, {
+        action: 'VEHICLE_VERIFY', targetType: 'VEHICLE', targetId: vehicle.id,
+        summary: `Verified ${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})`,
     });
 
     res.json({ success: true, data: updated });
@@ -172,7 +189,7 @@ export const rejectVehicle = async (req, res) => {
                 data: {
                     status: 'REJECTED',
                     verifiedAt: null,
-                    documentUrl: reason ? `REJECTED: ${reason}` : existing.documentUrl,
+                    rejectionReason: reason ? String(reason).slice(0, 300) : null,
                 },
             });
         }
@@ -186,6 +203,11 @@ export const rejectVehicle = async (req, res) => {
             ? `${vehicle.make} ${vehicle.model} was rejected: ${reason}`
             : `${vehicle.make} ${vehicle.model} RC was rejected. Listings were deactivated.`,
         data: { vehicleId: vehicle.id, reason: reason || null },
+    });
+
+    await logAdminAction(req, {
+        action: 'VEHICLE_REJECT', targetType: 'VEHICLE', targetId: vehicle.id,
+        summary: `Rejected ${vehicle.make} ${vehicle.model} (${vehicle.licensePlate})${reason ? `: ${reason}` : ''}`,
     });
 
     res.json({ success: true, data: updated, message: 'Vehicle rejected and listings deactivated.' });

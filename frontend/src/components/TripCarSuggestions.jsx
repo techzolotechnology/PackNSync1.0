@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { rentalsApi, tripsApi } from '../api/index.js';
 import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
+import { formatMoney } from '../config/markets.js';
 import './TripCarSuggestions.css';
 
 const FALLBACK = STOCK.carHero;
@@ -121,12 +122,12 @@ export default function TripCarSuggestions({
                                     </ul>
                                     <div className="trip-car-foot">
                                         <strong>
-                                            ₹{Number(listing.pricePerDay).toLocaleString()}
+                                            {formatMoney(listing.pricePerDay, listing.currency)}
                                             <span>/day</span>
                                         </strong>
                                         {listing.estimatedTotal != null && (
                                             <span className="trip-car-total">
-                                                ~₹{Number(listing.estimatedTotal).toLocaleString()} trip
+                                                ~{formatMoney(listing.estimatedTotal, listing.currency)} trip
                                             </span>
                                         )}
                                     </div>

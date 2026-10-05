@@ -1,0 +1,546 @@
+/* Styles for the 2FA gate, reports queue, earnings, moderation, broadcast and search. */
+
+/* ---------- Overview queue: more cards now ---------- */
+.adm-queue-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.adm-queue-card.is-urgent {
+    border-left-color: var(--clr-danger);
+}
+
+.adm-queue-card.is-urgent .adm-queue-note {
+    color: var(--clr-danger);
+}
+
+.adm-kpis {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* ---------- Global search ---------- */
+.adm-search {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+    margin-left: auto;
+}
+
+.adm-search input {
+    width: 100%;
+}
+
+.adm-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+}
+
+.adm-search-results h4 {
+    margin: 0.5rem 0.5rem 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.adm-search-results button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.adm-search-results button:hover,
+.adm-search-results button:focus-visible {
+    background: var(--clr-bg-800);
+}
+
+.adm-search-results strong {
+    font-size: 0.88rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-search-results small {
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+    overflow-wrap: anywhere;
+}
+
+/* ---------- 2FA gate ---------- */
+.adm-mfa-wrap {
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+
+.adm-mfa-card {
+    width: min(460px, 100%);
+    padding: 1.75rem;
+    border-radius: 1.15rem;
+    border: 1px solid var(--clr-border);
+    background: #ffffff;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.adm-mfa-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-mfa-card p,
+.adm-mfa-steps {
+    color: var(--clr-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.adm-mfa-steps {
+    padding-left: 1.2rem;
+    margin: 0;
+}
+
+.adm-mfa-qr {
+    align-self: center;
+    width: 200px;
+    height: 200px;
+    image-rendering: pixelated;
+    border-radius: 0.5rem;
+    border: 1px solid var(--clr-border);
+}
+
+.adm-mfa-key code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    background: var(--clr-bg-800);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.35rem;
+    overflow-wrap: anywhere;
+}
+
+.adm-mfa-applink {
+    font-size: 0.85rem;
+    color: var(--clr-primary-600);
+    font-weight: 600;
+}
+
+.adm-mfa-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.adm-mfa-form input {
+    flex: 1;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    text-align: center;
+}
+
+.adm-mfa-codes {
+    list-style: none;
+    padding: 0.75rem;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.35rem 1rem;
+    border-radius: 0.6rem;
+    background: var(--clr-bg-800);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+}
+
+.adm-mfa-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* ---------- Security panel ---------- */
+.adm-security {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-bg-800);
+}
+
+.adm-security h3 {
+    font-size: 0.95rem;
+    color: var(--clr-text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.adm-security p {
+    font-size: 0.85rem;
+    color: var(--clr-text-secondary);
+    max-width: 640px;
+}
+
+.adm-security p.adm-security-warn {
+    color: var(--clr-danger);
+    font-weight: 600;
+}
+
+.adm-security-codes {
+    flex-basis: 100%;
+}
+
+/* ---------- Reports ---------- */
+.adm-reports-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.adm-report-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 72vh;
+    overflow-y: auto;
+}
+
+.adm-report-item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--clr-border);
+    border-radius: 0.8rem;
+    background: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.adm-report-item.is-active {
+    border-color: var(--clr-primary-500);
+    box-shadow: 0 0 0 1px var(--clr-primary-500);
+}
+
+.adm-report-item strong {
+    color: var(--clr-text-primary);
+    font-size: 0.9rem;
+}
+
+.adm-report-item small {
+    color: var(--clr-text-muted);
+    font-size: 0.75rem;
+}
+
+.adm-report-detail {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--clr-border);
+    border-radius: 0.9rem;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.adm-report-empty {
+    min-height: 160px;
+    align-items: center;
+    justify-content: center;
+}
+
+.adm-report-head h3 {
+    font-size: 1.1rem;
+    margin: 0.4rem 0 0.2rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-report-head p {
+    font-size: 0.82rem;
+    color: var(--clr-text-secondary);
+}
+
+.adm-report-box {
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.7rem;
+    background: var(--clr-bg-800);
+    font-size: 0.85rem;
+    color: var(--clr-text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.adm-report-box small {
+    color: var(--clr-text-muted);
+}
+
+.adm-report-people,
+.adm-report-money {
+    color: var(--clr-text-secondary);
+}
+
+.adm-report-thread {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.adm-report-thread li {
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.7rem;
+    border: 1px solid var(--clr-border);
+    max-width: 90%;
+}
+
+.adm-report-thread li.is-admin {
+    align-self: flex-end;
+    background: #eaf3ff;
+    border-color: transparent;
+}
+
+.adm-report-thread strong {
+    font-size: 0.75rem;
+    color: var(--clr-text-secondary);
+}
+
+.adm-report-thread p {
+    margin: 0.15rem 0;
+    white-space: pre-wrap;
+    font-size: 0.88rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-report-thread time {
+    font-size: 0.7rem;
+    color: var(--clr-text-muted);
+}
+
+.adm-report-reply {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.adm-report-reply textarea {
+    width: 100%;
+}
+
+/* ---------- Money strip ---------- */
+.adm-money-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.adm-money-strip > div {
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.8rem;
+    background: var(--clr-bg-800);
+}
+
+.adm-money-strip span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.adm-money-strip strong {
+    display: block;
+    font-size: 1.25rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-money-strip em {
+    font-style: normal;
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+}
+
+/* ---------- Modals & edit forms ---------- */
+.adm-modal-backdrop {
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.adm-modal {
+    width: min(640px, 100%);
+    max-height: 88vh;
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.adm-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.adm-edit-form label > span,
+.adm-edit-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    margin-bottom: 0.3rem;
+}
+
+.adm-edit-form label small {
+    font-weight: 400;
+    color: var(--clr-text-muted);
+}
+
+.adm-edit-form input,
+.adm-edit-form textarea {
+    width: 100%;
+}
+
+.adm-edit-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.adm-edit-photo {
+    position: relative;
+    width: 110px;
+    height: 80px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--clr-border);
+}
+
+.adm-edit-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.adm-edit-photo button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* ---------- Broadcast ---------- */
+.adm-broadcast {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.adm-audience {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0.5rem;
+}
+
+.adm-audience legend {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    margin-bottom: 0.4rem;
+}
+
+.adm-audience label {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--clr-border);
+    border-radius: 0.7rem;
+    cursor: pointer;
+    background: #ffffff;
+}
+
+.adm-audience label.is-selected {
+    border-color: var(--clr-primary-500);
+    box-shadow: 0 0 0 1px var(--clr-primary-500);
+}
+
+.adm-audience label:focus-within {
+    outline: 2px solid var(--clr-primary-500);
+    outline-offset: 2px;
+}
+
+.adm-audience input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.adm-audience strong {
+    font-size: 0.88rem;
+    color: var(--clr-text-primary);
+}
+
+.adm-audience small {
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+}
+
+.adm-subhead {
+    font-size: 0.95rem;
+    color: var(--clr-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+    .adm-reports-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .adm-search {
+        max-width: none;
+        flex-basis: 100%;
+    }
+}

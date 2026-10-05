@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { tripsApi, expensesApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
@@ -10,6 +10,22 @@ import TripCarSuggestions from '../components/TripCarSuggestions.jsx';
 import TripChat from '../components/TripChat.jsx';
 import { useChatUnreadStore } from '../store/chatUnreadStore.js';
 import { displayName } from '../utils/displayName.js';
+import useSeo from '../hooks/useSeo.js';
+import { mediaUrl } from '../utils/mediaUrl.js';
+import { useAuthUiStore } from '../store/authUiStore.js';
+import { BACKEND_ORIGIN } from '../config/backend.js';
+import { copyLink, shareLink } from '../utils/share.js';
+
+const PENDING_JOIN_KEY = 'pns.pendingJoin';
+
+/** Same rules the server applies; a valid invite also upgrades a pending request. */
+function computeCanJoin(trip, myMembership, userId) {
+    if (!trip || userId === trip.organizerId) return false;
+    const statusOk = !myMembership
+        || ['REJECTED', 'LEFT'].includes(myMembership.status)
+        || (trip.viaInvite && myMembership.status === 'PENDING');
+    return statusOk && ['OPEN', 'DRAFT'].includes(trip.status);
+}
 import './TripDetailPage.css';
 
 const STATUS_BADGE = {
@@ -45,7 +61,11 @@ const emptyEditForm = {
 
 export default function TripDetailPage() {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const inviteCode = searchParams.get('invite') || null;
     const { user } = useAuthStore();
+    const openAuth = useAuthUiStore((s) => s.openAuth);
+    const [sharing, setSharing] = useState(false);
     const chatUnreadForTrip = useChatUnreadStore((s) => s.byTrip[id] || 0);
     const navigate = useNavigate();
     const [trip, setTrip] = useState(null);
@@ -58,13 +78,21 @@ export default function TripDetailPage() {
     const [expenseForm, setExpenseForm] = useState({ title: '', amount: '', category: 'OTHER' });
     const [savingExpense, setSavingExpense] = useState(false);
     const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', isPinned: false });
+
+    useSeo(trip ? {
+        title: `${trip.title} – Group Trip to ${trip.destination} | PickAndSync`,
+        description: (trip.description?.trim()
+            || `Join a group trip to ${trip.destination}. Plan the itinerary, chat and split costs with fellow travellers on PickAndSync.`).slice(0, 160),
+        image: trip.coverImageUrl ? mediaUrl(trip.coverImageUrl) : undefined,
+        noindex: !trip.isPublic,
+    } : {});
     const [savingAnnouncement, setSavingAnnouncement] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState(emptyEditForm);
     const [savingTrip, setSavingTrip] = useState(false);
 
     const refreshTrip = async () => {
-        const res = await tripsApi.getById(id);
+        const res = await tripsApi.getById(id, inviteCode ? { invite: inviteCode } : undefined);
         setTrip(res.data.data);
         return res.data.data;
     };
@@ -124,6 +152,53 @@ export default function TripDetailPage() {
         [trip, user]
     );
 
+    // Finish a join that started before the visitor signed in.
+    useEffect(() => {
+        if (!user || !trip) return;
+        let pending = null;
+        try {
+            pending = JSON.parse(sessionStorage.getItem(PENDING_JOIN_KEY) || 'null');
+        } catch { /* ignore */ }
+        if (pending?.tripId !== id) return;
+        sessionStorage.removeItem(PENDING_JOIN_KEY);
+        if (computeCanJoin(trip, myMembership, user.id)) handleJoin();
+    }, [user, trip]);
+
+    const handleShare = async () => {
+        if (!trip) return;
+        setSharing(true);
+        try {
+            if (user?.id === trip.organizerId) {
+                const res = await tripsApi.createInvite(id);
+                await shareLink({
+                    title: trip.title,
+                    text: `Join my trip "${trip.title}" to ${trip.destination} on PickAndSync — tap to join:`,
+                    url: res.data.data.shareUrl,
+                });
+            } else {
+                await shareLink({
+                    title: trip.title,
+                    text: `Check out this trip to ${trip.destination} on PickAndSync:`,
+                    url: `${BACKEND_ORIGIN}/share/trips/${id}`,
+                });
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not create the share link.');
+        } finally {
+            setSharing(false);
+        }
+    };
+
+    const handleCopyInvite = async (regenerate = false) => {
+        if (regenerate && !window.confirm('Reset the invite link? The old link will stop working.')) return;
+        try {
+            const res = await tripsApi.createInvite(id, regenerate ? { regenerate: true } : {});
+            await copyLink(res.data.data.url, regenerate ? 'New invite link copied' : 'Invite link copied');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Could not create the invite link.');
+        }
+    };
+
     const nameById = useMemo(() => {
         const map = {};
         trip?.members?.forEach((m) => {
@@ -136,12 +211,32 @@ export default function TripDetailPage() {
     }, [trip, user?.id]);
 
     const handleJoin = async () => {
-        if (!user) return navigate('/login');
+        if (!user) {
+            // Sign in without leaving the trip; the join continues after login.
+            try {
+                sessionStorage.setItem(PENDING_JOIN_KEY, JSON.stringify({ tripId: id }));
+            } catch { /* storage blocked */ }
+            openAuth(trip?.viaInvite ? 'register' : 'login');
+            return;
+        }
         setIsJoining(true);
         try {
-            await tripsApi.join(id);
-            toast.success('Join request sent! Waiting for organizer approval.');
-            await refreshTrip();
+            const res = await tripsApi.join(id, trip?.viaInvite && inviteCode ? { inviteCode } : {});
+            const fresh = await refreshTrip();
+            if (res.data?.approved) {
+                toast.success("You're in! Say hi in the trip chat.");
+                const me = fresh?.members?.find((m) => m.userId === user.id);
+                if (me && !me.user?.isVerified) {
+                    toast((t) => (
+                        <span>
+                            Verify your ID so the group sees you as ✓ Verified.{' '}
+                            <Link to="/verify" onClick={() => toast.dismiss(t.id)}>Verify now</Link>
+                        </span>
+                    ), { duration: 8000, id: 'verify-after-invite' });
+                }
+            } else {
+                toast.success('Join request sent! Waiting for organizer approval.');
+            }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to join trip.');
         } finally {
@@ -352,9 +447,9 @@ export default function TripDetailPage() {
     const isOrganizer = user?.id === trip.organizerId;
     const isApprovedMember = myMembership?.status === 'APPROVED' || isOrganizer;
     const canManageExpenses = isApprovedMember;
-    const canJoin = !isOrganizer
-        && (!myMembership || ['REJECTED', 'LEFT'].includes(myMembership.status))
-        && ['OPEN', 'DRAFT'].includes(trip.status);
+    const canJoin = computeCanJoin(trip, myMembership, user?.id);
+    const canShare = trip.isPublic || isOrganizer;
+    const joinedUnverified = myMembership?.status === 'APPROVED' && !isOrganizer && myMembership.user?.isVerified === false;
     const canLeave = !isOrganizer
         && myMembership
         && ['PENDING', 'APPROVED'].includes(myMembership.status);
@@ -377,9 +472,12 @@ export default function TripDetailPage() {
         }
     };
 
+    const joinLabel = trip.viaInvite
+        ? (user ? 'Join this trip' : 'Sign up to join')
+        : (user ? 'Join this trip' : 'Log in to join');
     const joinButton = canJoin && (
         <button className="btn btn-primary w-full join-trip-btn" onClick={handleJoin} disabled={isJoining}>
-            {isJoining ? 'Sending request…' : (user ? 'Join this trip' : 'Log in to join')}
+            {isJoining ? 'Joining…' : joinLabel}
         </button>
     );
 
@@ -440,7 +538,9 @@ export default function TripDetailPage() {
                         )}
                         {!user && canJoin && (
                             <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-                                Create an account or log in, then request to join this trip.
+                                {trip.viaInvite
+                                    ? "You've been invited — sign up with your email and you're in."
+                                    : 'Create an account or log in, then request to join this trip.'}
                             </p>
                         )}
                         {isOrganizer && (
@@ -464,12 +564,56 @@ export default function TripDetailPage() {
                             <span className="badge badge-success">You're in this trip</span>
                         )}
                         {isOrganizer && <span className="badge badge-success">You're the organizer</span>}
+                        {user && !isOrganizer && (
+                            <Link to={`/reports/new?targetType=TRIP&targetId=${trip.id}`} className="trip-report-link">
+                                Report this trip
+                            </Link>
+                        )}
                         {isOrganizer && (
                             <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
                                 Changes to price, dates, or member limit notify approved members.
                             </p>
                         )}
                     </div>
+
+                    {joinedUnverified && (
+                        <div className="card sidebar-card">
+                            <h3>Verify your ID</h3>
+                            <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                                You joined with an invite link. Verify once so the group sees you as ✓ Verified — it's also needed to rent cars.
+                            </p>
+                            <Link to="/verify" className="btn btn-ghost w-full">Verify now</Link>
+                        </div>
+                    )}
+
+                    {canShare && (
+                        <div className="card sidebar-card">
+                            <h3>{isOrganizer ? 'Invite friends' : 'Share this trip'}</h3>
+                            <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                                {isOrganizer
+                                    ? 'Friends with your invite link join instantly — no approval needed.'
+                                    : 'Know someone who would love this trip? Send it on WhatsApp.'}
+                            </p>
+                            <button type="button" className="btn btn-primary w-full" onClick={handleShare} disabled={sharing}>
+                                {sharing ? 'Opening…' : 'Share on WhatsApp'}
+                            </button>
+                            {isOrganizer && (
+                                <>
+                                    <button type="button" className="btn btn-ghost w-full" onClick={() => handleCopyInvite(false)}>
+                                        Copy invite link
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-ghost w-full"
+                                        style={{ fontSize: '0.8rem' }}
+                                        onClick={() => handleCopyInvite(true)}
+                                    >
+                                        Reset invite link
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
 
                     {isOrganizer && pendingMembers.length > 0 && (
                         <div className="card sidebar-card">
@@ -690,13 +834,15 @@ export default function TripDetailPage() {
                             {canJoin && (
                                 <div className="join-banner card">
                                     <div>
-                                        <strong>Want to travel together?</strong>
+                                        <strong>{trip.viaInvite ? "You're invited!" : 'Want to travel together?'}</strong>
                                         <p className="text-muted" style={{ margin: '0.35rem 0 0' }}>
-                                            Request to join — the organizer will approve you, then you can split shared costs.
+                                            {trip.viaInvite
+                                                ? 'Join instantly with your invite, then plan, chat and split costs with the group.'
+                                                : 'Request to join — the organizer will approve you, then you can split shared costs.'}
                                         </p>
                                     </div>
                                     <button className="btn btn-primary join-trip-btn" onClick={handleJoin} disabled={isJoining}>
-                                        {isJoining ? 'Sending request…' : (user ? 'Join this trip' : 'Log in to join')}
+                                        {isJoining ? 'Joining…' : joinLabel}
                                     </button>
                                 </div>
                             )}

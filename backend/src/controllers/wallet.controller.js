@@ -43,6 +43,8 @@ export const getWallet = async (req, res) => {
         data: {
             id: wallet.id,
             balance: wallet.balance,
+            // Spendable on bookings, not withdrawable
+            promoBalance: wallet.promoBalance || 0,
             currency: wallet.currency,
             cashfreeConfigured: cashfreeConfigured(),
             cashfreeMode: cashfreeMode(),
@@ -141,7 +143,7 @@ export const createTopup = async (req, res) => {
 
     const user = await prisma.user.findUnique({
         where: { id: req.user.id },
-        select: { id: true, name: true, email: true, phone: true },
+        select: { id: true, name: true, email: true, phoneNumber: true },
     });
 
     try {
@@ -149,7 +151,7 @@ export const createTopup = async (req, res) => {
             orderId,
             amount,
             customerId: user.id,
-            customerPhone: user.phone,
+            customerPhone: user.phoneNumber,
             customerEmail: user.email,
             customerName: user.name,
             returnUrl,
@@ -188,7 +190,7 @@ export const createTopup = async (req, res) => {
     }
 };
 
-async function settleTopupIfPaid(orderId, userIdHint) {
+export async function settleTopupIfPaid(orderId, userIdHint) {
     const pending = await prisma.walletTransaction.findFirst({
         where: { referenceId: orderId, type: 'TOPUP' },
         include: { wallet: true },
@@ -431,7 +433,6 @@ export const withdraw = async (req, res) => {
         });
     } catch (err) {
         await refundDebit({ txId: transaction.id, reason: `Payout failed: ${err.message}` });
-        const restored = await getOrCreateWallet(req.user.id);
         throw new AppError(err.message || 'Withdrawal failed. Amount returned to wallet.', 502);
     }
 };
@@ -462,3 +463,63 @@ export const spendFromWallet = async (req, res) => {
         },
     });
 };
+
+const STALE_TOPUP_MS = 3 * 24 * 3600 * 1000;
+
+/**
+ * Re-check one PENDING top-up with Cashfree and settle it either way:
+ * PAID → credit the wallet; expired/terminated (or abandoned for 3+ days) →
+ * mark FAILED/CANCELLED so it stops showing as pending.
+ * Returns { outcome: 'credited' | 'failed' | 'cancelled' | 'still_pending' | 'not_pending' }.
+ */
+export async function reconcileTopup(txId) {
+    const tx = await prisma.walletTransaction.findUnique({ where: { id: txId } });
+    if (!tx || tx.type !== 'TOPUP') throw new AppError('Top-up not found.', 404);
+    if (tx.status !== 'PENDING') return { outcome: 'not_pending', status: tx.status };
+
+    const age = Date.now() - new Date(tx.createdAt).getTime();
+    const close = async (status, reason) => {
+        const done = await prisma.walletTransaction.updateMany({
+            where: { id: tx.id, status: 'PENDING' },
+            data: { status, description: reason },
+        });
+        return { outcome: done.count ? status.toLowerCase() : 'not_pending' };
+    };
+
+    if (!cashfreeConfigured()) {
+        return age > STALE_TOPUP_MS ? close('CANCELLED', 'Abandoned top-up (payment gateway not configured)') : { outcome: 'still_pending' };
+    }
+
+    const order = await getPgOrder(tx.referenceId);
+    const status = String(order?.order_status || '').toUpperCase();
+    if (status === 'PAID') {
+        const result = await settleTopupIfPaid(tx.referenceId);
+        return { outcome: result.ok ? 'credited' : 'still_pending' };
+    }
+    if (['EXPIRED', 'TERMINATED', 'TERMINATION_REQUESTED', 'CANCELLED'].includes(status)) {
+        return close('FAILED', `Cashfree order ${status.toLowerCase()} — no money was taken`);
+    }
+    if (age > STALE_TOPUP_MS) return close('CANCELLED', 'Abandoned top-up (unpaid for 3 days)');
+    return { outcome: 'still_pending', gatewayStatus: status };
+}
+
+/** Sweep: re-check PENDING top-ups older than 30 minutes (oldest first). */
+export async function reconcileStuckTopups({ limit = 20 } = {}) {
+    const stuck = await prisma.walletTransaction.findMany({
+        where: { type: 'TOPUP', status: 'PENDING', createdAt: { lte: new Date(Date.now() - 30 * 60 * 1000) } },
+        select: { id: true },
+        orderBy: { createdAt: 'asc' },
+        take: limit,
+    });
+    const counts = {};
+    for (const { id } of stuck) {
+        try {
+            const { outcome } = await reconcileTopup(id);
+            counts[outcome] = (counts[outcome] || 0) + 1;
+        } catch (err) {
+            counts.error = (counts.error || 0) + 1;
+            console.error('[topups] reconcile failed', id, err.message);
+        }
+    }
+    return { checked: stuck.length, ...counts };
+}

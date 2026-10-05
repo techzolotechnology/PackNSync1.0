@@ -1,12 +1,28 @@
 import jwt from 'jsonwebtoken';
+import { createHash, randomInt, timingSafeEqual } from 'crypto';
 import { prisma } from '../utils/prisma.js';
 import { signAccessToken, signRefreshToken, setCookies, clearCookies } from '../utils/jwt.js';
 import { AppError } from '../utils/AppError.js';
 import { normalizeContact, deliverOtp } from '../utils/otpDelivery.js';
+import { findReferrerId } from '../utils/referrals.js';
+
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+const hashOtp = (email, code) =>
+    createHash('sha256').update(`${email}:${String(code).trim()}`).digest('hex');
+
+const otpMatches = (email, code, storedHash) => {
+    if (!storedHash || !code) return false;
+    const a = Buffer.from(hashOtp(email, code), 'hex');
+    const b = Buffer.from(String(storedHash), 'hex');
+    return a.length === b.length && timingSafeEqual(a, b);
+};
 
 // POST /api/auth/request-otp
 export const requestOtp = async (req, res) => {
-    const { contact, name, isRegister } = req.body;
+    const { contact, name, isRegister, referralCode } = req.body;
     if (!contact) throw new AppError('Email address is required.', 400);
 
     const { value: email } = normalizeContact(contact);
@@ -14,7 +30,10 @@ export const requestOtp = async (req, res) => {
 
     let user = await prisma.user.findUnique({ where: query });
 
-    if (isRegister && user) {
+    // A registration that was started but never verified (code still pending,
+    // never signed in) is a resend, not a duplicate account.
+    const pendingRegistration = Boolean(user && user.otpCode && !user.refreshToken);
+    if (isRegister && user && !pendingRegistration) {
         throw new AppError('Account already exists. Please log in.', 409);
     }
     if (!isRegister && !user) {
@@ -24,18 +43,33 @@ export const requestOtp = async (req, res) => {
         throw new AppError('Name is required for registration.', 400);
     }
 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = new Date(Date.now() + 10 * 60000);
+    // Throttle resends per account (the previous code was issued at expiry - TTL).
+    if (user?.otpExpiresAt) {
+        const issuedAt = user.otpExpiresAt.getTime() - OTP_TTL_MS;
+        if (Date.now() - issuedAt < OTP_RESEND_COOLDOWN_MS) {
+            throw new AppError('Please wait a minute before requesting another code.', 429);
+        }
+    }
+
+    const otpCode = randomInt(100000, 1000000).toString();
+    const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+    const otpFields = { otpCode: hashOtp(email, otpCode), otpExpiresAt, otpAttempts: 0 };
     const channel = await deliverOtp({ contact: email, otpCode });
 
-    if (isRegister) {
+    if (isRegister && !user) {
+        const referredById = referralCode ? await findReferrerId(referralCode) : null;
         user = await prisma.user.create({
-            data: { email, name: name.trim(), otpCode, otpExpiresAt },
+            data: {
+                email,
+                name: name.trim().slice(0, 60),
+                ...otpFields,
+                ...(referredById ? { referredById } : {}),
+            },
         });
     } else {
         user = await prisma.user.update({
             where: { id: user.id },
-            data: { otpCode, otpExpiresAt },
+            data: otpFields,
         });
     }
 
@@ -65,14 +99,33 @@ export const verifyOtp = async (req, res) => {
         );
     }
 
-    if (user.otpCode !== otpCode || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+    if (!user.otpCode || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
         throw new AppError('Invalid or expired OTP.', 401);
     }
 
-    await prisma.user.update({
-        where: { id: user.id },
-        data: { otpCode: null, otpExpiresAt: null },
+    if (!otpMatches(email, otpCode, user.otpCode)) {
+        // Count the failure atomically; burn the code after too many tries.
+        const updated = await prisma.user.update({
+            where: { id: user.id },
+            data: { otpAttempts: { increment: 1 } },
+            select: { otpAttempts: true },
+        });
+        if (updated.otpAttempts >= OTP_MAX_ATTEMPTS) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { otpCode: null, otpExpiresAt: null, otpAttempts: 0 },
+            });
+            throw new AppError('Too many incorrect attempts. Request a new code.', 429);
+        }
+        throw new AppError('Invalid or expired OTP.', 401);
+    }
+
+    // Consume the code exactly once, even if two verify requests race.
+    const consumed = await prisma.user.updateMany({
+        where: { id: user.id, otpCode: user.otpCode },
+        data: { otpCode: null, otpExpiresAt: null, otpAttempts: 0 },
     });
+    if (consumed.count === 0) throw new AppError('Invalid or expired OTP.', 401);
 
     const accessToken = signAccessToken(user.id);
     const refreshToken = signRefreshToken(user.id);
@@ -80,7 +133,7 @@ export const verifyOtp = async (req, res) => {
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
     setCookies(res, accessToken, refreshToken);
 
-    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, ...safeUser } = user;
+    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = user;
     res.json({ success: true, user: safeUser, accessToken, refreshToken });
 };
 
@@ -118,8 +171,10 @@ export const refreshAccessToken = async (req, res) => {
         );
     }
 
-    const accessToken = signAccessToken(user.id);
-    const newRefreshToken = signRefreshToken(user.id);
+    // Keep an admin's two-factor session across refreshes (it expires on its own).
+    const claims = decoded.mfaAt ? { mfaAt: decoded.mfaAt } : {};
+    const accessToken = signAccessToken(user.id, claims);
+    const newRefreshToken = signRefreshToken(user.id, claims);
 
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: newRefreshToken } });
     setCookies(res, accessToken, newRefreshToken);
@@ -129,6 +184,6 @@ export const refreshAccessToken = async (req, res) => {
 
 // GET /api/auth/me
 export const getMe = async (req, res) => {
-    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, ...safeUser } = req.user;
+    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = req.user;
     res.json({ success: true, user: safeUser });
 };

@@ -4,6 +4,9 @@ import { notifyUser } from '../utils/notify.js';
 import { assertFullyVerified, getUserVerificationState } from '../utils/verificationHelpers.js';
 import { findSuggestedCars } from '../utils/carSuggestions.js';
 import { fetchCoverSuggestions } from '../utils/coverSuggestions.js';
+import { canViewTrip } from '../utils/tripAccess.js';
+import { frontendBase, generateCode } from '../utils/referrals.js';
+import { isValidTripInvite, shareTripUrl } from '../utils/tripInvites.js';
 
 async function withVerificationFlags(trip) {
     const userIds = [
@@ -148,14 +151,22 @@ export const getTripById = async (req, res) => {
         },
     });
 
-    if (!trip) throw new AppError('Trip not found.', 404);
-    res.json({ success: true, data: await withVerificationFlags(trip) });
+    // A valid ?invite= code lets an invited friend see a private trip before joining.
+    const viaInvite = trip && req.query.invite
+        ? await isValidTripInvite(trip.id, String(req.query.invite))
+        : false;
+    // 404 rather than 403 so private trip ids are not confirmed to outsiders.
+    if (!trip || (!canViewTrip(trip, req.user) && !viaInvite)) throw new AppError('Trip not found.', 404);
+    res.json({ success: true, data: { ...(await withVerificationFlags(trip)), viaInvite } });
 };
 
 // GET /api/trips/:id/car-suggestions
 export const getTripCarSuggestions = async (req, res) => {
-    const trip = await prisma.trip.findUnique({ where: { id: req.params.id } });
-    if (!trip) throw new AppError('Trip not found.', 404);
+    const trip = await prisma.trip.findUnique({
+        where: { id: req.params.id },
+        include: { members: { select: { userId: true, status: true } } },
+    });
+    if (!trip || !canViewTrip(trip, req.user)) throw new AppError('Trip not found.', 404);
 
     const result = await findSuggestedCars(prisma, {
         destination: trip.destination,
@@ -417,50 +428,108 @@ export const deleteTrip = async (req, res) => {
 
 // POST /api/trips/:id/join
 export const requestToJoin = async (req, res) => {
-    await assertFullyVerified(req.user.id);
+    const inviteCode = req.body?.inviteCode ? String(req.body.inviteCode) : null;
 
     const trip = await prisma.trip.findUnique({ where: { id: req.params.id } });
     if (!trip) throw new AppError('Trip not found.', 404);
+
+    // A valid invite link is the organizer's approval: the friend joins straight
+    // away and verifies their ID later (shown as Unverified until then).
+    const viaInvite = inviteCode ? await isValidTripInvite(trip.id, inviteCode) : false;
+    if (inviteCode && !viaInvite) {
+        throw new AppError('This invite link is no longer valid. Ask the organizer for a new one.', 400);
+    }
+    if (!viaInvite) await assertFullyVerified(req.user.id);
+
     if (trip.organizerId === req.user.id) throw new AppError('Organizers cannot request to join.', 400);
     if (!['OPEN', 'DRAFT'].includes(trip.status)) {
         throw new AppError('This trip is not accepting new members.', 400);
-    }
-    if (trip.status === 'DRAFT') {
-        // Public draft trips can still be joined; promote to OPEN on first join interest
-        await prisma.trip.update({ where: { id: trip.id }, data: { status: 'OPEN' } });
     }
 
     const existing = await prisma.tripMember.findUnique({
         where: { tripId_userId: { tripId: req.params.id, userId: req.user.id } },
     });
-    if (existing && !['REJECTED', 'LEFT'].includes(existing.status)) {
+    const canUpgradePending = viaInvite && existing?.status === 'PENDING';
+    if (existing && !['REJECTED', 'LEFT'].includes(existing.status) && !canUpgradePending) {
         throw new AppError(`You already have a ${existing.status.toLowerCase()} membership.`, 409);
     }
 
+    if (viaInvite) {
+        const approvedCount = await prisma.tripMember.count({
+            where: { tripId: trip.id, status: 'APPROVED' },
+        });
+        if (approvedCount >= trip.maxParticipants) {
+            throw new AppError('This trip is full.', 400);
+        }
+    } else if (trip.status === 'DRAFT') {
+        // Public draft trips can still be joined; promote to OPEN on first join interest
+        await prisma.trip.update({ where: { id: trip.id }, data: { status: 'OPEN' } });
+    }
+
+    const status = viaInvite ? 'APPROVED' : 'PENDING';
     const member = existing
         ? await prisma.tripMember.update({
             where: { tripId_userId: { tripId: req.params.id, userId: req.user.id } },
-            data: { status: 'PENDING' },
+            data: { status },
         })
         : await prisma.tripMember.create({
-            data: { tripId: req.params.id, userId: req.user.id, status: 'PENDING' },
+            data: { tripId: req.params.id, userId: req.user.id, status },
         });
 
     // Notify organizer via Socket.IO + in-app
     const io = req.app.get('io');
     io?.to(`user:${trip.organizerId}`).emit('join_request', {
-        tripId: trip.id, tripTitle: trip.title,
+        tripId: trip.id, tripTitle: trip.title, viaInvite,
         user: { id: req.user.id, name: req.user.name, avatarUrl: req.user.avatarUrl },
     });
     await notifyUser({
         userId: trip.organizerId,
-        type: 'JOIN_REQUEST',
-        title: 'New join request',
-        body: `${req.user.name} wants to join “${trip.title}”.`,
+        type: viaInvite ? 'TRIP_UPDATE' : 'JOIN_REQUEST',
+        title: viaInvite ? 'Friend joined your trip' : 'New join request',
+        body: viaInvite
+            ? `${req.user.name} joined “${trip.title}” with your invite link.`
+            : `${req.user.name} wants to join “${trip.title}”.`,
         data: { tripId: trip.id, userId: req.user.id },
     });
 
-    res.status(201).json({ success: true, data: member });
+    res.status(201).json({ success: true, data: member, approved: viaInvite });
+};
+
+// POST /api/trips/:id/invite — organizer gets (or regenerates) the private invite link
+export const createTripInvite = async (req, res) => {
+    const trip = await prisma.trip.findUnique({ where: { id: req.params.id } });
+    if (!trip) throw new AppError('Trip not found.', 404);
+    if (trip.organizerId !== req.user.id && req.user.role !== 'ADMIN') {
+        throw new AppError('Only the organizer can create invite links.', 403);
+    }
+
+    const regenerate = Boolean(req.body?.regenerate);
+    let invite = await prisma.tripInvite.findUnique({ where: { tripId: trip.id } });
+    if (!invite || regenerate) {
+        // Regenerating replaces the code, so old links stop working.
+        for (let attempt = 0; attempt < 5 && (!invite || regenerate); attempt += 1) {
+            const code = generateCode(10);
+            try {
+                invite = await prisma.tripInvite.upsert({
+                    where: { tripId: trip.id },
+                    update: { code, createdAt: new Date() },
+                    create: { tripId: trip.id, code },
+                });
+                break;
+            } catch (err) {
+                if (err.code !== 'P2002') throw err;
+            }
+        }
+    }
+
+    res.json({
+        success: true,
+        data: {
+            code: invite.code,
+            url: `${frontendBase()}/trips/${trip.id}?invite=${invite.code}`,
+            shareUrl: shareTripUrl(req, trip.id, invite.code),
+        },
+    });
 };
 
 // POST /api/trips/:id/leave — traveler leaves or withdraws request
@@ -667,11 +736,12 @@ export const getTripMessages = async (req, res) => {
     const messages = await prisma.message.findMany({
         where: { tripId: req.params.id },
         include: { user: { select: { id: true, name: true, avatarUrl: true } } },
-        orderBy: { createdAt: 'asc' },
+        // Newest N, returned oldest-first for display.
+        orderBy: { createdAt: 'desc' },
         take,
     });
 
-    res.json({ success: true, data: messages });
+    res.json({ success: true, data: messages.reverse() });
 };
 
 // GET /api/trips/chat-unread — unread chat counts for the current user

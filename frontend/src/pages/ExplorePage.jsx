@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { exploreApi } from '../api/index.js';
 import ExploreMap from '../components/ExploreMap.jsx';
@@ -82,7 +82,10 @@ function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
 }
 
 export default function ExplorePage() {
-    const [mode, setMode] = useState('chat'); // chat | planner
+    const [searchParams] = useSearchParams();
+    // Deep links from destination pages: /explore?mode=planner&destination=Bali
+    const initialDestination = searchParams.get('destination') || '';
+    const [mode, setMode] = useState(() => (searchParams.get('mode') === 'planner' || initialDestination ? 'planner' : 'chat')); // chat | planner
     const [sessionId, setSessionId] = useState(() => localStorage.getItem(SESSION_KEY) || '');
     const [messages, setMessages] = useState([]);
     const [places, setPlaces] = useState([]);
@@ -274,6 +277,7 @@ export default function ExplorePage() {
 
                 {mode === 'planner' ? (
                     <ExplorePlanner
+                        initialDestination={initialDestination}
                         onPlanPlaces={onPlanPlaces}
                         selectedId={selectedId}
                         onSelectStop={(stop) => setSelectedId(stop.id)}

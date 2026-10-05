@@ -12,6 +12,11 @@ import {
 import { notifyUser } from '../utils/notify.js';
 import { findSuggestedCars } from '../utils/carSuggestions.js';
 import { averageRating } from './driverReview.controller.js';
+import { debitWallet } from '../utils/wallet.js';
+import { resolveListingMarket } from '../utils/markets.js';
+import { grantReferralRewards } from '../utils/referrals.js';
+import { platformFeePercent, priceWithFee, hostShareOf } from '../utils/commission.js';
+import { createEarningForBooking } from '../utils/hostEarnings.js';
 
 // GET /api/rentals/suggestions — cars matched to trip dates / destination / seats
 export const getCarSuggestions = async (req, res) => {
@@ -32,7 +37,8 @@ export const createListing = async (req, res) => {
     await assertFullyVerified(req.user.id);
     await assertPolicyAccepted(req.user.id, 'LISTING_TERMS');
 
-    const { vehicleId, pricePerDay, location, description, availableFrom, availableTo } = req.body;
+    const { vehicleId, pricePerDay, location, description, availableFrom, availableTo, country } = req.body;
+    const market = resolveListingMarket(country);
     const start = new Date(availableFrom);
     const end = new Date(availableTo);
 
@@ -53,6 +59,8 @@ export const createListing = async (req, res) => {
             vehicleId,
             hostId: req.user.id,
             pricePerDay: Number(pricePerDay),
+            country: market.country,
+            currency: market.currency,
             location,
             description,
             availableFrom: start,
@@ -80,9 +88,10 @@ const endOfUtcDay = (value) => {
 
 // GET /api/rentals/listings
 export const getListings = async (req, res) => {
-    const { location, minPrice, maxPrice, type, kind, startDate, endDate, fuelType } = req.query;
+    const { location, minPrice, maxPrice, type, kind, startDate, endDate, fuelType, country } = req.query;
 
     const where = { isActive: true };
+    if (country) where.country = String(country).trim().toUpperCase();
     if (location) where.location = { contains: location, mode: 'insensitive' };
     if (minPrice || maxPrice) {
         where.pricePerDay = {};
@@ -153,7 +162,7 @@ export const getListings = async (req, res) => {
         };
     });
 
-    res.json({ success: true, data });
+    res.json({ success: true, data, meta: { platformFeePercent: platformFeePercent() } });
 };
 
 // GET /api/rentals/listings/:id
@@ -185,6 +194,9 @@ export const bookRental = async (req, res) => {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        throw new AppError('Valid start and end dates are required.', 400);
+    }
     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     if (days <= 0) throw new AppError('End date must be after start date.', 400);
     // Compare calendar days so a listing available "today at noon" still books for today.
@@ -198,27 +210,38 @@ export const bookRental = async (req, res) => {
         throw new AppError('You cannot book your own vehicle listing.', 400);
     }
 
-    const overlappingBooking = await prisma.rentalBooking.findFirst({
-        where: {
-            listingId,
-            status: { in: ['PENDING', 'CONFIRMED'] },
-            startDate: { lt: end },
-            endDate: { gt: start },
-        },
-    });
-    if (overlappingBooking) throw new AppError('This vehicle already has a booking request for the selected dates.', 409);
+    // The host gets their full price; PickAndSync's commission is added on top.
+    const { hostAmount, platformFee, totalPrice } = priceWithFee(listing.pricePerDay * days);
 
-    const totalPrice = listing.pricePerDay * days;
+    // Serialize bookings per listing with a transaction-scoped advisory lock so
+    // two simultaneous requests cannot both pass the overlap check.
+    const booking = await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${listingId}))`;
 
-    const booking = await prisma.rentalBooking.create({
-        data: {
-            listingId,
-            renterId: req.user.id,
-            startDate: start,
-            endDate: end,
-            totalPrice,
-            status: 'PENDING',
-        },
+        const overlappingBooking = await tx.rentalBooking.findFirst({
+            where: {
+                listingId,
+                status: { in: ['PENDING', 'CONFIRMED', 'PAID'] },
+                startDate: { lt: end },
+                endDate: { gt: start },
+            },
+        });
+        if (overlappingBooking) {
+            throw new AppError('This vehicle already has a booking request for the selected dates.', 409);
+        }
+
+        return tx.rentalBooking.create({
+            data: {
+                listingId,
+                renterId: req.user.id,
+                startDate: start,
+                endDate: end,
+                totalPrice,
+                hostAmount,
+                platformFee,
+                status: 'PENDING',
+            },
+        });
     });
 
     // Notify host
@@ -258,6 +281,7 @@ export const bookRental = async (req, res) => {
                 to: host?.email,
                 subject: `New rental request — ${vehicleLabel}`,
                 ...emailFields,
+                totalPrice: hostAmount,
                 renterName: renter?.name || req.user.name,
                 hostName: host?.name || 'Host',
                 isHost: true,
@@ -282,7 +306,11 @@ export const bookRental = async (req, res) => {
         data: { bookingId: booking.id },
     });
 
-    res.status(201).json({ success: true, data: booking });
+    res.status(201).json({
+        success: true,
+        data: booking,
+        pricing: { hostAmount, platformFee, totalPrice, platformFeePercent: platformFeePercent() },
+    });
 };
 
 // PATCH /api/rentals/bookings/:id/cancel — renter cancels
@@ -389,8 +417,7 @@ export const respondToBooking = async (req, res) => {
     res.json({ success: true, data: updated });
 };
 
-// POST /api/rentals/bookings/:id/pay — traveler settles rental payment
-// body.method: 'wallet' (default) | 'local' (dev card stub)
+// POST /api/rentals/bookings/:id/pay — traveler settles rental payment from the wallet
 export const payBooking = async (req, res) => {
     const booking = await prisma.rentalBooking.findUnique({
         where: { id: req.params.id },
@@ -404,11 +431,27 @@ export const payBooking = async (req, res) => {
 
     const amount = Number(booking.totalPrice);
     const method = String(req.body?.method || 'wallet').toLowerCase();
+    if (method !== 'wallet') {
+        throw new AppError('Unsupported payment method. Pay from your wallet.', 400);
+    }
+    // The wallet holds INR only; other markets need their own payment provider.
+    if ((booking.listing.currency || 'INR') !== 'INR') {
+        throw new AppError(`Payments in ${booking.listing.currency} are not supported yet.`, 400);
+    }
     const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
-    let paymentRef;
 
-    if (method === 'wallet') {
-        const { debitWallet } = await import('../utils/wallet.js');
+    // Claim the booking (CONFIRMED -> PAID) and debit the wallet in one
+    // transaction: concurrent pay requests can only charge once, and a failed
+    // debit rolls the status back.
+    await prisma.$transaction(async (tx) => {
+        const claimed = await tx.rentalBooking.updateMany({
+            where: { id: booking.id, renterId: req.user.id, status: 'CONFIRMED' },
+            data: { status: 'PAID' },
+        });
+        if (claimed.count === 0) {
+            throw new AppError('This booking is no longer awaiting payment.', 409);
+        }
+
         const spend = await debitWallet({
             userId: req.user.id,
             amount,
@@ -418,43 +461,39 @@ export const payBooking = async (req, res) => {
             description: `Rental: ${label}`,
             provider: 'INTERNAL',
             metadata: { bookingId: booking.id },
+            tx,
         });
-        paymentRef = `wallet_${spend.transaction.id}`;
-        await prisma.payment.create({
+        await tx.payment.create({
             data: {
                 userId: req.user.id,
-                stripePaymentId: paymentRef,
+                stripePaymentId: `wallet_${spend.transaction.id}`,
                 amount,
                 currency: 'inr',
                 status: 'succeeded',
             },
         });
-    } else {
-        paymentRef = `local_pay_${booking.id}_${Date.now()}`;
-        await prisma.payment.create({
-            data: {
-                userId: req.user.id,
-                stripePaymentId: paymentRef,
-                amount,
-                currency: 'inr',
-                status: 'succeeded',
-            },
-        });
-    }
+        await createEarningForBooking(tx, booking);
+    });
 
-    const updated = await prisma.rentalBooking.update({
+    const updated = await prisma.rentalBooking.findUnique({
         where: { id: booking.id },
-        data: { status: 'PAID' },
         include: {
             listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
         },
     });
 
+    try {
+        await grantReferralRewards(req.user.id);
+    } catch (err) {
+        // A reward failure must never fail a completed payment.
+        console.error('[referral reward]', err.message || err);
+    }
+
     await notifyUser({
         userId: booking.listing.hostId,
         type: 'PAYMENT_RECEIVED',
         title: 'Rental payment received',
-        body: `${req.user.name} paid ₹${amount.toLocaleString()} for ${label}${method === 'wallet' ? ' (wallet)' : ''}.`,
+        body: `${req.user.name} paid for ${label}. Your earnings of ₹${hostShareOf(booking).toLocaleString('en-IN')} become withdrawable after the trip ends.`,
         data: { bookingId: booking.id },
     });
     await notifyUser({
@@ -501,4 +540,31 @@ export const getHostBookings = async (req, res) => {
     });
 
     res.json({ success: true, data: bookings });
+};
+
+// GET /api/rentals/earnings/my — host earnings summary
+export const getMyEarnings = async (req, res) => {
+    const earnings = await prisma.hostEarning.findMany({
+        where: { hostId: req.user.id },
+        include: {
+            booking: {
+                select: {
+                    id: true, startDate: true, endDate: true, totalPrice: true,
+                    listing: { select: { vehicle: { select: { make: true, model: true } } } },
+                },
+            },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+    });
+    const sum = (status) => earnings.filter((e) => status.includes(e.status)).reduce((s, e) => s + e.amount, 0);
+    res.json({
+        success: true,
+        data: {
+            upcoming: sum(['PENDING']),
+            onHold: sum(['ON_HOLD']),
+            released: sum(['RELEASED']),
+            earnings,
+        },
+    });
 };

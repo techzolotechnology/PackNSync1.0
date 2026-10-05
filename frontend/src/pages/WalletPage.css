@@ -228,3 +228,33 @@
         flex-direction: column;
     }
 }
+
+/* Invite friends (referral) */
+.invite-link-row {
+    margin: var(--space-3) 0;
+}
+
+.invite-link {
+    display: block;
+    padding: var(--space-3) var(--space-4);
+    border: 1px dashed var(--clr-border-bright);
+    border-radius: var(--radius-md);
+    background: var(--clr-bg-800);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+}
+
+.invite-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.invite-stats {
+    margin-top: var(--space-3);
+    font-size: 0.85rem;
+}
+
+.wallet-invite {
+    margin-bottom: 1rem;
+}

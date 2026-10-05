@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import { wakeApi } from '../utils/apiResilience.js';
+import { storedReferral } from '../utils/referral.js';
 import OtpCodeInput from './OtpCodeInput.jsx';
 import './AuthModal.css';
 
@@ -19,6 +20,7 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value |
 
 export default function AuthModal() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [params] = useSearchParams();
     const { requestOtp, verifyOtp, isLoading } = useAuthStore();
     const { open, mode, closeAuth, setMode } = useAuthUiStore();
@@ -69,6 +71,7 @@ export default function AuthModal() {
             name: form.name,
             contact: form.contact,
             isRegister,
+            ...(isRegister && storedReferral() ? { referralCode: storedReferral() } : {}),
         });
         if (result.success) {
             setOtpChannel(result.channel || null);
@@ -117,7 +120,11 @@ export default function AuthModal() {
         if (result.success) {
             toast.success(isRegister ? 'Account created!' : 'Welcome back!');
             closeAuth();
-            navigate(safeNextPath(params.get('next')) || '/trips');
+            // Stay on the page the modal was opened from (e.g. an invited trip);
+            // only the home page moves on to /trips.
+            const next = safeNextPath(params.get('next'));
+            if (next) navigate(next);
+            else if (location.pathname === '/') navigate('/trips');
         } else {
             setError(result.message);
         }

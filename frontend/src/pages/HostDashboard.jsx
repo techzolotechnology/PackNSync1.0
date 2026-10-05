@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { rentalsApi, vehiclesApi, verificationsApi } from '../api/index.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
+import { formatMoney } from '../config/markets.js';
 import './HostDashboard.css';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -72,6 +73,7 @@ export default function HostDashboard() {
     const [rcUploadTarget, setRcUploadTarget] = useState(null);
     const [listingForm, setListingForm] = useState(initialListingForm);
     const [message, setMessage] = useState('');
+    const [earnings, setEarnings] = useState(null);
 
     useEffect(() => {
         fetchDashboard();
@@ -87,6 +89,7 @@ export default function HostDashboard() {
             ]);
             setVehicles(vehiclesRes.data.data || []);
             setBookings(bookingsRes.data.data || []);
+            rentalsApi.getMyEarnings().then((res) => setEarnings(res.data.data)).catch(() => {});
         } catch (err) {
             setMessage(err.response?.data?.message || 'Unable to load host dashboard.');
         }
@@ -263,6 +266,28 @@ export default function HostDashboard() {
 
                 {message && <div className="host-banner warn">{message}</div>}
 
+                {earnings && (earnings.upcoming > 0 || earnings.onHold > 0 || earnings.released > 0) && (
+                    <section className="host-earnings" aria-label="Your earnings">
+                        <div>
+                            <span>Coming to your wallet</span>
+                            <strong>{formatMoney(earnings.upcoming)}</strong>
+                            <em>Released 24 hours after each trip ends</em>
+                        </div>
+                        {earnings.onHold > 0 && (
+                            <div>
+                                <span>On hold</span>
+                                <strong>{formatMoney(earnings.onHold)}</strong>
+                                <em>A renter raised an issue — we&apos;ll be in touch</em>
+                            </div>
+                        )}
+                        <div>
+                            <span>Paid to your wallet</span>
+                            <strong>{formatMoney(earnings.released)}</strong>
+                            <em><Link to="/wallet">Withdraw from wallet →</Link></em>
+                        </div>
+                    </section>
+                )}
+
                 {!kycStatus?.isFullyVerified && (
                     <div className="host-banner">
                         <Link to="/verify">Verify your identity</Link> before adding vehicles or listings.
@@ -380,7 +405,8 @@ export default function HostDashboard() {
                                         </p>
                                     </div>
                                     <div className="host-b-meta">
-                                        <strong>₹{Number(booking.totalPrice).toLocaleString()}</strong>
+                                        <strong>{formatMoney(booking.hostAmount ?? booking.totalPrice, booking.listing?.currency)}</strong>
+                                        <small className="host-b-earn">you earn</small>
                                         <span className={`host-b-status ${booking.status.toLowerCase()}`}>
                                             {booking.status}
                                         </span>

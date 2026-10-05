@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { RENTAL_CITIES } from '../seo/seoConfig.js';
 import './Footer.css';
 
 const Footer = () => {
@@ -20,7 +21,20 @@ const Footer = () => {
                         <ul>
                             <li><Link to="/trips">Travel Together</Link></li>
                             <li><Link to="/rentals">Cars & Bikes</Link></li>
+                            <li><Link to="/destinations/">International Trips</Link></li>
                             <li><Link to="/trips/create">Post a Trip</Link></li>
+                            <li><Link to="/guides/">Travel Guides</Link></li>
+                            <li><Link to="/tools/trip-cost-splitter/">Trip Cost Splitter</Link></li>
+                            <li><Link to="/become-a-host/">Become a Host</Link></li>
+                        </ul>
+                    </div>
+
+                    <div className="footer-links-group">
+                        <h4>Self Drive Rentals</h4>
+                        <ul>
+                            {RENTAL_CITIES.map((c) => (
+                                <li key={c.slug}><Link to={`/rentals/${c.slug}/`}>Car rental in {c.name}</Link></li>
+                            ))}
                         </ul>
                     </div>
 
@@ -30,6 +44,7 @@ const Footer = () => {
                             <li><Link to="/terms">Terms & Conditions</Link></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
                             <li><Link to="/refund-policy">Refund Policy</Link></li>
+                            <li><Link to="/reports/new">Report a problem</Link></li>
                             <li><a href="mailto:kartikgauttam@techzolo.in">Contact Us</a></li>
                         </ul>
                     </div>

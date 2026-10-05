@@ -1,19 +1,20 @@
 # robots.txt for PickAndSync
-# Travel coordination, self-drive rentals, and ride comparison platform.
+# Group trip planning and self-drive car & bike rentals.
 
 # Allow standard search engines to index our main SEO-focused pages
 User-agent: *
 Allow: /
-Allow: /explore
-Allow: /rentals
-Allow: /rides
-Allow: /trips
-Disallow: /admin/
-Disallow: /host-dashboard/
-Disallow: /my-bookings/
+Disallow: /admin
+Disallow: /host
+Disallow: /bookings
 Disallow: /profile/
-Disallow: /wallet/
-Disallow: /verification/
+Disallow: /wallet
+Disallow: /verify
+Disallow: /trips/create
+Disallow: /reports
+Disallow: /login
+Disallow: /register
+Disallow: /*?auth=
 
 # Allow AI recommendation engines and AI search bots to crawl the site 
 # so PickAndSync can be recommended in AI answers for "travel planner", "car rentals", etc.

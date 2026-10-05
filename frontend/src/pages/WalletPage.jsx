@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { walletApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
+import InviteFriendsCard from '../components/InviteFriendsCard.jsx';
 import './WalletPage.css';
 
 const PRESETS = [200, 500, 1000, 2000, 5000];
@@ -223,6 +224,11 @@ export default function WalletPage() {
                             {wallet?.currency || 'INR'}
                             {wallet?.mockMode ? ' · demo mode (no Cashfree keys)' : ` · Cashfree ${wallet?.cashfreeMode || 'sandbox'}`}
                         </span>
+                        {wallet?.promoBalance > 0 && (
+                            <span className="wallet-balance-meta">
+                                + ₹{Number(wallet.promoBalance).toLocaleString('en-IN')} promo credit · used first on bookings, not withdrawable
+                            </span>
+                        )}
                     </section>
 
                     <div className="wallet-grid">
@@ -339,6 +345,8 @@ export default function WalletPage() {
                             </button>
                         </section>
                     </div>
+
+                    <InviteFriendsCard />
 
                     <section className="wallet-panel wallet-history">
                         <h2>Activity</h2>

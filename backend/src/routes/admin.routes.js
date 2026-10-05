@@ -1,8 +1,21 @@
 import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { RC_UPLOAD_DIR } from '../middleware/rcUpload.middleware.js';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
 import { notifyUser } from '../utils/notify.js';
+import { creditWallet, creditPromo } from '../utils/wallet.js';
+import { cancelEarningForBooking } from '../utils/hostEarnings.js';
+import { deleteUserAccount } from '../utils/deleteUser.js';
+import { logAdminAction } from '../utils/audit.js';
+import { adminOpsRouter } from './adminOps.routes.js';
+import { adminSecurityRouter } from './adminSecurity.routes.js';
+import { adminMoneyRouter } from './adminMoney.routes.js';
+import { adminReportsRouter } from './adminReports.routes.js';
+import { adminContentRouter } from './adminContent.routes.js';
+import { requireAdminMfa } from '../middleware/adminMfa.middleware.js';
 import {
     listVerifications,
     approveVerification,
@@ -21,6 +34,17 @@ const MEMBER_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'LEFT'];
 
 adminRouter.use(authenticate, authorize('ADMIN'));
 
+// Two-factor enrollment/verification is reachable without a 2FA session;
+// every other admin route requires one.
+adminRouter.use('/2fa', adminSecurityRouter);
+adminRouter.use(requireAdminMfa);
+
+// Overview, user 360°, wallet ops, audit log, earnings, reports, moderation
+adminRouter.use(adminOpsRouter);
+adminRouter.use(adminMoneyRouter);
+adminRouter.use(adminReportsRouter);
+adminRouter.use(adminContentRouter);
+
 // GET /api/admin/stats
 adminRouter.get('/stats', async (_req, res) => {
     const [
@@ -37,6 +61,8 @@ adminRouter.get('/stats', async (_req, res) => {
         tripOrganizers,
         vehicleHosts,
         pendingJoins,
+        pendingWithdrawals,
+        openReports,
     ] = await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { isBanned: true } }),
@@ -51,6 +77,8 @@ adminRouter.get('/stats', async (_req, res) => {
         prisma.trip.findMany({ select: { organizerId: true }, distinct: ['organizerId'] }).then((r) => r.length),
         prisma.rentalListing.findMany({ select: { hostId: true }, distinct: ['hostId'] }).then((r) => r.length),
         prisma.tripMember.count({ where: { status: 'PENDING' } }),
+        prisma.walletTransaction.count({ where: { type: 'WITHDRAW', status: 'PENDING' } }),
+        prisma.report.count({ where: { status: { in: ['OPEN', 'IN_REVIEW'] } } }),
     ]);
 
     res.json({
@@ -69,6 +97,8 @@ adminRouter.get('/stats', async (_req, res) => {
             rentals: rentalCount,
             activeListings,
             pendingBookings,
+            pendingWithdrawals,
+            openReports,
         },
     });
 });
@@ -134,6 +164,11 @@ adminRouter.put('/users/:id/role', async (req, res) => {
         data: { role },
     });
 
+    await logAdminAction(req, {
+        action: 'USER_ROLE', targetType: 'USER', targetId: user.id,
+        summary: `Set role of ${user.name} to ${role}`, metadata: { role },
+    });
+
     res.json({ success: true, data: user });
 });
 
@@ -177,6 +212,11 @@ adminRouter.put('/users/:id/ban', async (req, res) => {
         });
     }
 
+    await logAdminAction(req, {
+        action: isBanned ? 'USER_BAN' : 'USER_UNBAN', targetType: 'USER', targetId: user.id,
+        summary: isBanned ? `Banned ${user.name}: ${user.banReason}` : `Unbanned ${user.name}`,
+    });
+
     res.json({ success: true, data: user });
 });
 
@@ -187,7 +227,11 @@ adminRouter.delete('/users/:id', async (req, res) => {
     if (!target) throw new AppError('User not found.', 404);
     if (target.role === 'ADMIN') throw new AppError('Cannot delete another admin.', 400);
 
-    await prisma.user.delete({ where: { id: req.params.id } });
+    await deleteUserAccount(req.params.id);
+    await logAdminAction(req, {
+        action: 'USER_DELETE', targetType: 'USER', targetId: target.id,
+        summary: `Deleted account ${target.name} (${target.email || target.phoneNumber || 'no contact'})`,
+    });
     res.json({ success: true, message: 'User deleted.' });
 });
 
@@ -268,7 +312,7 @@ adminRouter.get('/hosts', async (_req, res) => {
 
 // PATCH /api/admin/trips/:id — status / visibility control
 adminRouter.patch('/trips/:id', async (req, res) => {
-    const { status, isPublic } = req.body;
+    const { status, isPublic, title, description } = req.body;
     const trip = await prisma.trip.findUnique({ where: { id: req.params.id } });
     if (!trip) throw new AppError('Trip not found.', 404);
 
@@ -280,6 +324,12 @@ adminRouter.patch('/trips/:id', async (req, res) => {
         data.status = status;
     }
     if (isPublic !== undefined) data.isPublic = Boolean(isPublic);
+    if (title !== undefined) {
+        const clean = String(title).trim();
+        if (clean.length < 3) throw new AppError('Title must be at least 3 characters.', 400);
+        data.title = clean.slice(0, 120);
+    }
+    if (description !== undefined) data.description = String(description).trim().slice(0, 4000) || null;
     if (!Object.keys(data).length) throw new AppError('Nothing to update.', 400);
 
     const updated = await prisma.trip.update({ where: { id: trip.id }, data });
@@ -290,6 +340,11 @@ adminRouter.patch('/trips/:id', async (req, res) => {
         title: 'Trip updated by admin',
         body: `Admin updated “${trip.title}”${data.status ? ` → ${data.status}` : ''}${data.isPublic !== undefined ? ` (${data.isPublic ? 'public' : 'private'})` : ''}.`,
         data: { tripId: trip.id, ...data },
+    });
+
+    await logAdminAction(req, {
+        action: 'TRIP_UPDATE', targetType: 'TRIP', targetId: trip.id,
+        summary: `Updated trip “${trip.title}”`, metadata: data,
     });
 
     res.json({ success: true, data: updated });
@@ -322,6 +377,12 @@ adminRouter.put('/trips/:id/members/:userId', async (req, res) => {
         data: { tripId: trip.id, status },
     });
 
+    await logAdminAction(req, {
+        action: 'TRIP_MEMBER', targetType: 'TRIP', targetId: trip.id,
+        summary: `Set ${member.user?.name || req.params.userId} to ${status} on “${trip.title}”`,
+        metadata: { userId: req.params.userId, status },
+    });
+
     res.json({ success: true, data: member });
 });
 
@@ -334,7 +395,14 @@ adminRouter.delete('/trips/:id', async (req, res) => {
     if (!trip) throw new AppError('Trip not found.', 404);
 
     const notifyIds = new Set([trip.organizerId, ...trip.members.map((m) => m.userId)]);
-    await prisma.trip.delete({ where: { id: req.params.id } });
+    await prisma.$transaction([
+        prisma.payment.updateMany({ where: { tripId: trip.id }, data: { tripId: null } }),
+        prisma.trip.delete({ where: { id: req.params.id } }),
+    ]);
+    await logAdminAction(req, {
+        action: 'TRIP_DELETE', targetType: 'TRIP', targetId: trip.id,
+        summary: `Deleted trip “${trip.title}”`,
+    });
 
     await Promise.all(
         [...notifyIds].map((userId) =>
@@ -391,6 +459,11 @@ adminRouter.patch('/rentals/listings/:id', async (req, res) => {
         data: { listingId: listing.id },
     });
 
+    await logAdminAction(req, {
+        action: isActive ? 'LISTING_ACTIVATE' : 'LISTING_DEACTIVATE', targetType: 'LISTING', targetId: listing.id,
+        summary: `${isActive ? 'Activated' : 'Deactivated'} listing ${listing.vehicle.make} ${listing.vehicle.model}`,
+    });
+
     res.json({ success: true, data: updated });
 });
 
@@ -427,6 +500,14 @@ adminRouter.patch('/rentals/bookings/:id', async (req, res) => {
         include: { listing: { include: { vehicle: true } } },
     });
     if (!booking) throw new AppError('Booking not found.', 404);
+    if (status === booking.status) throw new AppError(`Booking is already ${status}.`, 400);
+    // Money states only move through real payments/refunds, never by override.
+    if (status === 'PAID') {
+        throw new AppError('A booking becomes PAID only when the renter pays. It cannot be forced.', 400);
+    }
+    if (booking.status === 'PAID') {
+        throw new AppError('This booking is paid. Refund it from Money → Payments to cancel it, so the renter gets their money back.', 400);
+    }
 
     const updated = await prisma.rentalBooking.update({
         where: { id: booking.id },
@@ -454,6 +535,12 @@ adminRouter.patch('/rentals/bookings/:id', async (req, res) => {
             data: { bookingId: booking.id, status },
         }),
     ]);
+
+    await logAdminAction(req, {
+        action: 'BOOKING_STATUS', targetType: 'BOOKING', targetId: booking.id,
+        summary: `Changed booking for ${label} from ${booking.status} to ${status}`,
+        metadata: { from: booking.status, to: status },
+    });
 
     res.json({ success: true, data: updated });
 });
@@ -483,24 +570,71 @@ adminRouter.post('/payments/:id/refund', async (req, res) => {
         throw new AppError('Only succeeded payments can be refunded.', 400);
     }
 
-    const updated = await prisma.payment.update({
-        where: { id: payment.id },
-        data: { status: 'refunded' },
-        include: { user: { select: { id: true, name: true } } },
-    });
+    // Wallet-funded payments are refunded back to the wallet; the matching
+    // PAID booking is cancelled. Claiming the payment row first (succeeded ->
+    // refunded) makes concurrent refund clicks a no-op.
+    const walletTxId = String(payment.stripePaymentId || '').match(/^wallet_(.+)$/)?.[1] || null;
+    const spendTx = walletTxId
+        ? await prisma.walletTransaction.findUnique({ where: { id: walletTxId } })
+        : null;
+    const bookingId = spendTx?.metadata?.bookingId || null;
 
-    // Best-effort: cancel matching PAID rental if local_pay_{bookingId}_...
-    const localMatch = String(payment.stripePaymentId || '').match(/^local_pay_([0-9a-fA-F-]{36})_/);
-    if (localMatch?.[1]) {
-        const booking = await prisma.rentalBooking.findUnique({
-            where: { id: localMatch[1] },
-            include: { listing: { include: { vehicle: true } } },
+    let earningOutcome = null;
+    const updated = await prisma.$transaction(async (tx) => {
+        const claimed = await tx.payment.updateMany({
+            where: { id: payment.id, status: 'succeeded' },
+            data: { status: 'refunded' },
         });
-        if (booking && booking.status === 'PAID') {
-            await prisma.rentalBooking.update({
-                where: { id: booking.id },
+        if (claimed.count === 0) throw new AppError('Payment already refunded.', 409);
+
+        if (spendTx) {
+            // Promo credit used on the booking goes back as promo credit, so a
+            // refund can never turn referral rewards into withdrawable cash.
+            const promoUsed = Math.min(Number(spendTx.metadata?.promoUsed) || 0, payment.amount);
+            const cashPart = payment.amount - promoUsed;
+            if (cashPart > 0) {
+                await creditWallet({
+                    userId: payment.userId,
+                    amount: cashPart,
+                    type: 'REFUND',
+                    referenceId: `refund_${payment.id}`,
+                    description: 'Refund by admin',
+                    provider: 'INTERNAL',
+                    metadata: { paymentId: payment.id, bookingId },
+                    tx,
+                });
+            }
+            if (promoUsed > 0) {
+                await creditPromo({
+                    userId: payment.userId,
+                    amount: promoUsed,
+                    referenceId: `refund_promo_${payment.id}`,
+                    description: 'Promo credit returned (refund)',
+                    metadata: { paymentId: payment.id, bookingId },
+                    tx,
+                });
+            }
+        }
+        if (bookingId) {
+            await tx.rentalBooking.updateMany({
+                where: { id: bookingId, status: 'PAID' },
                 data: { status: 'CANCELLED' },
             });
+            earningOutcome = await cancelEarningForBooking(bookingId, tx);
+        }
+
+        return tx.payment.findUnique({
+            where: { id: payment.id },
+            include: { user: { select: { id: true, name: true } } },
+        });
+    });
+
+    if (bookingId) {
+        const booking = await prisma.rentalBooking.findUnique({
+            where: { id: bookingId },
+            include: { listing: { include: { vehicle: true } } },
+        });
+        if (booking) {
             await notifyUser({
                 userId: booking.listing.hostId,
                 type: 'SYSTEM',
@@ -519,7 +653,28 @@ adminRouter.post('/payments/:id/refund', async (req, res) => {
         data: { paymentId: payment.id },
     });
 
-    res.json({ success: true, data: updated, message: 'Payment refunded.' });
+    await logAdminAction(req, {
+        action: 'PAYMENT_REFUND', targetType: 'PAYMENT', targetId: payment.id,
+        summary: `Refunded ₹${Number(payment.amount).toLocaleString('en-IN')} to ${updated.user?.name || payment.userId}`,
+        metadata: { amount: payment.amount, bookingId, hostEarningAlreadyReleased: Boolean(earningOutcome?.alreadyReleased) },
+    });
+
+    res.json({
+        success: true,
+        data: updated,
+        message: earningOutcome?.alreadyReleased
+            ? `Payment refunded. Note: the host was already paid ₹${earningOutcome.earning.amount.toLocaleString('en-IN')} for this booking — recover it from the host.`
+            : 'Payment refunded.',
+    });
+});
+
+// GET /api/admin/rc-files/:filename — RC documents are not publicly served
+adminRouter.get('/rc-files/:filename', async (req, res) => {
+    const filename = path.basename(String(req.params.filename || ''));
+    const filePath = path.join(RC_UPLOAD_DIR, filename);
+    if (!filename || !fs.existsSync(filePath)) throw new AppError('File not found.', 404);
+    res.set('Cache-Control', 'private, no-store');
+    res.sendFile(filePath);
 });
 
 // KYC + vehicles
