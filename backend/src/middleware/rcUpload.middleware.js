@@ -10,10 +10,13 @@ if (!fs.existsSync(RC_UPLOAD_DIR)) {
     fs.mkdirSync(RC_UPLOAD_DIR, { recursive: true });
 }
 
+const MIME_EXT = { 'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, RC_UPLOAD_DIR),
     filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+        // Extension from the validated mimetype, never the client filename (no .html uploads).
+        const ext = MIME_EXT[file.mimetype] || '.jpg';
         const safePlate = String(req.body?.licensePlate || 'rc').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         cb(null, `${req.user.id}_${safePlate}_${Date.now()}${ext}`);
     },
@@ -22,7 +25,7 @@ const storage = multer.diskStorage({
 const fileFilter = (_req, file, cb) => {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (allowed.includes(file.mimetype)) return cb(null, true);
-    cb(new Error('Upload a clear RC photo (JPG, PNG, or WEBP). PDF not supported yet.'));
+    cb(Object.assign(new Error('Upload a clear RC photo (JPG, PNG, or WEBP). PDF not supported yet.'), { statusCode: 400 }));
 };
 
 export const rcUpload = multer({

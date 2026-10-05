@@ -41,7 +41,7 @@ export default function AccountScreen({ user, setUser, layout }) {
     setMessage('');
     try {
       const response = await api.post('/auth/verify-otp', { contact: contact.trim(), otpCode });
-      api.setToken(response.accessToken);
+      api.setToken(response.accessToken, response.refreshToken);
       setUser(response.user);
       setMessage('Logged in.');
       setStep(1);

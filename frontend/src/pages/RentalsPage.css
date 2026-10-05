@@ -854,3 +854,73 @@
         text-align: center;
     }
 }
+
+/* Weekend getaways (city landing pages) */
+.cr-getaways {
+    margin-top: var(--space-12);
+}
+
+.cr-getaways h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--clr-text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.cr-getaways-lead {
+    color: var(--clr-text-secondary);
+    margin-bottom: var(--space-5);
+}
+
+.cr-getaways-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+}
+
+.cr-getaway {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    background: var(--clr-bg-700);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+}
+
+.cr-getaway strong {
+    color: var(--clr-text-primary);
+}
+
+.cr-getaway-meta {
+    font-size: 0.8rem;
+    color: var(--clr-primary-500);
+    font-weight: 600;
+}
+
+.cr-getaway-note {
+    font-size: 0.875rem;
+    color: var(--clr-text-secondary);
+}
+
+.cr-getaway-links {
+    display: flex;
+    gap: var(--space-4);
+    margin-top: var(--space-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cr-getaway-links a {
+    color: var(--clr-primary-500);
+}
+
+.cr-fee-note {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.75;
+}

@@ -1,5 +1,5 @@
 import { Component, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
@@ -194,10 +194,15 @@ function formatRange(start, end) {
 
 function CreateTripForm() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const initial = useMemo(() => loadDraft(), []);
     const [step, setStep] = useState(() => initial?.step ?? 0);
     const [isLoading, setIsLoading] = useState(false);
-    const [form, setForm] = useState(() => initial?.form ?? { ...DEFAULT_FORM });
+    // ?destination= comes from destination landing pages; a saved draft wins.
+    const [form, setForm] = useState(() => initial?.form ?? {
+        ...DEFAULT_FORM,
+        destination: (searchParams.get('destination') || '').slice(0, 120),
+    });
     const [restored] = useState(() => Boolean(initial));
 
     useEffect(() => {

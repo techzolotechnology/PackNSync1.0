@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { useAuthUiStore } from './store/authUiStore.js';
@@ -16,9 +16,12 @@ import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 import PageTransition from './components/motion/PageTransition.jsx';
 import MotionBridge from './components/motion/MotionBridge.jsx';
 import { HERO_MEDIA } from './utils/heroMedia.js';
+import RouteSeo from './components/RouteSeo.jsx';
+import { findRentalCity } from './seo/seoConfig.js';
+import { rememberReferral } from './utils/referral.js';
 
 // Heavy routes are code-split so the initial bundle stays small.
-const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
+const AdminPage = lazy(() => import('./pages/AdminRoot.jsx'));
 const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx'));
 const RentalsPage = lazy(() => import('./pages/RentalsPage.jsx'));
 const TripDetailPage = lazy(() => import('./pages/TripDetailPage.jsx'));
@@ -28,8 +31,25 @@ const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions.jsx'));
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
 const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'));
+const DestinationsPage = lazy(() => import('./pages/DestinationsPage.jsx'));
+const DestinationPage = lazy(() => import('./pages/DestinationPage.jsx'));
+const GuidesPage = lazy(() => import('./pages/GuidesPage.jsx'));
+const GuidePage = lazy(() => import('./pages/GuidePage.jsx'));
+const CostSplitterPage = lazy(() => import('./pages/CostSplitterPage.jsx'));
+const BecomeHostPage = lazy(() => import('./pages/BecomeHostPage.jsx'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
+const NewReportPage = lazy(() => import('./pages/NewReportPage.jsx'));
 
 const HIDE_FOOTER_PATHS = new Set(['/explore']);
+
+/** /rentals/:city landing pages; unknown cities fall back to /rentals. */
+function RentalsCityRoute() {
+    const { city: slug } = useParams();
+    const city = findRentalCity(slug);
+    if (!city) return <Navigate to="/rentals" replace />;
+    // key: remount when switching cities so the search box resets
+    return <RentalsPage key={city.slug} city={city} />;
+}
 
 /** Old /login and /register URLs → home + open auth modal */
 function AuthRouteRedirect({ mode }) {
@@ -53,6 +73,20 @@ function AuthQueryBridge() {
             setParams(next, { replace: true });
         }
     }, [params, setParams, openAuth]);
+    return null;
+}
+
+/** ?ref=CODE on any page: remember the referrer for sign-up, then tidy the URL. */
+function ReferralBridge() {
+    const [params, setParams] = useSearchParams();
+    useEffect(() => {
+        const ref = params.get('ref');
+        if (!ref) return;
+        rememberReferral(ref);
+        const next = new URLSearchParams(params);
+        next.delete('ref');
+        setParams(next, { replace: true });
+    }, [params, setParams]);
     return null;
 }
 
@@ -146,9 +180,11 @@ export default function App() {
             )}
             {hasTripsVideoBackground && <div className="app-shell-video-overlay" aria-hidden="true" />}
             {!booted && <SplashScreen ready={hydrated} onDone={() => setBooted(true)} />}
+            <RouteSeo />
             <Navbar />
             <AuthModal />
             <AuthQueryBridge />
+            <ReferralBridge />
             <ChatUnreadBridge />
             <main className="app-page">
                 <MotionBridge />
@@ -165,10 +201,20 @@ export default function App() {
                     <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
                     <Route path="/rides" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/trips'} replace />} />
                     <Route path="/rentals" element={<BlockAdminFromApp><RentalsPage /></BlockAdminFromApp>} />
+                    <Route path="/rentals/:city" element={<BlockAdminFromApp><RentalsCityRoute /></BlockAdminFromApp>} />
+                    <Route path="/guides" element={<BlockAdminFromApp><GuidesPage /></BlockAdminFromApp>} />
+                    <Route path="/guides/:slug" element={<BlockAdminFromApp><GuidePage /></BlockAdminFromApp>} />
+                    <Route path="/tools/trip-cost-splitter" element={<CostSplitterPage />} />
+                    <Route path="/become-a-host" element={<BlockAdminFromApp><BecomeHostPage /></BlockAdminFromApp>} />
+                    <Route path="/destinations" element={<BlockAdminFromApp><DestinationsPage /></BlockAdminFromApp>} />
+                    <Route path="/destinations/:slug" element={<BlockAdminFromApp><DestinationPage /></BlockAdminFromApp>} />
                     <Route path="/explore" element={<BlockAdminFromApp><ExplorePage /></BlockAdminFromApp>} />
                     <Route path="/bookings" element={<BlockAdminFromApp><PrivateRoute><MyBookingsPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/wallet" element={<BlockAdminFromApp><PrivateRoute><WalletPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/host" element={<BlockAdminFromApp><PrivateRoute><HostDashboard /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/reports" element={<BlockAdminFromApp><PrivateRoute><ReportsPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/reports/new" element={<BlockAdminFromApp><PrivateRoute><NewReportPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/reports/:id" element={<BlockAdminFromApp><PrivateRoute><ReportsPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/verify" element={<BlockAdminFromApp><PrivateRoute><VerificationPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/terms" element={<TermsAndConditions />} />
                     <Route path="/terms/:type" element={<TermsPage />} />

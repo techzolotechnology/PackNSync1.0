@@ -1,18 +1,38 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { adminApi } from '../api/index.js';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import AdminOverview from '../components/admin/AdminOverview.jsx';
+import AdminWithdrawals from '../components/admin/AdminWithdrawals.jsx';
+import AdminLedger from '../components/admin/AdminLedger.jsx';
+import AdminUserDrawer from '../components/admin/AdminUserDrawer.jsx';
+import AdminAudit from '../components/admin/AdminAudit.jsx';
+import AdminSecurity from '../components/admin/AdminSecurity.jsx';
+import AdminReports from '../components/admin/AdminReports.jsx';
+import AdminEarnings from '../components/admin/AdminEarnings.jsx';
+import AdminStuckTopups from '../components/admin/AdminStuckTopups.jsx';
+import AdminBroadcast from '../components/admin/AdminBroadcast.jsx';
+import AdminSearch from '../components/admin/AdminSearch.jsx';
+import { ListingEditor, TripChatModeration } from '../components/admin/AdminModeration.jsx';
+import { downloadCsv } from '../utils/csv.js';
+import { hasViewableDocument, openAdminDocument } from '../utils/adminDocs.js';
 import './AdminPage.css';
+import './AdminOps.css';
 
 const TABS = [
     { id: 'Overview', label: 'Overview' },
+    { id: 'Reports', label: 'Reports' },
     { id: 'Trust', label: 'Trust' },
     { id: 'Travel', label: 'Trips' },
     { id: 'Rentals', label: 'Rentals' },
-    { id: 'Payments', label: 'Payments' },
+    { id: 'Money', label: 'Money' },
     { id: 'People', label: 'People' },
+    { id: 'Broadcast', label: 'Broadcast' },
+    { id: 'Audit', label: 'Audit & security' },
 ];
+const TAB_IDS = new Set(TABS.map((t) => t.id));
+const USERS_PAGE_SIZE = 25;
 
 const ROLES = ['USER', 'ADMIN'];
 const BOOKING_STATUSES = ['PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED', 'PAID'];
@@ -29,7 +49,24 @@ function statusBadgeClass(status) {
 }
 
 export default function AdminPage() {
-    const [tab, setTab] = useState('Overview');
+    // The active tab lives in the URL so refresh/back keep the admin's place.
+    const [params, setParams] = useSearchParams();
+    const tab = TAB_IDS.has(params.get('tab')) ? params.get('tab') : 'Overview';
+    const setTab = useCallback((next) => {
+        setParams((prev) => {
+            const nextParams = new URLSearchParams(prev);
+            if (next === 'Overview') nextParams.delete('tab');
+            else nextParams.set('tab', next);
+            return nextParams;
+        }, { replace: false });
+    }, [setParams]);
+    const [moneySub, setMoneySub] = useState('payments');
+    const [drawerUserId, setDrawerUserId] = useState(null);
+    const [moderateTripId, setModerateTripId] = useState(null);
+    const [editingListing, setEditingListing] = useState(null);
+    const [focusReportId, setFocusReportId] = useState(null);
+    const [usersPage, setUsersPage] = useState(1);
+    const [usersTotal, setUsersTotal] = useState(0);
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [trips, setTrips] = useState([]);
@@ -62,14 +99,17 @@ export default function AdminPage() {
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         try {
-            const res = await adminApi.getUsers({ search, limit: 40 });
+            const res = await adminApi.getUsers({ search, page: usersPage, limit: USERS_PAGE_SIZE });
             setUsers(res.data.data);
+            setUsersTotal(res.data.pagination?.total || 0);
         } catch {
             toast.error('Failed to load users.');
         } finally {
             setIsLoading(false);
         }
-    }, [search]);
+    }, [search, usersPage]);
+
+    useEffect(() => { setUsersPage(1); }, [search]);
 
     const fetchTrips = useCallback(async () => {
         setIsLoading(true);
@@ -167,8 +207,57 @@ export default function AdminPage() {
         if (tab === 'Rentals') fetchRentals();
     }, [tab, fetchRentals]);
     useEffect(() => {
-        if (tab === 'Payments') fetchPayments();
-    }, [tab, fetchPayments]);
+        if (tab === 'Money' && moneySub === 'payments') fetchPayments();
+    }, [tab, moneySub, fetchPayments]);
+
+    /** Jump from the overview queue straight to the right list. */
+    const navigateTo = (nextTab, sub) => {
+        if (nextTab === 'Trust' && sub) setTrustSub(sub);
+        if (nextTab === 'Rentals' && sub) {
+            setRentalSub(sub);
+            if (sub === 'bookings') setBookingFilter('PENDING');
+        }
+        if (nextTab === 'Money' && sub) setMoneySub(sub);
+        if (nextTab === 'Reports') setFocusReportId(sub || null);
+        setTab(nextTab);
+    };
+
+    const closeModeration = useCallback(() => setModerateTripId(null), []);
+    const closeListingEditor = useCallback(() => setEditingListing(null), []);
+
+    const handleRenameTrip = async (trip) => {
+        const title = window.prompt('New trip title:', trip.title);
+        if (!title || title.trim() === trip.title) return;
+        try {
+            await adminApi.updateTrip(trip.id, { title: title.trim() });
+            toast.success('Trip renamed. The organizer was notified.');
+            fetchTrips();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Rename failed.');
+        }
+    };
+
+    const exportPayments = () => downloadCsv(`pickandsync-payments-${format(new Date(), 'yyyy-MM-dd')}.csv`, payments, [
+        { label: 'Date', value: (p) => new Date(p.createdAt).toISOString() },
+        { label: 'User', value: (p) => p.user?.name },
+        { label: 'Email', value: (p) => p.user?.email },
+        { label: 'Amount (INR)', value: (p) => p.amount },
+        { label: 'Status', value: (p) => p.status },
+        { label: 'Reference', value: (p) => p.stripePaymentId },
+        { label: 'Trip', value: (p) => p.trip?.title },
+    ]);
+
+    const closeDrawer = useCallback(() => setDrawerUserId(null), []);
+
+    /** Work waiting in each tab, shown as a count on the tab. */
+    const tabCount = (id) => {
+        if (!stats) return 0;
+        if (id === 'Trust') return stats.pendingVerifications || 0;
+        if (id === 'Rentals') return stats.pendingBookings || 0;
+        if (id === 'Money') return stats.pendingWithdrawals || 0;
+        if (id === 'Reports') return stats.openReports || 0;
+        return 0;
+    };
 
     const handleDeleteUser = async (userId) => {
         if (!window.confirm('Delete this user permanently?')) return;
@@ -347,7 +436,11 @@ export default function AdminPage() {
                         <h1>Admin</h1>
                         <p>Moderate trust, trips, rentals, payments, and accounts.</p>
                     </div>
-                    <span className="admin-live-pill">Live</span>
+                    <AdminSearch
+                        onOpenUser={setDrawerUserId}
+                        onOpenTrip={(title) => { setTravelSub('trips'); setTripSearch(title); setTab('Travel'); }}
+                        onOpenReport={(id) => navigateTo('Reports', id)}
+                    />
                 </div>
 
                 <div className="admin-tabs" role="tablist">
@@ -361,101 +454,25 @@ export default function AdminPage() {
                             onClick={() => setTab(t.id)}
                         >
                             {t.label}
+                            {tabCount(t.id) > 0 && <span className="adm-tab-count">{tabCount(t.id)}</span>}
                         </button>
                     ))}
                 </div>
 
-                {tab === 'Overview' && (
-                    <>
-                        <div className="admin-kpi-strip">
-                            <div className={`admin-kpi ${(stats?.pendingVerifications || 0) > 0 ? 'warn' : 'ok'}`}>
-                                <span>Pending KYC</span>
-                                <strong>{stats?.pendingVerifications ?? '—'}</strong>
-                                <em>Needs review</em>
-                            </div>
-                            <div className="admin-kpi ok">
-                                <span>Open trips</span>
-                                <strong>{stats?.openTrips ?? '—'}</strong>
-                                <em>{stats?.trips ?? 0} total</em>
-                            </div>
-                            <div className="admin-kpi">
-                                <span>Active listings</span>
-                                <strong>{stats?.activeListings ?? '—'}</strong>
-                                <em>{stats?.pendingBookings ?? 0} pending bookings</em>
-                            </div>
-                            <div className="admin-kpi">
-                                <span>Revenue</span>
-                                <strong>₹{stats != null ? Number(stats.revenue).toLocaleString() : '—'}</strong>
-                                <em>{stats?.users ?? 0} users</em>
-                            </div>
-                        </div>
+                {tab === 'Overview' && <AdminOverview onNavigate={navigateTo} />}
 
-                        <div className="admin-room-grid">
-                            <section className="admin-room-card">
-                                <div className="admin-room-card-head">
-                                    <div>
-                                        <h3>Trust</h3>
-                                        <p className="admin-room-desc">ID checks and vehicle RC approval.</p>
-                                    </div>
-                                </div>
-                                <div className="admin-metrics">
-                                    <div className="admin-metric"><span>Pending KYC</span><strong>{stats?.pendingVerifications ?? '—'}</strong></div>
-                                    <div className="admin-metric"><span>Banned users</span><strong>{stats?.bannedUsers ?? '—'}</strong></div>
-                                </div>
-                                <div className="admin-actions">
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setTab('Trust')}>Review</button>
-                                </div>
-                            </section>
-                            <section className="admin-room-card">
-                                <div className="admin-room-card-head">
-                                    <div>
-                                        <h3>Trips</h3>
-                                        <p className="admin-room-desc">Organizers, joiners, and trip status.</p>
-                                    </div>
-                                </div>
-                                <div className="admin-metrics">
-                                    <div className="admin-metric"><span>Trips</span><strong>{stats?.trips ?? '—'}</strong></div>
-                                    <div className="admin-metric"><span>Organizers</span><strong>{stats?.tripOrganizers ?? '—'}</strong></div>
-                                    <div className="admin-metric"><span>Pending joins</span><strong>{stats?.pendingJoins ?? '—'}</strong></div>
-                                </div>
-                                <div className="admin-actions">
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setTab('Travel')}>Manage</button>
-                                </div>
-                            </section>
-                            <section className="admin-room-card">
-                                <div className="admin-room-card-head">
-                                    <div>
-                                        <h3>Rentals</h3>
-                                        <p className="admin-room-desc">Hosts, listings, and booking overrides.</p>
-                                    </div>
-                                </div>
-                                <div className="admin-metrics">
-                                    <div className="admin-metric"><span>Vehicle hosts</span><strong>{stats?.vehicleHosts ?? '—'}</strong></div>
-                                    <div className="admin-metric"><span>Active listings</span><strong>{stats?.activeListings ?? '—'}</strong></div>
-                                    <div className="admin-metric"><span>Rental bookings</span><strong>{stats?.rentals ?? '—'}</strong></div>
-                                </div>
-                                <div className="admin-actions">
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setTab('Rentals')}>Manage</button>
-                                </div>
-                            </section>
-                            <section className="admin-room-card">
-                                <div className="admin-room-card-head">
-                                    <div>
-                                        <h3>Money & people</h3>
-                                        <p className="admin-room-desc">Refunds, roles, and account access.</p>
-                                    </div>
-                                </div>
-                                <div className="admin-metrics">
-                                    <div className="admin-metric"><span>Revenue</span><strong>₹{stats != null ? Number(stats.revenue).toLocaleString() : '—'}</strong></div>
-                                    <div className="admin-metric"><span>Users</span><strong>{stats?.users ?? '—'}</strong></div>
-                                </div>
-                                <div className="admin-actions">
-                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setTab('Payments')}>Payments</button>
-                                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setTab('People')}>People</button>
-                                </div>
-                            </section>
+                {tab === 'Reports' && (
+                    <div className="admin-panel">
+                        <div className="admin-panel-head">
+                            <div>
+                                <h2>Reports &amp; disputes</h2>
+                                <p>Customer reports — safety first. Reply, hold host payouts, refund, or resolve.</p>
+                            </div>
                         </div>
-                    </>
+                        <div className="admin-panel-body">
+                            <AdminReports key={focusReportId || 'list'} initialSelected={focusReportId} onOpenUser={setDrawerUserId} onChanged={fetchStats} />
+                        </div>
+                    </div>
                 )}
 
                 {tab === 'Trust' && (
@@ -493,10 +510,21 @@ export default function AdminPage() {
                                             : verifications.length === 0 ? <tr><td colSpan="6">No records.</td></tr>
                                                 : verifications.map((v) => (
                                                     <tr key={v.id}>
-                                                        <td>{v.user?.name}<br /><small>{v.user?.email || v.user?.phoneNumber}</small></td>
-                                                        <td>{v.documentType}</td>
+                                                        <td>
+                                                            <button type="button" className="adm-link-btn" onClick={() => setDrawerUserId(v.userId)}>{v.user?.name}</button>
+                                                            <br /><small>{v.user?.email || v.user?.phoneNumber}</small>
+                                                        </td>
+                                                        <td>
+                                                            {v.documentType}
+                                                            {hasViewableDocument(v.documentUrl) && (
+                                                                <><br /><button type="button" className="adm-link-btn" onClick={() => openAdminDocument(v.documentUrl)}>View photo</button></>
+                                                            )}
+                                                        </td>
                                                         <td>{v.documentNumber || v.digiLockerId || '—'}</td>
-                                                        <td><span className={`badge ${statusBadgeClass(v.status)}`}>{v.status}</span></td>
+                                                        <td>
+                                                            <span className={`badge ${statusBadgeClass(v.status)}`}>{v.status}</span>
+                                                            {v.rejectionReason && <><br /><small>{v.rejectionReason}</small></>}
+                                                        </td>
                                                         <td>{format(new Date(v.createdAt), 'MMM d, yyyy')}</td>
                                                         <td className="admin-actions">
                                                             {v.status === 'PENDING' && (
@@ -524,7 +552,11 @@ export default function AdminPage() {
                                                     <td>{v.make} {v.model}</td>
                                                     <td>{v.owner?.name}</td>
                                                     <td>{v.licensePlate}</td>
-                                                    <td>{v.rcUrl ? 'Submitted' : '—'}</td>
+                                                    <td>
+                                                        {hasViewableDocument(v.rcUrl)
+                                                            ? <button type="button" className="adm-link-btn" onClick={() => openAdminDocument(v.rcUrl)}>View RC photo</button>
+                                                            : v.rcUrl ? 'DigiLocker record' : '—'}
+                                                    </td>
                                                     <td><span className={`badge ${statusBadgeClass(v.isVerified ? 'Yes' : 'No')}`}>{v.isVerified ? 'Yes' : 'No'}</span></td>
                                                     <td className="admin-actions">
                                                         {!v.isVerified ? (
@@ -628,6 +660,8 @@ export default function AdminPage() {
                                                         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setExpandedTrip(expandedTrip === t.id ? null : t.id)}>
                                                             {expandedTrip === t.id ? 'Hide members' : 'Members'}
                                                         </button>
+                                                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setModerateTripId(t.id)}>Moderate</button>
+                                                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleRenameTrip(t)}>Rename</button>
                                                         <Link to={`/trips/${t.id}`} className="btn btn-ghost btn-sm">Open</Link>
                                                         <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDeleteTrip(t.id)}>Delete</button>
                                                     </div>
@@ -733,7 +767,8 @@ export default function AdminPage() {
                                                     <td>₹{Number(l.pricePerDay).toLocaleString()}</td>
                                                     <td><span className={`badge ${statusBadgeClass(l.isActive ? 'Yes' : 'No')}`}>{l.isActive ? 'Yes' : 'No'}</span></td>
                                                     <td>{l._count?.bookings ?? 0}</td>
-                                                    <td>
+                                                    <td className="admin-actions">
+                                                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditingListing(l)}>Edit</button>
                                                         <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleListingToggle(l)}>
                                                             {l.isActive ? 'Deactivate' : 'Activate'}
                                                         </button>
@@ -762,13 +797,20 @@ export default function AdminPage() {
                                                     <td>₹{Number(b.totalPrice).toLocaleString()}</td>
                                                     <td><span className={`badge ${statusBadgeClass(b.status)}`}>{b.status}</span></td>
                                                     <td>
-                                                        <select
-                                                            className="form-input admin-inline-select"
-                                                            value={b.status}
-                                                            onChange={(e) => handleBookingStatus(b.id, e.target.value)}
-                                                        >
-                                                            {BOOKING_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                                                        </select>
+                                                        {b.status === 'PAID' ? (
+                                                            <small title="Paid bookings are cancelled by refunding the payment, so the renter gets their money back.">
+                                                                Refund in Money → Payments
+                                                            </small>
+                                                        ) : (
+                                                            <select
+                                                                className="form-input admin-inline-select"
+                                                                value={b.status}
+                                                                onChange={(e) => handleBookingStatus(b.id, e.target.value)}
+                                                            >
+                                                                {/* PAID only happens through a real payment */}
+                                                                {BOOKING_STATUSES.filter((s) => s !== 'PAID').map((s) => <option key={s} value={s}>{s}</option>)}
+                                                            </select>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -780,15 +822,32 @@ export default function AdminPage() {
                     </div>
                 )}
 
-                {tab === 'Payments' && (
+                {tab === 'Money' && (
                     <div className="admin-panel">
                         <div className="admin-panel-head">
                             <div>
-                                <h2>Payments</h2>
-                                <p>Track money and issue refunds.</p>
+                                <h2>Money</h2>
+                                <p>Payments and refunds, withdrawal payouts, and every wallet movement.</p>
                             </div>
                         </div>
                         <div className="admin-panel-body">
+                        <div className="admin-search-row">
+                            <div className="admin-subtabs">
+                                <button type="button" className={moneySub === 'payments' ? 'active' : ''} onClick={() => setMoneySub('payments')}>Payments</button>
+                                <button type="button" className={moneySub === 'withdrawals' ? 'active' : ''} onClick={() => setMoneySub('withdrawals')}>Withdrawals</button>
+                                <button type="button" className={moneySub === 'earnings' ? 'active' : ''} onClick={() => setMoneySub('earnings')}>Host earnings</button>
+                                <button type="button" className={moneySub === 'topups' ? 'active' : ''} onClick={() => setMoneySub('topups')}>Stuck top-ups</button>
+                                <button type="button" className={moneySub === 'ledger' ? 'active' : ''} onClick={() => setMoneySub('ledger')}>Wallet ledger</button>
+                            </div>
+                            {moneySub === 'payments' && (
+                                <button type="button" className="btn btn-ghost btn-sm" onClick={exportPayments} disabled={!payments.length}>Export CSV</button>
+                            )}
+                        </div>
+                        {moneySub === 'withdrawals' && <AdminWithdrawals onChanged={fetchStats} />}
+                        {moneySub === 'ledger' && <AdminLedger />}
+                        {moneySub === 'earnings' && <AdminEarnings onOpenUser={setDrawerUserId} />}
+                        {moneySub === 'topups' && <AdminStuckTopups />}
+                        {moneySub === 'payments' && (
                         <div className="admin-table-wrap">
                             <table className="admin-table">
                                 <thead>
@@ -818,6 +877,7 @@ export default function AdminPage() {
                                 </tbody>
                             </table>
                         </div>
+                        )}
                         </div>
                     </div>
                 )}
@@ -859,7 +919,7 @@ export default function AdminPage() {
                                                             ? <img src={u.avatarUrl} alt={u.name} className="avatar avatar-sm" />
                                                             : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.75rem' }}>{u.name[0]}</div>
                                                         }
-                                                        <span>{u.name}</span>
+                                                        <button type="button" className="adm-link-btn" onClick={() => setDrawerUserId(u.id)}>{u.name}</button>
                                                     </div>
                                                 </td>
                                                 <td><small>{u.email || u.phoneNumber || '—'}</small></td>
@@ -880,6 +940,7 @@ export default function AdminPage() {
                                                 </td>
                                                 <td>{format(new Date(u.createdAt), 'MMM d, yyyy')}</td>
                                                 <td className="admin-actions">
+                                                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setDrawerUserId(u.id)}>Details</button>
                                                     <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleBanToggle(u)}>
                                                         {u.isBanned ? 'Unban' : 'Ban'}
                                                     </button>
@@ -890,10 +951,69 @@ export default function AdminPage() {
                                 </tbody>
                             </table>
                         </div>
+                        {usersTotal > USERS_PAGE_SIZE && (
+                            <div className="adm-pager">
+                                <button type="button" className="btn btn-ghost btn-sm" disabled={usersPage <= 1} onClick={() => setUsersPage((n) => n - 1)}>
+                                    ← Previous
+                                </button>
+                                <span>
+                                    Page {usersPage} of {Math.ceil(usersTotal / USERS_PAGE_SIZE)} · {usersTotal} users
+                                </span>
+                                <button
+                                    type="button"
+                                    className="btn btn-ghost btn-sm"
+                                    disabled={usersPage >= Math.ceil(usersTotal / USERS_PAGE_SIZE)}
+                                    onClick={() => setUsersPage((n) => n + 1)}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'Broadcast' && (
+                    <div className="admin-panel">
+                        <div className="admin-panel-head">
+                            <div>
+                                <h2>Broadcast</h2>
+                                <p>Announce outages, policy changes or offers to everyone or a segment.</p>
+                            </div>
+                        </div>
+                        <div className="admin-panel-body">
+                            <AdminBroadcast />
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'Audit' && (
+                    <div className="admin-panel">
+                        <div className="admin-panel-head">
+                            <div>
+                                <h2>Audit log</h2>
+                                <p>Every admin action — bans, refunds, payouts, overrides — with who did it and when.</p>
+                            </div>
+                        </div>
+                        <div className="admin-panel-body">
+                            <AdminSecurity />
+                            <AdminAudit onOpenUser={setDrawerUserId} />
                         </div>
                     </div>
                 )}
             </div>
+
+            {moderateTripId && <TripChatModeration tripId={moderateTripId} onClose={closeModeration} />}
+            {editingListing && <ListingEditor listing={editingListing} onClose={closeListingEditor} onSaved={fetchRentals} />}
+
+            {drawerUserId && (
+                <AdminUserDrawer
+                    userId={drawerUserId}
+                    onClose={closeDrawer}
+                    onBanToggle={handleBanToggle}
+                    onChanged={fetchStats}
+                />
+            )}
         </div>
     );
 }

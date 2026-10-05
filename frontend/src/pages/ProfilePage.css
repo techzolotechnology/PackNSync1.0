@@ -615,3 +615,11 @@
         align-items: flex-start;
     }
 }
+
+.pf-report-link {
+    display: inline-block;
+    margin: 0.25rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+    text-decoration: underline;
+}

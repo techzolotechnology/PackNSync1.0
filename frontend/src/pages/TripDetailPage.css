@@ -590,3 +590,8 @@
         width: 100%;
     }
 }
+.trip-report-link {
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+    text-decoration: underline;
+}

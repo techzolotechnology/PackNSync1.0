@@ -42,7 +42,7 @@
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 2fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
     gap: var(--space-12);
     margin-bottom: var(--space-12);
 }

@@ -356,6 +356,11 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
+                                {!isOwn && currentUser && (
+                                    <Link to={`/reports/new?targetType=USER&targetId=${profile.id}`} className="pf-report-link">
+                                        Report this person
+                                    </Link>
+                                )}
                                 <p className="pf-bio">
                                     {profile.bio || (isOwn
                                         ? 'Add a short bio so hosts and trip mates know who you are.'

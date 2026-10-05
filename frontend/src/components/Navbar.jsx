@@ -173,7 +173,10 @@ export default function Navbar() {
         if (!n.isRead) await markOneRead(n.id);
         setNotifOpen(false);
         const data = n.data || {};
-        if (data.tripId) navigate(`/trips/${data.tripId}`);
+        if (data.reportId) navigate(`/reports/${data.reportId}`);
+        else if (data.earningId) navigate('/host');
+        else if (data.promo || data.referral) navigate('/wallet');
+        else if (data.tripId) navigate(`/trips/${data.tripId}`);
         else if (data.bookingId) navigate('/bookings');
         else if (n.type === 'PAYMENT_RECEIVED' || n.type === 'REQUEST_APPROVED' || n.type === 'REQUEST_REJECTED') {
             navigate('/bookings');
@@ -376,6 +379,14 @@ export default function Navbar() {
                                                         <strong>Verify ID</strong>
                                                         <small>Complete KYC verification</small>
                                                     </Link>
+                                                    <Link
+                                                        to="/reports"
+                                                        className="nav-dropdown-item"
+                                                        onClick={() => setProfileOpen(false)}
+                                                    >
+                                                        <strong>Reports &amp; disputes</strong>
+                                                        <small>Report a problem, track replies</small>
+                                                    </Link>
                                                 </>
                                             )}
                                             <button type="button" className="nav-dropdown-item danger" onClick={handleLogout}>
@@ -446,6 +457,7 @@ export default function Navbar() {
                                     <>
                                         <Link to={`/profile/${user.id}`} onClick={() => setMenuOpen(false)} className="mobile-link">Profile</Link>
                                         <Link to="/verify" onClick={() => setMenuOpen(false)} className="mobile-link">Verify ID</Link>
+                                        <Link to="/reports" onClick={() => setMenuOpen(false)} className="mobile-link">Reports &amp; disputes</Link>
                                     </>
                                 )}
                                 <button onClick={handleLogout} className="mobile-link" style={{ textAlign: 'left', color: 'var(--clr-danger)' }}>Sync Out</button>

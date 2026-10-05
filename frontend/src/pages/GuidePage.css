@@ -1,0 +1,107 @@
+.guide-list {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-10);
+}
+
+.guide-list-item {
+    display: block;
+    padding: var(--space-5) var(--space-6);
+    background: var(--clr-bg-700);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color var(--transition-base), transform var(--transition-base);
+}
+
+.guide-list-item:hover {
+    border-color: var(--clr-border-bright);
+    transform: translateY(-2px);
+}
+
+.guide-list-item h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--clr-text-primary);
+    margin: var(--space-1) 0 var(--space-2);
+}
+
+.guide-list-item p {
+    color: var(--clr-text-secondary);
+    margin-bottom: var(--space-2);
+}
+
+.guide-tags {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-primary-500);
+}
+
+.guide-meta {
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+}
+
+.guide-article {
+    max-width: 760px;
+}
+
+.guide-article header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    line-height: 1.2;
+    color: var(--clr-text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.guide-article header .dst-lead {
+    margin-top: var(--space-5);
+}
+
+.guide-section {
+    margin-top: var(--space-8);
+    color: var(--clr-text-secondary);
+    line-height: 1.7;
+}
+
+.guide-section h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--clr-text-primary);
+    margin-bottom: var(--space-3);
+}
+
+.guide-section p + p {
+    margin-top: var(--space-3);
+}
+
+.guide-section ul,
+.guide-section ol {
+    padding-left: var(--space-5);
+    display: grid;
+    gap: var(--space-2);
+}
+
+.guide-section a,
+.splitter-cta-inline a {
+    color: var(--clr-primary-500);
+    font-weight: 600;
+}
+
+.guide-cta {
+    margin-top: var(--space-10);
+    padding: var(--space-6);
+}
+
+.guide-cta p {
+    color: var(--clr-text-primary);
+    font-weight: 600;
+}
+
+.guide-more {
+    list-style: none;
+    padding: 0;
+}

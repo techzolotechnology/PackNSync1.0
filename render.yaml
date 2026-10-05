@@ -80,6 +80,25 @@ services:
         sync: false
       - key: API_PUBLIC_URL
         value: https://api.pickandsync.com
+      # Commission added on top of the host's price, and when host earnings release
+      - key: PLATFORM_FEE_PERCENT
+        value: "2"
+      - key: HOST_EARNING_RELEASE_HOURS
+        value: "24"
+      # Referral reward (promo credit, INR) for both people; 0 disables
+      - key: REFERRAL_REWARD_INR
+        value: "100"
+      # Admin security: Google Authenticator is required for the admin panel
+      - key: ADMIN_MFA_REQUIRED
+        value: "true"
+      - key: ADMIN_MFA_SESSION_HOURS
+        value: "12"
+      # Security / money alerts (admin sign-ins, payouts, refunds, role changes)
+      - key: ADMIN_ALERT_EMAILS
+        value: Kartikgauttam@techzolo.in
+      # Encrypts admin authenticator secrets at rest (falls back to JWT_SECRET)
+      - key: SECRET_BOX_KEY
+        generateValue: true
 
 databases:
   - name: packandsync-db

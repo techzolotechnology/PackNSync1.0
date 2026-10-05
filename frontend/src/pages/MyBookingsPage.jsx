@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { rentalsApi, usersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { displayName } from '../utils/displayName.js';
+import { formatMoney } from '../config/markets.js';
 import './MyBookingsPage.css';
 
 const statusClass = (status) => {
@@ -263,9 +264,15 @@ export default function MyBookingsPage() {
                                         )}
                                     </div>
                                     <div className="booking-side">
-                                        <strong>₹{Number(b.totalPrice).toLocaleString()}</strong>
+                                        <strong>{formatMoney(b.totalPrice, b.listing?.currency)}</strong>
+                                        {b.platformFee > 0 && (
+                                            <small className="booking-fee">
+                                                {formatMoney(b.hostAmount, b.listing?.currency)} + {formatMoney(b.platformFee, b.listing?.currency)} service fee
+                                            </small>
+                                        )}
                                         <span className={`booking-status ${statusClass(b.status)}`}>{b.status}</span>
                                         <div className="booking-actions">
+                                            <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
                                             {canPay && (
                                                 <button
                                                     type="button"
@@ -330,8 +337,10 @@ export default function MyBookingsPage() {
                                 </p>
                             </div>
                             <div className="booking-side">
-                                <strong>₹{Number(b.totalPrice).toLocaleString()}</strong>
+                                <strong>{formatMoney(b.hostAmount ?? b.totalPrice, b.listing?.currency)}</strong>
+                                <small className="booking-fee">you earn</small>
                                 <span className={`booking-status ${statusClass(b.status)}`}>{b.status}</span>
+                                <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
                                 {b.status === 'PENDING' && (
                                     <div className="booking-actions">
                                         <button

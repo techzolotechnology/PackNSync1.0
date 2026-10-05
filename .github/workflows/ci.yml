@@ -45,3 +45,6 @@ jobs:
 
       - name: Backend syntax check
         run: node --check backend/src/index.js
+
+      - name: Backend tests
+        run: npm test --workspace=backend

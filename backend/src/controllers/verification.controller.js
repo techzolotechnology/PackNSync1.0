@@ -10,6 +10,22 @@ import {
 
 const VALID_DOC_TYPES = ['DL', 'AADHAAR', 'RC'];
 
+/**
+ * DigiLocker is mocked: it creates placeholder PENDING records that an admin
+ * must still approve. It is the only KYC flow in the UI today, so it stays on
+ * unless DIGILOCKER_MOCK=false. Replace with the real DigiLocker API.
+ */
+const digiLockerMockAllowed = () => process.env.DIGILOCKER_MOCK !== 'false';
+
+const assertDigiLockerAvailable = () => {
+    if (!digiLockerMockAllowed()) {
+        throw new AppError('DigiLocker verification is not available yet. Please upload your documents for admin review.', 503);
+    }
+};
+
+/** OCR text is trivially forgeable, so auto-approval is opt-in. */
+const rcOcrAutoApproveEnabled = () => process.env.RC_OCR_AUTO_APPROVE === 'true';
+
 const upsertVerification = async ({ userId, documentType, documentNumber, documentUrl, digiLockerId, status, verifiedAt }) => {
     const where = documentType === 'RC' && documentNumber
         ? { userId, documentType, documentNumber }
@@ -30,6 +46,7 @@ const upsertVerification = async ({ userId, documentType, documentNumber, docume
         digiLockerId,
         status: status || 'PENDING',
         verifiedAt: verifiedAt || null,
+        rejectionReason: null,
     };
 
     if (existing) {
@@ -72,6 +89,7 @@ export const submitVerification = async (req, res) => {
 
 // POST /api/verifications/digilocker/connect
 export const connectDigiLocker = async (req, res) => {
+    assertDigiLockerAvailable();
     const docs = mockDigiLockerDocuments({ userId: req.user.id });
     const saved = await Promise.all(docs.map((doc) => upsertVerification({
         userId: req.user.id,
@@ -87,6 +105,7 @@ export const connectDigiLocker = async (req, res) => {
 
 // POST /api/verifications/digilocker/rc
 export const submitRcViaDigiLocker = async (req, res) => {
+    assertDigiLockerAvailable();
     const { licensePlate } = req.body;
     if (!licensePlate?.trim()) throw new AppError('License plate is required for RC verification.', 400);
 
@@ -126,12 +145,15 @@ export const uploadRcForOcr = async (req, res) => {
     });
     if (!vehicle) throw new AppError('Add this vehicle to your fleet before uploading RC.', 404);
 
-    let documentUrl = `/uploads/rc/${req.file.filename}`;
+    // Served only to admins (see GET /api/admin/rc-files/:filename).
+    let documentUrl = `/api/admin/rc-files/${req.file.filename}`;
     if (isCloudinaryConfigured()) {
         try {
             const uploaded = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'packandsync/rc',
                 resource_type: 'image',
+                // Not reachable by public URL; fetch with a signed URL.
+                type: 'authenticated',
             });
             documentUrl = uploaded.secure_url;
         } catch (err) {
@@ -140,11 +162,18 @@ export const uploadRcForOcr = async (req, res) => {
     }
 
     const { text, confidence } = await runRcOcr(req.file.path);
-    const evaluation = evaluateRcMatch({
+    const match = evaluateRcMatch({
         ocrText: text,
         vehicle,
         ownerName: req.user.name,
     });
+    const evaluation = rcOcrAutoApproveEnabled() || !match.autoApproved
+        ? match
+        : {
+            ...match,
+            autoApproved: false,
+            summary: 'RC uploaded and OCR matched. Sent for admin review.',
+        };
 
     const verification = await upsertVerification({
         userId: req.user.id,

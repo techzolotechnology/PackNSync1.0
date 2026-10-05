@@ -23,10 +23,10 @@ const emptyForm = () => {
     };
 };
 
-export default function ExplorePlanner({ onPlanPlaces, selectedId, onSelectStop }) {
+export default function ExplorePlanner({ onPlanPlaces, selectedId, onSelectStop, initialDestination = '' }) {
     const user = useAuthStore((s) => s.user);
     const [meta, setMeta] = useState(null);
-    const [form, setForm] = useState(emptyForm);
+    const [form, setForm] = useState(() => ({ ...emptyForm(), destination: initialDestination.slice(0, 120) }));
     const [plan, setPlan] = useState(null);
     const [savedList, setSavedList] = useState([]);
     const [view, setView] = useState('form'); // form | plan | list

@@ -7,6 +7,7 @@ import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { CAR_FALLBACKS, BIKE_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import { wakeApi } from '../utils/apiResilience.js';
+import { formatMoney } from '../config/markets.js';
 import './RentalsPage.css';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -156,7 +157,8 @@ function kindFromParams(params) {
     return raw === 'bike' || raw === 'bikes' ? 'bike' : 'car';
 }
 
-export default function RentalsPage() {
+/** @param {{ city?: { name: string, location: string, intro: string } }} props — set on /rentals/:city landing pages */
+export default function RentalsPage({ city = null }) {
     const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -164,7 +166,8 @@ export default function RentalsPage() {
     const isBike = kind === 'bike';
 
     const [listings, setListings] = useState([]);
-    const [location, setLocation] = useState(() => searchParams.get('location') || '');
+    const [feePercent, setFeePercent] = useState(null);
+    const [location, setLocation] = useState(() => searchParams.get('location') || city?.location || '');
     const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || today);
     const [endDate, setEndDate] = useState(tomorrow);
     const [priceMin, setPriceMin] = useState(50);
@@ -221,6 +224,7 @@ export default function RentalsPage() {
                 res = await attempt();
             }
             setListings(res.data.data || []);
+            setFeePercent(res.data.meta?.platformFeePercent ?? null);
         } catch (err) {
             setListings([]);
             setLoadError(err.response?.data?.message || 'Unable to load rental listings. Try Search again in a moment.');
@@ -268,8 +272,11 @@ export default function RentalsPage() {
 
     const completeBooking = async (listing) => {
         try {
-            await rentalsApi.book({ listingId: listing.id, startDate, endDate });
-            toast.success(`Booking request sent. Total: ₹${Number(listing.pricePerDay * rentalDays).toLocaleString()}`);
+            const res = await rentalsApi.book({ listingId: listing.id, startDate, endDate });
+            const pricing = res.data?.pricing;
+            toast.success(pricing
+                ? `Booking request sent. Total ${formatMoney(pricing.totalPrice, listing.currency)} (${formatMoney(pricing.hostAmount, listing.currency)} + ${formatMoney(pricing.platformFee, listing.currency)} service fee)`
+                : 'Booking request sent.');
         } catch (err) {
             const msg = err.response?.data?.message || 'Booking failed.';
             if (msg.includes('verification') || msg.includes('KYC')) {
@@ -363,11 +370,17 @@ export default function RentalsPage() {
                     </div>
                     <div className="ps-reveal ps-left">
                     <p className="cr-hero-kicker">Cars &amp; bikes from community hosts</p>
-                    <h1>{isBike ? 'Bike on Rent' : 'Car on Rent'}</h1>
+                    <h1>
+                        {city
+                            ? `Self Drive ${isBike ? 'Bike' : 'Car'} Rental in ${city.name}`
+                            : isBike ? 'Bike on Rent' : 'Car on Rent'}
+                    </h1>
                     <p>
-                        {isBike
-                            ? 'Self-ride bikes and scooters — city hops, weekends, your schedule. Switch to Cars anytime.'
-                            : 'Self-drive cars for weekends and outer-city runs. Need two wheels? Tap Bikes above.'}
+                        {city
+                            ? city.intro
+                            : isBike
+                                ? 'Self-ride bikes and scooters — city hops, weekends, your schedule. Switch to Cars anytime.'
+                                : 'Self-drive cars for weekends and outer-city runs. Need two wheels? Tap Bikes above.'}
                     </p>
                     </div>
 
@@ -586,7 +599,10 @@ export default function RentalsPage() {
                                                     </em>
                                                 )}
                                             </span>
-                                            <strong className="cr-price">₹{Number(listing.pricePerDay).toLocaleString()}/day</strong>
+                                            <strong className="cr-price">
+                                                {formatMoney(listing.pricePerDay, listing.currency)}/day
+                                                {feePercent > 0 && <small className="cr-fee-note">+{feePercent}% service fee</small>}
+                                            </strong>
                                         </div>
                                         <div className="cr-actions">
                                             <button type="button" className="cr-book" onClick={() => handleBook(listing)}>
@@ -604,8 +620,31 @@ export default function RentalsPage() {
                 )}
             </section>
 
+            {city?.getaways?.length > 0 && (
+                <section className="container cr-getaways" aria-labelledby="cr-getaways-title">
+                    <h2 id="cr-getaways-title">Weekend getaways from {city.name} by car</h2>
+                    <p className="cr-getaways-lead">
+                        Pick up a self-drive car in {city.name} and split the fuel and rental with friends.
+                        Distances are approximate one-way drives.
+                    </p>
+                    <ul className="cr-getaways-grid">
+                        {city.getaways.map((g) => (
+                            <li key={g.name} className="cr-getaway">
+                                <strong>{g.name}</strong>
+                                <span className="cr-getaway-meta">~{g.km} km · ~{g.hours} h</span>
+                                <span className="cr-getaway-note">{g.note}</span>
+                                <span className="cr-getaway-links">
+                                    <Link to={`/explore?mode=planner&destination=${encodeURIComponent(g.name)}`}>Plan trip</Link>
+                                    {g.citySlug && <Link to={`/rentals/${g.citySlug}/`}>Cars in {g.name}</Link>}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
             <div className="container cr-host-cta ps-reveal ps-scale">
-                <Link to="/host">Host a car or bike</Link>
+                <Link to="/become-a-host/">Host a car or bike</Link>
             </div>
 
             <TermsAcceptanceModal

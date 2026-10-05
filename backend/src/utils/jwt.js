@@ -1,12 +1,16 @@
 import jwt from 'jsonwebtoken';
 
-export const signAccessToken = (userId) =>
-    jwt.sign({ sub: userId }, process.env.JWT_SECRET, {
+/**
+ * claims.mfaAt: when an admin last passed two-factor (ms epoch). It rides on
+ * both tokens so a refresh keeps the 2FA session until it expires.
+ */
+export const signAccessToken = (userId, claims = {}) =>
+    jwt.sign({ sub: userId, ...claims }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     });
 
-export const signRefreshToken = (userId) =>
-    jwt.sign({ sub: userId }, process.env.JWT_REFRESH_SECRET, {
+export const signRefreshToken = (userId, claims = {}) =>
+    jwt.sign({ sub: userId, ...claims }, process.env.JWT_REFRESH_SECRET, {
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     });
 
