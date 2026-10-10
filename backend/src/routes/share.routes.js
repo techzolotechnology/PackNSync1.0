@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { frontendBase } from '../utils/referrals.js';
 import { apiPublicBase, isValidTripInvite } from '../utils/tripInvites.js';
+import { isLinkPreviewBot } from '../utils/linkPreview.js';
 
 /**
  * Link-preview pages. The website is a static SPA on GitHub Pages, so WhatsApp,
@@ -60,6 +61,15 @@ function absoluteImage(req, url) {
 // GET /share/trips/:id[?invite=CODE]
 shareRouter.get('/trips/:id', async (req, res) => {
     const inviteCode = req.query.invite ? String(req.query.invite) : null;
+
+    // People go straight to the trip page without waiting on the database; the
+    // trip page checks the invite code itself. Only preview bots need the tags.
+    if (!isLinkPreviewBot(req.get('user-agent'))) {
+        const query = inviteCode ? `?invite=${encodeURIComponent(inviteCode)}` : '';
+        res.set('Cache-Control', 'no-store');
+        return res.redirect(302, `${frontendBase()}/trips/${encodeURIComponent(req.params.id)}${query}`);
+    }
+
     const trip = await prisma.trip.findUnique({
         where: { id: req.params.id },
         select: {
@@ -75,6 +85,7 @@ shareRouter.get('/trips/:id', async (req, res) => {
         : `${frontendBase()}/trips`;
 
     res.set('Cache-Control', 'public, max-age=300');
+    res.vary('User-Agent');
     res.type('html');
 
     // Private trips only reveal details to people holding a valid invite link.

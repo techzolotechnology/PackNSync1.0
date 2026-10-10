@@ -179,7 +179,7 @@ export default function TripDetailPage() {
                 await shareLink({
                     title: trip.title,
                     text: `Check out this trip to ${trip.destination} on PickAndSync:`,
-                    url: `${BACKEND_ORIGIN}/share/trips/${id}`,
+                    url: trip.shareUrl || `${BACKEND_ORIGIN}/share/trips/${id}`,
                 });
             }
         } catch (err) {

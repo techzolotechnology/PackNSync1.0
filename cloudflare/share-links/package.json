@@ -1,0 +1,10 @@
+{
+  "name": "pickandsync-share-links",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker for go.pickandsync.com: short trip links and API keep-awake.",
+  "scripts": {
+    "test": "node --test",
+    "deploy": "npx wrangler@4 deploy"
+  }
+}

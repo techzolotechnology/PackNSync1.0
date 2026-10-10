@@ -22,4 +22,13 @@ describe('trip invites', () => {
         expect(shareTripUrl({}, 't1', 'ABC')).toBe('https://api.pickandsync.com/share/trips/t1?invite=ABC');
         delete process.env.API_PUBLIC_URL;
     });
+
+    it('builds short links on the share domain when SHARE_BASE_URL is set', () => {
+        process.env.API_PUBLIC_URL = 'https://api.pickandsync.com';
+        process.env.SHARE_BASE_URL = 'https://go.pickandsync.com/';
+        expect(shareTripUrl({}, 't1')).toBe('https://go.pickandsync.com/t/t1');
+        expect(shareTripUrl({}, 't1', 'ABC')).toBe('https://go.pickandsync.com/t/t1?invite=ABC');
+        delete process.env.SHARE_BASE_URL;
+        delete process.env.API_PUBLIC_URL;
+    });
 });
