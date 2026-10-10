@@ -14,6 +14,7 @@ import VerificationPage from './pages/VerificationPage.jsx';
 import Footer from './components/Footer.jsx';
 import ChatUnreadBridge from './components/ChatUnreadBridge.jsx';
 import PageTransition from './components/motion/PageTransition.jsx';
+import ScrollManager from './components/ScrollManager.jsx';
 import MotionBridge from './components/motion/MotionBridge.jsx';
 import { HERO_MEDIA } from './utils/heroMedia.js';
 import RouteSeo from './components/RouteSeo.jsx';
@@ -21,24 +22,53 @@ import { findRentalCity } from './seo/seoConfig.js';
 import { rememberReferral } from './utils/referral.js';
 
 // Heavy routes are code-split so the initial bundle stays small.
+const loadExplore = () => import('./pages/ExplorePage.jsx');
+const loadRentals = () => import('./pages/RentalsPage.jsx');
+const loadTripDetail = () => import('./pages/TripDetailPage.jsx');
+const loadWallet = () => import('./pages/WalletPage.jsx');
+const loadDestinations = () => import('./pages/DestinationsPage.jsx');
+const loadDestination = () => import('./pages/DestinationPage.jsx');
+const loadGuides = () => import('./pages/GuidesPage.jsx');
+const loadGuide = () => import('./pages/GuidePage.jsx');
+const loadCostSplitter = () => import('./pages/CostSplitterPage.jsx');
+const loadBecomeHost = () => import('./pages/BecomeHostPage.jsx');
+
 const AdminPage = lazy(() => import('./pages/AdminRoot.jsx'));
-const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx'));
-const RentalsPage = lazy(() => import('./pages/RentalsPage.jsx'));
-const TripDetailPage = lazy(() => import('./pages/TripDetailPage.jsx'));
+const ExplorePage = lazy(loadExplore);
+const RentalsPage = lazy(loadRentals);
+const TripDetailPage = lazy(loadTripDetail);
 const HostDashboard = lazy(() => import('./pages/HostDashboard.jsx'));
-const WalletPage = lazy(() => import('./pages/WalletPage.jsx'));
+const WalletPage = lazy(loadWallet);
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions.jsx'));
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
 const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'));
-const DestinationsPage = lazy(() => import('./pages/DestinationsPage.jsx'));
-const DestinationPage = lazy(() => import('./pages/DestinationPage.jsx'));
-const GuidesPage = lazy(() => import('./pages/GuidesPage.jsx'));
-const GuidePage = lazy(() => import('./pages/GuidePage.jsx'));
-const CostSplitterPage = lazy(() => import('./pages/CostSplitterPage.jsx'));
-const BecomeHostPage = lazy(() => import('./pages/BecomeHostPage.jsx'));
+const DestinationsPage = lazy(loadDestinations);
+const DestinationPage = lazy(loadDestination);
+const GuidesPage = lazy(loadGuides);
+const GuidePage = lazy(loadGuide);
+const CostSplitterPage = lazy(loadCostSplitter);
+const BecomeHostPage = lazy(loadBecomeHost);
 const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const NewReportPage = lazy(() => import('./pages/NewReportPage.jsx'));
+
+/** Pages people usually open next; fetched once the browser is idle so they open without a wait. */
+const PRELOAD_PAGES = [
+    loadRentals, loadTripDetail, loadExplore, loadDestinations, loadDestination,
+    loadGuides, loadGuide, loadCostSplitter, loadBecomeHost, loadWallet,
+];
+
+function usePreloadPages() {
+    useEffect(() => {
+        const preload = () => PRELOAD_PAGES.forEach((load) => load().catch(() => {}));
+        if ('requestIdleCallback' in window) {
+            const id = window.requestIdleCallback(preload, { timeout: 5000 });
+            return () => window.cancelIdleCallback(id);
+        }
+        const id = window.setTimeout(preload, 3000);
+        return () => window.clearTimeout(id);
+    }, []);
+}
 
 const HIDE_FOOTER_PATHS = new Set(['/explore']);
 
@@ -161,6 +191,7 @@ export default function App() {
     useEffect(() => {
         fetchMe();
     }, [fetchMe]);
+    usePreloadPages();
 
     return (
         <div className={`app-shell ${hasTripsVideoBackground ? 'app-shell--trips-video' : ''}`}>
@@ -187,9 +218,12 @@ export default function App() {
             <ReferralBridge />
             <ChatUnreadBridge />
             <main className="app-page">
+                <ScrollManager />
                 <MotionBridge />
+                {/* Suspense sits outside the keyed transition so, during navigation, the current
+                    page stays on screen while the next page's code loads (v7_startTransition). */}
+                <Suspense fallback={<div className="page-auth-pending" aria-busy="true" />}>
                 <PageTransition>
-                    <Suspense fallback={<div className="page-auth-pending" aria-busy="true" />}>
                     <Routes location={location}>
                     <Route path="/" element={<BlockAdminFromApp><HomePage /></BlockAdminFromApp>} />
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
@@ -222,8 +256,8 @@ export default function App() {
                     <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="*" element={<Navigate to={user?.role === 'ADMIN' ? '/admin' : '/'} replace />} />
                     </Routes>
-                    </Suspense>
                 </PageTransition>
+                </Suspense>
             </main>
             {!HIDE_FOOTER_PATHS.has(pathname) && (!user || user.role !== 'ADMIN') ? <Footer /> : null}
         </div>

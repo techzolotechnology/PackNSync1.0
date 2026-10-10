@@ -7,6 +7,7 @@ import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { CAR_FALLBACKS, BIKE_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import { wakeApi } from '../utils/apiResilience.js';
+import { readViewCache, viewCacheKey, writeViewCache } from '../utils/viewCache.js';
 import { formatMoney } from '../config/markets.js';
 import './RentalsPage.css';
 
@@ -165,8 +166,15 @@ export default function RentalsPage({ city = null }) {
     const kind = kindFromParams(searchParams);
     const isBike = kind === 'bike';
 
-    const [listings, setListings] = useState([]);
-    const [feePercent, setFeePercent] = useState(null);
+    // Returning to this search shows the last results straight away (no skeleton, no jump).
+    const [initialCache] = useState(() => {
+        const params = { startDate: searchParams.get('startDate') || today, endDate: tomorrow, kind: isBike ? 'bike' : 'car' };
+        const initialLocation = (searchParams.get('location') || city?.location || '').trim();
+        if (initialLocation) params.location = initialLocation;
+        return readViewCache(viewCacheKey('rentals', params));
+    });
+    const [listings, setListings] = useState(() => initialCache?.listings ?? []);
+    const [feePercent, setFeePercent] = useState(() => initialCache?.feePercent ?? null);
     const [location, setLocation] = useState(() => searchParams.get('location') || city?.location || '');
     const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || today);
     const [endDate, setEndDate] = useState(tomorrow);
@@ -174,7 +182,7 @@ export default function RentalsPage({ city = null }) {
     const [priceMax, setPriceMax] = useState(500);
     const [category, setCategory] = useState(() => searchParams.get('category') || '');
     const [sortBy, setSortBy] = useState('price');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => !initialCache);
     const [loadError, setLoadError] = useState('');
     const [pendingListing, setPendingListing] = useState(null);
     const [termsOpen, setTermsOpen] = useState(false);
@@ -202,7 +210,6 @@ export default function RentalsPage({ city = null }) {
     }, [kind]);
 
     const fetchListings = async () => {
-        setLoading(true);
         setLoadError('');
         wakeApi();
         const params = {
@@ -211,6 +218,16 @@ export default function RentalsPage({ city = null }) {
             kind: isBike ? 'bike' : 'car',
         };
         if (location.trim()) params.location = location.trim();
+
+        const cacheKey = viewCacheKey('rentals', params);
+        const cached = readViewCache(cacheKey);
+        if (cached) {
+            setListings(cached.listings);
+            setFeePercent(cached.feePercent);
+            setLoading(false);
+        } else {
+            setLoading(true);
+        }
 
         const attempt = () => rentalsApi.getListings(params);
         try {
@@ -223,11 +240,17 @@ export default function RentalsPage({ city = null }) {
                 wakeApi();
                 res = await attempt();
             }
-            setListings(res.data.data || []);
-            setFeePercent(res.data.meta?.platformFeePercent ?? null);
+            const fresh = res.data.data || [];
+            const fee = res.data.meta?.platformFeePercent ?? null;
+            setListings(fresh);
+            setFeePercent(fee);
+            writeViewCache(cacheKey, { listings: fresh, feePercent: fee });
         } catch (err) {
-            setListings([]);
-            setLoadError(err.response?.data?.message || 'Unable to load rental listings. Try Search again in a moment.');
+            // Keep showing the last results if only the refresh failed.
+            if (!cached) {
+                setListings([]);
+                setLoadError(err.response?.data?.message || 'Unable to load rental listings. Try Search again in a moment.');
+            }
         } finally {
             setLoading(false);
         }

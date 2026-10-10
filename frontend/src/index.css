@@ -639,6 +639,11 @@ h1 {
   color: var(--clr-text-primary);
 }
 
+/* Holds the page's space while a page loads, so the footer doesn't jump up. */
+.page-auth-pending {
+  min-height: 70vh;
+}
+
 .page-atmosphere {
   position: relative;
   isolation: isolate;

@@ -9,7 +9,8 @@ const Router = window.location.protocol === 'file:' ? HashRouter : BrowserRouter
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <Router>
+        {/* v7_startTransition: keep the current page on screen while the next one's code loads */}
+        <Router future={{ v7_startTransition: true }}>
             <App />
             <Toaster
                 position="top-right"
