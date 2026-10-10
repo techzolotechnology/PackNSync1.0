@@ -4,6 +4,7 @@ import { tripsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { format } from 'date-fns';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { readViewCache, viewCacheKey, writeViewCache } from '../utils/viewCache.js';
 import { TRIP_COVER_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './TripsPage.css';
 
@@ -87,12 +88,16 @@ export default function TripsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const tab = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
 
-    const [trips, setTrips] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState(() => searchParams.get('q') || '');
     const [status, setStatus] = useState(() => searchParams.get('status') || '');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState(null);
+    // Returning to this list shows the last results straight away (no skeleton, no jump).
+    const [initialCache] = useState(() => readViewCache(
+        viewCacheKey('trips', { tab, search, status, page: 1, user: user?.id || null }),
+    ));
+    const [trips, setTrips] = useState(() => initialCache?.trips ?? []);
+    const [isLoading, setIsLoading] = useState(() => !initialCache);
+    const [pagination, setPagination] = useState(() => initialCache?.pagination ?? null);
     const motionRef = useRef(null);
     useGoFlyMotion(motionRef, [trips, isLoading, tab]);
 
@@ -116,7 +121,15 @@ export default function TripsPage() {
             setIsLoading(false);
             return;
         }
-        setIsLoading(true);
+        const key = viewCacheKey('trips', { tab, search, status, page, user: user?.id || null });
+        const cached = readViewCache(key);
+        if (cached) {
+            setTrips(cached.trips);
+            setPagination(cached.pagination);
+            setIsLoading(false);
+        } else {
+            setIsLoading(true);
+        }
         try {
             const params = { search, status, page, limit: 12 };
             const res = tab === 'mine'
@@ -124,9 +137,10 @@ export default function TripsPage() {
                 : await tripsApi.getAll(params);
             setTrips(res.data.data);
             setPagination(res.data.pagination);
+            writeViewCache(key, { trips: res.data.data, pagination: res.data.pagination });
         } catch (err) {
             console.error(err);
-            setTrips([]);
+            if (!cached) setTrips([]);
         } finally {
             setIsLoading(false);
         }

@@ -3,7 +3,28 @@
 .page-transition-root {
   width: 100%;
   min-height: inherit;
-  transform-style: preserve-3d;
+  /* `backwards`, not `both`: once finished, no fill is left that would keep a stacking context */
+  animation: ps-page-in 0.2s ease-out backwards;
+}
+
+@keyframes ps-page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Back/Forward: show the page as the reader left it — no fade, no replayed reveals */
+html[data-nav='pop'] .page-transition-root {
+  animation: none;
+}
+
+html[data-nav='pop'] .ps-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 /* Scroll reveal.

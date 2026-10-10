@@ -89,9 +89,8 @@ export default function MotionBridge() {
     const { pathname } = useLocation();
 
     useEffect(() => {
+        // Scroll position on navigation is handled by ScrollManager.
         if (prefersReducedMotion()) return undefined;
-
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 
         const root = document.querySelector('main.app-page');
         if (!root) return undefined;
@@ -117,29 +116,32 @@ export default function MotionBridge() {
                 // Page declared its own reveal in markup — useGoFlyMotion drives it
                 if (el.classList.contains('ps-reveal')) return;
                 el.dataset.psRevealBound = '1';
+
+                // Content already on screen has been seen: hiding it now would make it
+                // flash out and slide back in. Only content further down gets a reveal.
+                const rect = el.getBoundingClientRect();
+                const inView = rect.top < window.innerHeight && rect.bottom > 0;
+                if (inView) return;
+
                 el.classList.add('ps-reveal');
                 el.style.setProperty('--ps-delay', `${Math.min(i % 6, 5) * 55}ms`);
-
-                const rect = el.getBoundingClientRect();
-                const inView = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
-                if (inView) {
-                    // Stagger first paint slightly without waiting for IO
-                    window.requestAnimationFrame(() => el.classList.add('ps-reveal-in'));
-                } else {
-                    io.observe(el);
-                }
+                io.observe(el);
             });
 
             root.querySelectorAll(TILT_SELECTORS).forEach(attachTilt);
         };
 
-        // Run after paint so route content exists
-        const t = window.setTimeout(prep, 40);
-        const mo = new MutationObserver(() => prep());
+        // At most one scan per frame, however many nodes a render adds.
+        let frame = 0;
+        const schedulePrep = () => {
+            if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; prep(); });
+        };
+        prep();
+        const mo = new MutationObserver(schedulePrep);
         mo.observe(root, { childList: true, subtree: true });
 
         return () => {
-            window.clearTimeout(t);
+            if (frame) window.cancelAnimationFrame(frame);
             io.disconnect();
             mo.disconnect();
         };
