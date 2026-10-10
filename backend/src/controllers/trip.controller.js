@@ -157,7 +157,10 @@ export const getTripById = async (req, res) => {
         : false;
     // 404 rather than 403 so private trip ids are not confirmed to outsiders.
     if (!trip || (!canViewTrip(trip, req.user) && !viaInvite)) throw new AppError('Trip not found.', 404);
-    res.json({ success: true, data: { ...(await withVerificationFlags(trip)), viaInvite } });
+    res.json({
+        success: true,
+        data: { ...(await withVerificationFlags(trip)), viaInvite, shareUrl: shareTripUrl(req, trip.id) },
+    });
 };
 
 // GET /api/trips/:id/car-suggestions

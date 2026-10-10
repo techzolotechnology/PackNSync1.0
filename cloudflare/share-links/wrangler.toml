@@ -1,0 +1,19 @@
+# Cloudflare Worker for go.pickandsync.com (short trip links + API keep-awake).
+# Deploy from this folder:  npx wrangler@4 login  then  npx wrangler@4 deploy
+name = "pickandsync-share"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Creates the go.pickandsync.com DNS record and certificate automatically
+# (the pickandsync.com zone is on the same Cloudflare account).
+routes = [
+  { pattern = "go.pickandsync.com", custom_domain = true }
+]
+
+# Ping the API every 5 minutes so Render's free plan does not put it to sleep.
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+SITE_URL = "https://pickandsync.com"
+API_URL = "https://api.pickandsync.com"
