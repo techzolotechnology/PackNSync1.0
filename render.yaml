@@ -88,6 +88,9 @@ services:
       # Referral reward (promo credit, INR) for both people; 0 disables
       - key: REFERRAL_REWARD_INR
         value: "100"
+      # Most promo credit one admin offer may hand out in total (all recipients together)
+      - key: OFFER_MAX_TOTAL_CREDIT_INR
+        value: "200000"
       # Admin security: Google Authenticator is required for the admin panel
       - key: ADMIN_MFA_REQUIRED
         value: "true"

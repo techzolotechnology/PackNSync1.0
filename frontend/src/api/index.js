@@ -204,6 +204,8 @@ export const rentalsApi = {
     cancelBooking: (id) => api.patch(`/rentals/bookings/${id}/cancel`),
     respondToBooking: (id, status) => api.patch(`/rentals/bookings/${id}/respond`, { status }),
     payBooking: (id, data = { method: 'wallet' }) => api.post(`/rentals/bookings/${id}/pay`, data),
+    // Price to pay now, after any offer discount
+    quoteBooking: (id) => api.get(`/rentals/bookings/${id}/quote`),
     reviewDriver: (id, data) => api.post(`/rentals/bookings/${id}/driver-review`, data),
     getDriverReviews: (userId) => api.get(`/rentals/drivers/${userId}/reviews`),
 };
@@ -291,7 +293,7 @@ export const adminApi = {
     refundPayment: (id) => api.post(`/admin/payments/${id}/refund`),
     getOverview: () => api.get('/admin/overview'),
     getUserDetail: (id) => api.get(`/admin/users/${id}/detail`),
-    grantPromo: (id, amount, reason) => api.post(`/admin/users/${id}/promo`, { amount, reason }),
+    grantPromo: (id, amount, reason, expiresAt) => api.post(`/admin/users/${id}/promo`, { amount, reason, expiresAt }),
     getWithdrawals: (status = 'PENDING') => api.get('/admin/wallet/withdrawals', { params: { status } }),
     completeWithdrawal: (id, reference) => api.post(`/admin/wallet/withdrawals/${id}/complete`, { reference }),
     rejectWithdrawal: (id, reason) => api.post(`/admin/wallet/withdrawals/${id}/reject`, { reason }),
@@ -331,6 +333,16 @@ export const adminApi = {
     sendBroadcast: (data) => api.post('/admin/broadcasts', data),
     getBroadcasts: () => api.get('/admin/broadcasts'),
     search: (q) => api.get('/admin/search', { params: { q } }),
+    // Offers: rental discounts and wallet credits
+    getOffers: () => api.get('/admin/offers'),
+    previewOffer: (data) => api.post('/admin/offers/preview', data),
+    createOffer: (data) => api.post('/admin/offers', data),
+    endOffer: (id) => api.post(`/admin/offers/${id}/end`),
+};
+
+export const offersApi = {
+    // Rental discounts sent to me that I can still use
+    mine: () => api.get('/offers/mine'),
 };
 
 export const reportsApi = {

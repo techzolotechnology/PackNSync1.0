@@ -13,6 +13,7 @@ import AdminReports from '../components/admin/AdminReports.jsx';
 import AdminEarnings from '../components/admin/AdminEarnings.jsx';
 import AdminStuckTopups from '../components/admin/AdminStuckTopups.jsx';
 import AdminBroadcast from '../components/admin/AdminBroadcast.jsx';
+import AdminOffers from '../components/admin/AdminOffers.jsx';
 import AdminSearch from '../components/admin/AdminSearch.jsx';
 import { ListingEditor, TripChatModeration } from '../components/admin/AdminModeration.jsx';
 import { downloadCsv } from '../utils/csv.js';
@@ -28,6 +29,7 @@ const TABS = [
     { id: 'Rentals', label: 'Rentals' },
     { id: 'Money', label: 'Money' },
     { id: 'People', label: 'People' },
+    { id: 'Offers', label: 'Offers & credits' },
     { id: 'Broadcast', label: 'Broadcast' },
     { id: 'Audit', label: 'Audit & security' },
 ];
@@ -969,6 +971,20 @@ export default function AdminPage() {
                                 </button>
                             </div>
                         )}
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'Offers' && (
+                    <div className="admin-panel">
+                        <div className="admin-panel-head">
+                            <div>
+                                <h2>Offers & credits</h2>
+                                <p>Give a rental discount or wallet credit to everyone, a group, or chosen people. To credit one person, open them under People.</p>
+                            </div>
+                        </div>
+                        <div className="admin-panel-body">
+                            <AdminOffers />
                         </div>
                     </div>
                 )}

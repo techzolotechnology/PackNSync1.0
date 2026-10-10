@@ -1,5 +1,6 @@
 import { prisma } from './prisma.js';
 import { AppError } from './AppError.js';
+import { consumePromoGrants, expireDueGrantsForUser, recordPromoGrant } from './promoGrants.js';
 
 export async function getOrCreateWallet(userId, tx = prisma) {
     // upsert avoids a unique-constraint race when two requests create the wallet at once
@@ -140,6 +141,8 @@ export async function debitWallet({
 
         // Promo credit is spent first on in-app spends; withdrawals use cash only.
         const usePromo = type === 'SPEND';
+        // Credit past its expiry date must not pay for anything, even before the sweep runs.
+        if (usePromo) await expireDueGrantsForUser(tx, userId);
         let wallet;
         let promoUsed = 0;
         for (let attempt = 0; ; attempt += 1) {
@@ -162,6 +165,8 @@ export async function debitWallet({
             if (attempt >= 4) throw new AppError('Wallet is busy. Please try again.', 409);
         }
         const updated = await tx.wallet.findUnique({ where: { id: wallet.id } });
+        // Which credit blocks paid, so a refund can give back exactly those.
+        const promoGrants = promoUsed > 0 ? await consumePromoGrants(tx, userId, promoUsed) : [];
 
         const transaction = await tx.walletTransaction.create({
             data: {
@@ -173,7 +178,7 @@ export async function debitWallet({
                 description,
                 referenceId,
                 provider,
-                metadata: promoUsed > 0 ? { ...(metadata || {}), promoUsed } : metadata,
+                metadata: promoUsed > 0 ? { ...(metadata || {}), promoUsed, promoGrants } : metadata,
             },
         });
 
@@ -182,10 +187,25 @@ export async function debitWallet({
 }
 
 /**
- * Grant promotional credit (referral rewards etc.). Idempotent on referenceId.
- * Promo credit can pay for bookings but is never withdrawable.
+ * Grant promotional credit (referral rewards, admin credit, offers). Idempotent
+ * on referenceId. Promo credit pays for bookings but is never withdrawable;
+ * with `expiresAt` the unspent part is removed on that date.
+ *
+ * `source` is ADMIN | OFFER | REFERRAL | REFUND (see promo_grants).
  */
-export async function creditPromo({ userId, amount, referenceId, description, metadata, tx: outerTx }) {
+export async function creditPromo({
+    userId,
+    amount,
+    referenceId,
+    description,
+    metadata,
+    expiresAt = null,
+    source = 'ADMIN',
+    note,
+    offerId,
+    grantedById,
+    tx: outerTx,
+}) {
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0) {
         throw new AppError('Promo amount must be positive.', 400);
@@ -203,6 +223,9 @@ export async function creditPromo({ userId, amount, referenceId, description, me
             where: { id: wallet.id },
             data: { promoBalance: { increment: value } },
         });
+        const grant = await recordPromoGrant(tx, {
+            userId, amount: value, referenceId, expiresAt, source, note: note ?? description, offerId, grantedById,
+        });
         const transaction = await tx.walletTransaction.create({
             data: {
                 walletId: wallet.id,
@@ -213,10 +236,15 @@ export async function creditPromo({ userId, amount, referenceId, description, me
                 description,
                 referenceId,
                 provider: 'PROMO',
-                metadata: { ...(metadata || {}), promo: true },
+                metadata: {
+                    ...(metadata || {}),
+                    promo: true,
+                    grantId: grant.id,
+                    ...(expiresAt ? { expiresAt: expiresAt.toISOString() } : {}),
+                },
             },
         });
-        return { wallet: updated, transaction, duplicate: false };
+        return { wallet: updated, transaction, grant, duplicate: false };
     });
 }
 

@@ -5,6 +5,7 @@ import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
 import { logAdminAction } from '../utils/audit.js';
 import { creditPromo, refundDebit } from '../utils/wallet.js';
+import { parsePromoExpiry, activePromoCredits } from '../utils/promoGrants.js';
 import { getUserVerificationState } from '../utils/verificationHelpers.js';
 
 /**
@@ -138,7 +139,7 @@ adminOpsRouter.get('/users/:id/detail', async (req, res) => {
     });
     if (!user) throw new AppError('User not found.', 404);
 
-    const [wallet, bookings, verification, audit] = await Promise.all([
+    const [wallet, bookings, verification, audit, promoCredits] = await Promise.all([
         prisma.wallet.findUnique({
             where: { userId: user.id },
             include: { transactions: { orderBy: { createdAt: 'desc' }, take: 20 } },
@@ -156,6 +157,7 @@ adminOpsRouter.get('/users/:id/detail', async (req, res) => {
             orderBy: { createdAt: 'desc' },
             take: 10,
         }),
+        activePromoCredits(user.id),
     ]);
 
     res.json({
@@ -163,8 +165,8 @@ adminOpsRouter.get('/users/:id/detail', async (req, res) => {
         data: {
             user,
             wallet: wallet
-                ? { balance: wallet.balance, promoBalance: wallet.promoBalance, transactions: wallet.transactions }
-                : { balance: 0, promoBalance: 0, transactions: [] },
+                ? { balance: wallet.balance, promoBalance: wallet.promoBalance, transactions: wallet.transactions, promoCredits }
+                : { balance: 0, promoBalance: 0, transactions: [], promoCredits: [] },
             bookings,
             verification: {
                 isFullyVerified: verification.isFullyVerified,
@@ -178,7 +180,8 @@ adminOpsRouter.get('/users/:id/detail', async (req, res) => {
     });
 });
 
-// POST /api/admin/users/:id/promo { amount, reason } — goodwill / support credit
+// POST /api/admin/users/:id/promo { amount, reason, expiresAt? } — credit for car and bike rentals
+// (never withdrawable). With expiresAt the unspent part is removed on that date.
 adminOpsRouter.post('/users/:id/promo', async (req, res) => {
     const amount = Number(req.body?.amount);
     const reason = String(req.body?.reason || '').trim();
@@ -186,6 +189,7 @@ adminOpsRouter.post('/users/:id/promo', async (req, res) => {
         throw new AppError(`Promo credit must be between ₹1 and ₹${MAX_PROMO_GRANT}.`, 400);
     }
     if (reason.length < 3) throw new AppError('Give a reason for the credit.', 400);
+    const expiresAt = parsePromoExpiry(req.body?.expiresAt);
 
     const user = await prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true, name: true } });
     if (!user) throw new AppError('User not found.', 404);
@@ -196,19 +200,26 @@ adminOpsRouter.post('/users/:id/promo', async (req, res) => {
         referenceId: `admin_promo_${randomUUID()}`,
         description: `Credit from PickAndSync: ${reason.slice(0, 120)}`,
         metadata: { grantedBy: req.user.id, reason },
+        expiresAt,
+        source: 'ADMIN',
+        note: reason.slice(0, 200),
+        grantedById: req.user.id,
     });
 
+    const until = expiresAt
+        ? ` Use it before ${expiresAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}.`
+        : '';
     await notifyUser({
         userId: user.id,
         type: 'SYSTEM',
         title: `₹${amount.toLocaleString('en-IN')} credit added`,
-        body: `The PickAndSync team added promo credit to your wallet: ${reason}`,
+        body: `The PickAndSync team added promo credit to your wallet for car and bike rentals: ${reason}.${until}`,
         data: { promo: true },
     });
     await logAdminAction(req, {
         action: 'PROMO_GRANT', targetType: 'USER', targetId: user.id,
-        summary: `Granted ₹${amount.toLocaleString('en-IN')} promo credit to ${user.name}: ${reason}`,
-        metadata: { amount, reason },
+        summary: `Granted ₹${amount.toLocaleString('en-IN')} promo credit to ${user.name}${expiresAt ? ` (expires ${expiresAt.toISOString().slice(0, 10)})` : ''}: ${reason}`,
+        metadata: { amount, reason, expiresAt },
     });
 
     res.json({ success: true, data: { promoBalance: wallet.promoBalance } });
@@ -304,7 +315,7 @@ adminOpsRouter.get('/wallet/transactions', async (req, res) => {
     const q = String(req.query.q || '').trim();
 
     const where = {};
-    if (['TOPUP', 'SPEND', 'REFUND', 'WITHDRAW', 'ADJUST'].includes(type)) where.type = type;
+    if (['TOPUP', 'SPEND', 'REFUND', 'WITHDRAW', 'ADJUST', 'EARNING', 'EXPIRE'].includes(type)) where.type = type;
     if (['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'].includes(status)) where.status = status;
     if (q) {
         where.OR = [

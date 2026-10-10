@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { walletApi } from '../api/index.js';
+import { walletApi, offersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import InviteFriendsCard from '../components/InviteFriendsCard.jsx';
@@ -38,7 +38,9 @@ const txLabel = (tx) => {
         SPEND: 'Spent',
         WITHDRAW: 'Withdrawn',
         REFUND: 'Refund',
-        ADJUST: 'Adjustment',
+        ADJUST: tx.provider === 'PROMO' ? 'Promo credit' : 'Adjustment',
+        EARNING: 'Host earning',
+        EXPIRE: 'Credit expired',
     };
     return map[tx.type] || tx.type;
 };
@@ -61,13 +63,17 @@ export default function WalletPage() {
     const [accountNumber, setAccountNumber] = useState('');
     const [ifsc, setIfsc] = useState('');
 
+    const [offers, setOffers] = useState([]);
+
     const refresh = useCallback(async () => {
-        const [wRes, tRes] = await Promise.all([
+        const [wRes, tRes, oRes] = await Promise.all([
             walletApi.get(),
             walletApi.transactions({ limit: 40 }),
+            offersApi.mine().catch(() => null),
         ]);
         setWallet(wRes.data.data);
         setTxs(tRes.data.data || []);
+        setOffers(oRes?.data?.data || []);
     }, []);
 
     useEffect(() => {
@@ -226,10 +232,51 @@ export default function WalletPage() {
                         </span>
                         {wallet?.promoBalance > 0 && (
                             <span className="wallet-balance-meta">
-                                + ₹{Number(wallet.promoBalance).toLocaleString('en-IN')} promo credit · used first on bookings, not withdrawable
+                                + ₹{Number(wallet.promoBalance).toLocaleString('en-IN')} promo credit · used first on car and bike rentals, not withdrawable
                             </span>
                         )}
                     </section>
+
+                    {(wallet?.promoCredits?.length > 0 || offers.length > 0) && (
+                        <section className="wallet-panel wallet-perks">
+                            {wallet?.promoCredits?.length > 0 && (
+                                <>
+                                    <h2>Promo credit</h2>
+                                    <p className="wallet-muted">Spent automatically on car and bike rentals, soonest-expiring first.</p>
+                                    <ul className="wallet-perk-list">
+                                        {wallet.promoCredits.map((c) => (
+                                            <li key={c.id}>
+                                                <strong>₹{Number(c.remaining).toLocaleString('en-IN')}</strong>
+                                                <span>{c.note || (c.source === 'REFERRAL' ? 'Referral reward' : 'Promo credit')}</span>
+                                                <small className={c.expiresAt ? 'wallet-perk-expiry' : ''}>
+                                                    {c.expiresAt ? `Use by ${format(new Date(c.expiresAt), 'd MMM yyyy')}` : 'No expiry'}
+                                                </small>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+                            {offers.length > 0 && (
+                                <>
+                                    <h2>Your offers</h2>
+                                    <p className="wallet-muted">Applied automatically when you pay for a matching rental.</p>
+                                    <ul className="wallet-perk-list">
+                                        {offers.map((o) => (
+                                            <li key={o.id}>
+                                                <strong>{o.title}</strong>
+                                                <span>{o.summary}</span>
+                                                <small className="wallet-perk-expiry">
+                                                    {o.validUntil ? `Until ${format(new Date(o.validUntil), 'd MMM yyyy')}` : 'No end date'}
+                                                    {o.usesLeft > 1 ? ` · ${o.usesLeft} uses left` : ''}
+                                                </small>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Link to="/rentals" className="btn btn-ghost btn-sm">Browse cars & bikes</Link>
+                                </>
+                            )}
+                        </section>
+                    )}
 
                     <div className="wallet-grid">
                         <section className="wallet-panel">
@@ -355,7 +402,7 @@ export default function WalletPage() {
                         ) : (
                             <ul className="wallet-tx-list">
                                 {txs.map((tx) => {
-                                    const out = tx.type === 'SPEND' || tx.type === 'WITHDRAW';
+                                    const out = ['SPEND', 'WITHDRAW', 'EXPIRE'].includes(tx.type);
                                     return (
                                         <li key={tx.id}>
                                             <div>

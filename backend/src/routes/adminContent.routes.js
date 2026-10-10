@@ -3,6 +3,7 @@ import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
 import { logAdminAction } from '../utils/audit.js';
+import { AUDIENCES, audienceWhere } from '../utils/audiences.js';
 
 /** Content moderation, broadcasts, global search and admin 2FA resets. */
 export const adminContentRouter = Router();
@@ -135,36 +136,6 @@ adminContentRouter.patch('/vehicles/:id/images', async (req, res) => {
 /* ------------------------------------------------------------------ */
 /* Broadcasts                                                          */
 /* ------------------------------------------------------------------ */
-
-const AUDIENCES = ['ALL', 'HOSTS', 'ORGANIZERS', 'VERIFIED', 'CITY'];
-
-function audienceWhere(audience, city) {
-    const base = { isBanned: false, role: 'USER' };
-    switch (audience) {
-        case 'HOSTS': return { ...base, rentalListings: { some: {} } };
-        case 'ORGANIZERS': return { ...base, organizedTrips: { some: {} } };
-        case 'VERIFIED':
-            return {
-                ...base,
-                AND: [
-                    { verifications: { some: { documentType: 'DL', status: 'VERIFIED' } } },
-                    { verifications: { some: { documentType: 'AADHAAR', status: 'VERIFIED' } } },
-                ],
-            };
-        case 'CITY': {
-            const c = String(city || '').trim();
-            if (c.length < 2) throw new AppError('Enter a city for a city broadcast.', 400);
-            return {
-                ...base,
-                OR: [
-                    { city: { contains: c, mode: 'insensitive' } },
-                    { rentalListings: { some: { location: { contains: c, mode: 'insensitive' } } } },
-                ],
-            };
-        }
-        default: return base;
-    }
-}
 
 function readBroadcast(body) {
     const audience = String(body?.audience || 'ALL').toUpperCase();

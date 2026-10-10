@@ -6,7 +6,8 @@ import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
 import { notifyUser } from '../utils/notify.js';
-import { creditWallet, creditPromo } from '../utils/wallet.js';
+import { creditWallet } from '../utils/wallet.js';
+import { returnPromo } from '../utils/promoGrants.js';
 import { cancelEarningForBooking } from '../utils/hostEarnings.js';
 import { deleteUserAccount } from '../utils/deleteUser.js';
 import { logAdminAction } from '../utils/audit.js';
@@ -15,6 +16,7 @@ import { adminSecurityRouter } from './adminSecurity.routes.js';
 import { adminMoneyRouter } from './adminMoney.routes.js';
 import { adminReportsRouter } from './adminReports.routes.js';
 import { adminContentRouter } from './adminContent.routes.js';
+import { adminOffersRouter } from './adminOffers.routes.js';
 import { requireAdminMfa } from '../middleware/adminMfa.middleware.js';
 import {
     listVerifications,
@@ -44,6 +46,7 @@ adminRouter.use(adminOpsRouter);
 adminRouter.use(adminMoneyRouter);
 adminRouter.use(adminReportsRouter);
 adminRouter.use(adminContentRouter);
+adminRouter.use(adminOffersRouter);
 
 // GET /api/admin/stats
 adminRouter.get('/stats', async (_req, res) => {
@@ -605,13 +608,14 @@ adminRouter.post('/payments/:id/refund', async (req, res) => {
                 });
             }
             if (promoUsed > 0) {
-                await creditPromo({
+                // Back to the same credit blocks (and their expiry dates) it came from.
+                await returnPromo(tx, {
                     userId: payment.userId,
                     amount: promoUsed,
+                    grants: spendTx.metadata?.promoGrants,
                     referenceId: `refund_promo_${payment.id}`,
                     description: 'Promo credit returned (refund)',
                     metadata: { paymentId: payment.id, bookingId },
-                    tx,
                 });
             }
         }
@@ -621,6 +625,8 @@ adminRouter.post('/payments/:id/refund', async (req, res) => {
                 data: { status: 'CANCELLED' },
             });
             earningOutcome = await cancelEarningForBooking(bookingId, tx);
+            // A refunded booking gives the offer use back.
+            await tx.offerRedemption.deleteMany({ where: { bookingId } });
         }
 
         return tx.payment.findUnique({

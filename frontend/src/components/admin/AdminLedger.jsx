@@ -5,9 +5,9 @@ import { adminApi } from '../../api/index.js';
 import { formatMoney } from '../../config/markets.js';
 import { downloadCsv } from '../../utils/csv.js';
 
-const TYPES = ['TOPUP', 'SPEND', 'REFUND', 'WITHDRAW', 'ADJUST'];
+const TYPES = ['TOPUP', 'SPEND', 'REFUND', 'WITHDRAW', 'ADJUST', 'EARNING', 'EXPIRE'];
 const STATUSES = ['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'];
-const INFLOW = new Set(['TOPUP', 'REFUND', 'ADJUST']);
+const INFLOW = new Set(['TOPUP', 'REFUND', 'ADJUST', 'EARNING']);
 /** Failed/cancelled rows never moved money (a failed withdrawal was refunded). */
 const settledNothing = (r) => r.status === 'FAILED' || r.status === 'CANCELLED';
 

@@ -3,16 +3,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 // Minimal in-memory stand-in for the Prisma calls the wallet helpers make.
 // Conditional updateMany calls are evaluated against current state, which is
 // what makes the real queries race-safe.
-const db = { wallets: [], txs: [] };
+const db = { wallets: [], txs: [], grants: [] };
 let nextId = 1;
 
 const matches = (row, where = {}) => Object.entries(where).every(([key, cond]) => {
     if (cond && typeof cond === 'object' && !Array.isArray(cond)) {
         if ('gte' in cond) return row[key] >= cond.gte;
+        if ('gt' in cond) return row[key] > cond.gt;
+        if ('lte' in cond) return row[key] != null && row[key] <= cond.lte;
         if ('in' in cond) return cond.in.includes(row[key]);
         if ('notIn' in cond) return !cond.notIn.includes(row[key]);
     }
-    return row[key] === cond;
+    return (row[key] ?? null) === cond;
 });
 
 const applyData = (row, data) => {
@@ -53,6 +55,17 @@ const client = {
     },
 };
 
+client.promoGrant = {
+    create: async ({ data }) => { const g = { id: `g${nextId++}`, createdAt: new Date(), ...data }; db.grants.push(g); return { ...g }; },
+    findMany: async ({ where }) => db.grants.filter((g) => matches(g, where)).map((g) => ({ ...g })),
+    count: async ({ where }) => db.grants.filter((g) => matches(g, where)).length,
+    updateMany: async ({ where, data }) => {
+        const rows = db.grants.filter((g) => matches(g, where));
+        rows.forEach((r) => applyData(r, data));
+        return { count: rows.length };
+    },
+};
+
 vi.mock('./prisma.js', () => ({
     prisma: { ...client, $transaction: (fn) => fn(client) },
 }));
@@ -66,6 +79,7 @@ describe('wallet helpers', () => {
     beforeEach(() => {
         db.wallets = [];
         db.txs = [];
+        db.grants = [];
     });
 
     it('credits a pending top-up only once when webhook and verify race', async () => {
@@ -127,6 +141,24 @@ describe('wallet helpers', () => {
         expect(promoOf('u1')).toBe(0);
         expect(balanceOf('u1')).toBe(80);
         expect(transaction.metadata.promoUsed).toBe(30);
+    });
+
+    it('spends the credit that expires soonest first and records which blocks paid', async () => {
+        await creditWallet({ userId: 'u1', amount: 100, referenceId: 'seed' });
+        const later = await creditPromo({ userId: 'u1', amount: 40, referenceId: 'admin_a', expiresAt: new Date('2099-01-01') });
+        const never = await creditPromo({ userId: 'u1', amount: 25, referenceId: 'referral_q', source: 'REFERRAL' });
+        const sooner = await creditPromo({ userId: 'u1', amount: 20, referenceId: 'offer_b', expiresAt: new Date('2098-01-01') });
+
+        const { transaction } = await debitWallet({ userId: 'u1', amount: 50, referenceId: 'rental_b3' });
+
+        expect(transaction.metadata.promoUsed).toBe(50);
+        expect(transaction.metadata.promoGrants).toEqual([
+            { id: sooner.grant.id, amount: 20 },
+            { id: later.grant.id, amount: 30 },
+        ]);
+        expect(db.grants.find((g) => g.id === never.grant.id).remaining).toBe(25);
+        expect(promoOf('u1')).toBe(35);
+        expect(balanceOf('u1')).toBe(100);
     });
 
     it('never lets promo credit be withdrawn', async () => {

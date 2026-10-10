@@ -78,6 +78,7 @@ export async function grantReferralRewards(refereeId) {
             referenceId: `referral_${referee.id}_referee`,
             description: 'Referral reward: welcome credit',
             metadata: { referrerId: referee.referredById },
+            source: 'REFERRAL',
         }),
         creditPromo({
             userId: referee.referredById,
@@ -85,6 +86,7 @@ export async function grantReferralRewards(refereeId) {
             referenceId: `referral_${referee.id}_referrer`,
             description: `Referral reward: ${referee.name} made their first booking`,
             metadata: { refereeId: referee.id },
+            source: 'REFERRAL',
         }),
     ]);
 

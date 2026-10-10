@@ -35,18 +35,25 @@ export default function AdminUserDrawer({ userId, onClose, onBanToggle, onChange
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
 
-    const grantPromo = async () => {
-        const amount = window.prompt('Promo credit amount in ₹ (max 5,000). It can be spent on bookings but not withdrawn:');
-        if (amount === null) return;
-        const reason = window.prompt('Reason (shown to the user and kept in the audit log):');
-        if (reason === null) return;
+    const [creditForm, setCreditForm] = useState(null);
+    const [savingCredit, setSavingCredit] = useState(false);
+
+    const grantPromo = async (e) => {
+        e.preventDefault();
+        const amount = Number(creditForm.amount);
+        const until = creditForm.expiresAt ? ` until ${format(new Date(`${creditForm.expiresAt}T00:00:00`), 'd MMM yyyy')}` : ' with no expiry';
+        if (!window.confirm(`Add ${formatMoney(amount)} promo credit to ${data.user.name}${until}?\n\nIt pays for car and bike rentals and can't be withdrawn.`)) return;
+        setSavingCredit(true);
         try {
-            await adminApi.grantPromo(userId, Number(amount), reason.trim());
-            toast.success('Promo credit added.');
+            await adminApi.grantPromo(userId, amount, creditForm.reason.trim(), creditForm.expiresAt || undefined);
+            toast.success('Credit added. They have been notified.');
+            setCreditForm(null);
             load();
             onChanged?.();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not add credit.');
+        } finally {
+            setSavingCredit(false);
         }
     };
 
@@ -86,7 +93,14 @@ export default function AdminUserDrawer({ userId, onClose, onBanToggle, onChange
                         {u.isBanned && u.banReason && <p className="adm-drawer-note">Ban reason: {u.banReason}</p>}
 
                         <div className="adm-drawer-actions">
-                            <button type="button" className="btn btn-primary btn-sm" onClick={grantPromo}>Add promo credit</button>
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => setCreditForm(creditForm ? null : { amount: '', reason: '', expiresAt: '' })}
+                                aria-expanded={Boolean(creditForm)}
+                            >
+                                Add credit
+                            </button>
                             {u.role !== 'ADMIN' && (
                                 <button type="button" className="btn btn-ghost btn-sm" onClick={async () => { await onBanToggle(u); load(); }}>
                                     {u.isBanned ? 'Unban' : 'Ban'}
@@ -113,12 +127,75 @@ export default function AdminUserDrawer({ userId, onClose, onBanToggle, onChange
                             <Link to={`/profile/${u.id}`} className="btn btn-ghost btn-sm">Public profile</Link>
                         </div>
 
+                        {creditForm && (
+                            <form className="adm-edit-form adm-credit-form" onSubmit={grantPromo}>
+                                <p className="adm-inline-note">
+                                    Promo credit pays for car and bike rentals (used before cash) and can never be withdrawn.
+                                </p>
+                                <label>
+                                    <span>Amount (₹, up to 5,000)</span>
+                                    <input
+                                        className="form-input"
+                                        type="number"
+                                        min="1"
+                                        max="5000"
+                                        required
+                                        value={creditForm.amount}
+                                        onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
+                                    />
+                                </label>
+                                <label>
+                                    <span>Reason <small>(shown to them and kept in the audit log)</small></span>
+                                    <input
+                                        className="form-input"
+                                        required
+                                        minLength={3}
+                                        maxLength={200}
+                                        placeholder="e.g. Sorry for the late pickup"
+                                        value={creditForm.reason}
+                                        onChange={(e) => setCreditForm({ ...creditForm, reason: e.target.value })}
+                                    />
+                                </label>
+                                <label>
+                                    <span>Expires on <small>(optional; unused credit is removed after this day)</small></span>
+                                    <input
+                                        className="form-input"
+                                        type="date"
+                                        min={format(new Date(Date.now() + 86400000), 'yyyy-MM-dd')}
+                                        max={format(new Date(Date.now() + 365 * 86400000), 'yyyy-MM-dd')}
+                                        value={creditForm.expiresAt}
+                                        onChange={(e) => setCreditForm({ ...creditForm, expiresAt: e.target.value })}
+                                    />
+                                </label>
+                                <div className="admin-actions">
+                                    <button type="submit" className="btn btn-primary btn-sm" disabled={savingCredit || !(Number(creditForm.amount) > 0) || creditForm.reason.trim().length < 3}>
+                                        {savingCredit ? 'Adding…' : 'Add credit'}
+                                    </button>
+                                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCreditForm(null)}>Cancel</button>
+                                </div>
+                            </form>
+                        )}
+
                         <section className="adm-drawer-section">
                             <h3>Wallet</h3>
                             <div className="adm-drawer-stats">
                                 <div><span>Cash</span><strong>{formatMoney(data.wallet.balance)}</strong></div>
                                 <div><span>Promo credit</span><strong>{formatMoney(data.wallet.promoBalance)}</strong></div>
                             </div>
+                            {data.wallet.promoCredits?.length > 0 && (
+                                <ul className="adm-drawer-list" aria-label="Promo credit by expiry">
+                                    {data.wallet.promoCredits.map((c) => (
+                                        <li key={c.id}>
+                                            <span>
+                                                {formatMoney(c.remaining)} <small>of {formatMoney(c.amount)} · {c.note || c.source.toLowerCase()}</small>
+                                            </span>
+                                            <span className={`badge ${c.expiresAt ? 'badge-warning' : 'badge-neutral'}`}>
+                                                {c.expiresAt ? `expires ${format(new Date(c.expiresAt), 'd MMM yyyy')}` : 'no expiry'}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                             {data.wallet.transactions.length > 0 && (
                                 <ul className="adm-drawer-list">
                                     {data.wallet.transactions.map((t) => (
@@ -126,7 +203,7 @@ export default function AdminUserDrawer({ userId, onClose, onBanToggle, onChange
                                             <span>{t.type}{t.provider === 'PROMO' ? ' · promo' : ''} <small>{format(new Date(t.createdAt), 'MMM d')}</small></span>
                                             <span>
                                                 {/* Failed/cancelled movements never changed the balance, so no sign */}
-                                                {['FAILED', 'CANCELLED'].includes(t.status) ? '' : ['TOPUP', 'REFUND', 'ADJUST'].includes(t.type) ? '+' : '−'}
+                                                {['FAILED', 'CANCELLED'].includes(t.status) ? '' : ['TOPUP', 'REFUND', 'ADJUST', 'EARNING'].includes(t.type) ? '+' : '−'}
                                                 {formatMoney(t.amount)}{' '}
                                                 <span className={`badge ${badge(t.status)}`}>{t.status}</span>
                                             </span>
