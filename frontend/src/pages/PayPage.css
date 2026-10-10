@@ -1,0 +1,56 @@
+.pay-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.pay-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid var(--clr-border);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    align-items: stretch;
+}
+
+.pay-card h1 {
+    font-size: 1.35rem;
+    margin: 0;
+    color: var(--clr-text-primary);
+}
+
+.pay-card p {
+    margin: 0;
+    color: var(--clr-text-secondary);
+    line-height: 1.5;
+}
+
+.pay-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 0.25rem;
+    border-radius: 999px;
+    border: 3px solid var(--clr-border);
+    border-top-color: var(--clr-primary-500);
+    animation: pay-spin 0.9s linear infinite;
+}
+
+@keyframes pay-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pay-spinner {
+        animation-duration: 3s;
+    }
+}

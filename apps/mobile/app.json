@@ -3,7 +3,7 @@
     "name": "PickAndSync",
     "slug": "packandsync",
     "owner": "kartikgauttam",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "sdkVersion": "51.0.0",
     "orientation": "default",
     "scheme": "packandsync",
@@ -17,7 +17,7 @@
     "assetBundlePatterns": ["**/*"],
     "android": {
       "package": "com.packandsync.app",
-      "versionCode": 1,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#007bff"
@@ -34,6 +34,9 @@
       "eas": {
         "projectId": "1c33f722-bd62-4a95-8e81-a23d3c1d5b67"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }

@@ -3,11 +3,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { colors } from '../theme';
 
+// Account opens from the header; hosting from Home, Rentals and Account.
 const tabs = [
   ['Home', '\u2302'],
-  ['Rentals', '\u25a3'],
-  ['Host', '+'],
-  ['Account', '\u25cf'],
+  ['Trips', '\u25ce'],
+  ['Rentals', '\u25a3', 'Rent'],
+  ['Bookings', '\u2630'],
+  ['Wallet', '\u20b9'],
 ];
 
 export default function BottomNav({ activeTab, setTab, layout }) {
@@ -15,7 +17,7 @@ export default function BottomNav({ activeTab, setTab, layout }) {
 
   return (
     <View style={styles.nav}>
-      {tabs.map(([tab, symbol]) => {
+      {tabs.map(([tab, symbol, label = tab]) => {
         const active = tab === activeTab;
         return (
           <TouchableOpacity
@@ -26,7 +28,7 @@ export default function BottomNav({ activeTab, setTab, layout }) {
             style={[styles.item, active && styles.itemActive]}
           >
             <Text style={[styles.symbol, active && styles.textActive]}>{symbol}</Text>
-            <Text numberOfLines={1} style={[styles.label, layout.compact && styles.labelCompact, active && styles.textActive]}>{tab}</Text>
+            <Text numberOfLines={1} style={[styles.label, layout.compact && styles.labelCompact, active && styles.textActive]}>{label}</Text>
           </TouchableOpacity>
         );
       })}

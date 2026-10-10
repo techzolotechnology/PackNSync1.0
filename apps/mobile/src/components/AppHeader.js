@@ -5,12 +5,29 @@ import { colors } from '../theme';
 import { AppButton } from './ui';
 
 const desktopNav = [
-  ['Home', 'Travel Together'],
+  ['Home', 'Home'],
+  ['Trips', 'Group Trips'],
   ['Rentals', 'Cars & Bikes'],
-  ['Host', 'Host a Vehicle'],
+  ['Bookings', 'My Bookings'],
+  ['Wallet', 'Wallet'],
 ];
 
-export default function AppHeader({ activeTab, setTab, layout }) {
+// Signed in: your initial opens the account page. Signed out: the Sync In button.
+function AccountButton({ user, setTab, activeTab, compactStyle }) {
+  if (!user) return <AppButton compact onPress={() => setTab('Account')} style={compactStyle}>Sync In</AppButton>;
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Your account"
+      onPress={() => setTab('Account')}
+      style={[styles.avatar, activeTab === 'Account' && styles.avatarActive]}
+    >
+      <Text style={styles.avatarText}>{String(user.name || 'P').slice(0, 1).toUpperCase()}</Text>
+    </TouchableOpacity>
+  );
+}
+
+export default function AppHeader({ activeTab, setTab, layout, user }) {
   return (
     <View style={styles.header}>
       <View style={[styles.inner, { maxWidth: layout.contentMaxWidth, paddingHorizontal: layout.gutter }]}>
@@ -32,12 +49,10 @@ export default function AppHeader({ activeTab, setTab, layout }) {
                 </TouchableOpacity>
               ))}
             </View>
-            <AppButton compact onPress={() => setTab('Account')}>Sync In</AppButton>
+            <AccountButton user={user} setTab={setTab} activeTab={activeTab} />
           </View>
         ) : (
-          <AppButton compact onPress={() => setTab('Account')} style={layout.compact && styles.compactButton}>
-            Sync In
-          </AppButton>
+          <AccountButton user={user} setTab={setTab} activeTab={activeTab} compactStyle={layout.compact && styles.compactButton} />
         )}
       </View>
     </View>
@@ -63,11 +78,14 @@ const styles = StyleSheet.create({
   logoCompact: { fontSize: 19 },
   tagline: { color: colors.subtle, fontWeight: '700', fontSize: 10, marginTop: 1 },
   desktopActions: { flexDirection: 'row', alignItems: 'center', gap: 24 },
-  desktopNav: { flexDirection: 'row', alignItems: 'stretch', gap: 18 },
+  desktopNav: { flexDirection: 'row', alignItems: 'stretch', gap: 14 },
   navItem: { minHeight: 52, justifyContent: 'center', paddingHorizontal: 5 },
   navText: { color: colors.subtle, fontWeight: '700', fontSize: 14 },
   navTextActive: { color: colors.blue },
   navUnderline: { position: 'absolute', height: 2, backgroundColor: colors.blue, left: 4, right: 4, bottom: 4, borderRadius: 2 },
   compactButton: { minWidth: 76, paddingHorizontal: 13 },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blueSoft, borderWidth: 2, borderColor: 'transparent' },
+  avatarActive: { borderColor: colors.blue },
+  avatarText: { color: colors.blue, fontSize: 18, fontWeight: '900' },
 });
 

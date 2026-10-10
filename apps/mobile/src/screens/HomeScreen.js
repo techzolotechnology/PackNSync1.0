@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Linking, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../theme';
 import { AppButton, Pill, ResponsiveGrid, Surface } from '../components/ui';
@@ -35,7 +35,7 @@ export default function HomeScreen({ layout, setTab }) {
           <Text style={styles.searchTitle}>What would you like to pick today?</Text>
           <View style={[styles.actionRow, !layout.wide && styles.actionColumn]}>
             <AppButton style={styles.action} onPress={() => setTab('Rentals')}>Search Cars & Bikes</AppButton>
-            <AppButton style={styles.action} variant="ghost" onPress={() => Linking.openURL('https://pickandsync.com/trips')}>
+            <AppButton style={styles.action} variant="ghost" onPress={() => setTab('Trips')}>
               Browse Group Trips
             </AppButton>
           </View>

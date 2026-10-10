@@ -144,7 +144,11 @@ export const createTopup = async (req, res) => {
         );
     }
 
-    const returnUrl = `${frontendBase()}/wallet?topup=return&order_id={order_id}`;
+    // Top-ups started in the mobile app pay in the phone's browser, then land on a
+    // page that sends the person back to the app (which verifies the order).
+    const returnUrl = req.body?.returnTo === 'app'
+        ? `${frontendBase()}/pay/done?order_id={order_id}`
+        : `${frontendBase()}/wallet?topup=return&order_id={order_id}`;
     const notifyUrl = `${apiPublicBase(req)}/api/wallet/webhook/cashfree`;
 
     const user = await prisma.user.findUnique({
