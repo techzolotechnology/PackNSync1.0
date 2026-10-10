@@ -18,6 +18,7 @@ import {
     markWithdrawSuccess,
 } from '../utils/wallet.js';
 import { sendMail, emailConfigured } from '../utils/mailer.js';
+import { activePromoCredits } from '../utils/promoGrants.js';
 import { walletTopupEmail } from '../utils/emailTemplates.js';
 
 const MIN_TOPUP = 10;
@@ -38,13 +39,18 @@ function apiPublicBase(req) {
 // GET /api/wallet
 export const getWallet = async (req, res) => {
     const wallet = await getOrCreateWallet(req.user.id);
+    const promoCredits = await activePromoCredits(req.user.id);
     res.json({
         success: true,
         data: {
             id: wallet.id,
             balance: wallet.balance,
-            // Spendable on bookings, not withdrawable
+            // Spendable on car and bike rentals, not withdrawable
             promoBalance: wallet.promoBalance || 0,
+            // Each block of promo credit with its expiry, soonest first
+            promoCredits: promoCredits.map((c) => ({
+                id: c.id, remaining: c.remaining, expiresAt: c.expiresAt, source: c.source, note: c.note,
+            })),
             currency: wallet.currency,
             cashfreeConfigured: cashfreeConfigured(),
             cashfreeMode: cashfreeMode(),

@@ -234,3 +234,12 @@
     font-size: 0.75rem;
     color: var(--clr-text-muted);
 }
+
+/* Offer discount on a booking */
+.booking-offer {
+    display: block;
+    max-width: 240px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #047857;
+}

@@ -28,7 +28,9 @@ import { exploreRouter } from './routes/explore.routes.js';
 import { walletRouter } from './routes/wallet.routes.js';
 import { shareRouter } from './routes/share.routes.js';
 import { reportRouter } from './routes/report.routes.js';
+import { offerRouter } from './routes/offer.routes.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
+import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
@@ -186,6 +188,7 @@ app.use('/api/verifications', verificationRouter);
 app.use('/api/explore', exploreRouter);
 app.use('/api/wallet', walletRouter);
 app.use('/api/reports', reportRouter);
+app.use('/api/offers', offerRouter);
 
 // Link-preview pages for shared trips (Open Graph for WhatsApp etc.)
 app.use('/share', shareRouter);
@@ -196,8 +199,9 @@ app.use(errorHandler);
 
 /**
  * Background sweeps (every 15 min): pay out host earnings whose hold period
- * has passed, and settle top-ups stuck in PENDING. Both are idempotent, so
- * running them on several instances at once is safe.
+ * has passed, expire promo credit past its date (and remind people first),
+ * and settle top-ups stuck in PENDING. All are idempotent, so running them on
+ * several instances at once is safe.
  */
 const SWEEP_MS = 15 * 60 * 1000;
 async function runSweeps() {
@@ -206,6 +210,14 @@ async function runSweeps() {
         if (earnings.released) console.log(`[sweep] released ${earnings.released} host earning(s)`);
     } catch (err) {
         console.error('[sweep] earnings failed:', err.message || err);
+    }
+    try {
+        const expired = await expireDuePromoGrants();
+        if (expired.usersExpired) console.log('[sweep] promo credit expired', expired);
+        const reminders = await remindExpiringPromoGrants();
+        if (reminders.reminded) console.log('[sweep] promo expiry reminders', reminders);
+    } catch (err) {
+        console.error('[sweep] promo credit failed:', err.message || err);
     }
     try {
         const topups = await reconcileStuckTopups();

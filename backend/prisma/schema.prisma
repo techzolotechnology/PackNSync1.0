@@ -125,6 +125,11 @@ model User {
   reportsAssigned       Report[]        @relation("ReportAssignee")
   reportMessages        ReportMessage[]
   broadcasts            Broadcast[]
+  promoGrants           PromoGrant[]      @relation("PromoGrantUser")
+  promoGrantsGiven      PromoGrant[]      @relation("PromoGrantAdmin")
+  offersCreated         Offer[]
+  offerTargets          OfferRecipient[]
+  offerRedemptions      OfferRedemption[]
 
   @@map("users")
 }
@@ -462,6 +467,8 @@ enum WalletTxType {
   WITHDRAW
   ADJUST
   EARNING
+  /// Promo credit removed because it reached its expiry date unused
+  EXPIRE
 }
 
 enum WalletTxStatus {
@@ -554,6 +561,8 @@ model RentalBooking {
   hostAmount      Float?
   /// PickAndSync commission added on top of the host's price
   platformFee     Float    @default(0)
+  /// Offer discount taken off at payment; PickAndSync bears it, the host is paid in full
+  discountAmount  Float    @default(0)
   status          String   @default("PENDING")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -563,6 +572,7 @@ model RentalBooking {
   driverReview    DriverReview?
   hostEarning     HostEarning?
   reports         Report[]
+  offerRedemption OfferRedemption?
 
   @@map("rental_bookings")
 }
@@ -713,4 +723,108 @@ model ExplorePlanStop {
 
   @@index([dayId, sortOrder])
   @@map("explore_plan_stops")
+}
+
+/// One block of promo credit. wallets.promoBalance is the spendable total;
+/// grants say where it came from and when each part expires. Spends use the
+/// soonest-expiring credit first.
+model PromoGrant {
+  id             String    @id @default(uuid())
+  userId         String
+  amount         Float
+  /// Still unspent; reaches 0 when used up or expired
+  remaining      Float
+  expiresAt      DateTime?
+  /// ADMIN | OFFER | REFERRAL | REFUND
+  source         String
+  note           String?
+  offerId        String?
+  grantedById    String?
+  /// Same as the ADJUST wallet transaction that added the credit
+  referenceId    String    @unique
+  reminderSentAt DateTime?
+  expiredAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user      User   @relation("PromoGrantUser", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User?  @relation("PromoGrantAdmin", fields: [grantedById], references: [id], onDelete: SetNull)
+  offer     Offer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+
+  @@index([userId, remaining])
+  @@index([expiresAt])
+  @@map("promo_grants")
+}
+
+/// An admin offer: a rental DISCOUNT applied at payment, or a wallet CREDIT
+/// granted to every recipient when the offer is sent.
+model Offer {
+  id               String    @id @default(uuid())
+  /// CREDIT | DISCOUNT
+  kind             String
+  title            String
+  message          String
+  creditAmount     Float?
+  creditExpiresAt  DateTime?
+  /// PERCENT | FLAT
+  discountType     String?
+  discountValue    Float?
+  /// Upper limit for a percentage discount, in rupees
+  maxDiscount      Float?
+  minBookingAmount Float?
+  /// ALL | CAR | BIKE
+  appliesTo        String    @default("ALL")
+  usesPerUser      Int       @default(1)
+  validUntil       DateTime?
+  /// ALL | HOSTS | ORGANIZERS | VERIFIED | CITY | SELECTED
+  audience         String
+  city             String?
+  recipients       Int       @default(0)
+  /// ACTIVE | ENDED
+  status           String    @default("ACTIVE")
+  createdById      String?
+  endedAt          DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  targets     OfferRecipient[]
+  redemptions OfferRedemption[]
+  grants      PromoGrant[]
+
+  @@index([status, kind])
+  @@map("offers")
+}
+
+/// Who an offer was sent to (fixed when the offer is sent).
+model OfferRecipient {
+  offerId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([offerId, userId])
+  @@index([userId])
+  @@map("offer_recipients")
+}
+
+/// A discount offer used on a paid booking. `seq` numbers a person's uses of
+/// one offer, so two payments racing for the last use cannot both get it.
+model OfferRedemption {
+  id        String   @id @default(uuid())
+  offerId   String
+  userId    String
+  bookingId String   @unique
+  seq       Int
+  amount    Float
+  createdAt DateTime @default(now())
+
+  offer   Offer         @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking RentalBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, userId, seq])
+  @@map("offer_redemptions")
 }

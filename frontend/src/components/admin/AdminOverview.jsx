@@ -104,7 +104,7 @@ export default function AdminOverview({ onNavigate }) {
                 <div className="adm-kpi">
                     <span>Commission, last 30 days</span>
                     <strong>{data ? compactMoney(data.money.commission30) : '—'}</strong>
-                    <em>2% added on rentals</em>
+                    <em>2% rental fee, minus offer discounts</em>
                 </div>
                 <div className="adm-kpi">
                     <span>Owed to hosts</span>

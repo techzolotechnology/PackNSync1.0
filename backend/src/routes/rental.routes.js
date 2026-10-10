@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
     createListing, getListings, getListingById, getCarSuggestions, bookRental, getMyBookings, getHostBookings,
-    cancelBooking, respondToBooking, payBooking, getMyEarnings,
+    cancelBooking, respondToBooking, payBooking, quoteBooking, getMyEarnings,
 } from '../controllers/rental.controller.js';
 import { createDriverReview, getDriverReviews } from '../controllers/driverReview.controller.js';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware.js';
@@ -18,6 +18,7 @@ rentalRouter.get('/bookings/host', authenticate, getHostBookings);
 rentalRouter.get('/earnings/my', authenticate, getMyEarnings);
 rentalRouter.patch('/bookings/:id/cancel', authenticate, cancelBooking);
 rentalRouter.patch('/bookings/:id/respond', authenticate, respondToBooking);
+rentalRouter.get('/bookings/:id/quote', authenticate, quoteBooking);
 rentalRouter.post('/bookings/:id/pay', authenticate, payBooking);
 rentalRouter.post('/bookings/:id/driver-review', authenticate, createDriverReview);
 rentalRouter.get('/drivers/:userId/reviews', getDriverReviews);

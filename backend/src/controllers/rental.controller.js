@@ -15,7 +15,8 @@ import { averageRating } from './driverReview.controller.js';
 import { debitWallet } from '../utils/wallet.js';
 import { resolveListingMarket } from '../utils/markets.js';
 import { grantReferralRewards } from '../utils/referrals.js';
-import { platformFeePercent, priceWithFee, hostShareOf } from '../utils/commission.js';
+import { platformFeePercent, priceWithFee, hostShareOf, round2 } from '../utils/commission.js';
+import { bestDiscountFor, describeDiscount } from '../utils/offers.js';
 import { createEarningForBooking } from '../utils/hostEarnings.js';
 
 // GET /api/rentals/suggestions — cars matched to trip dates / destination / seats
@@ -429,7 +430,7 @@ export const payBooking = async (req, res) => {
         throw new AppError('Pay after the host confirms your booking.', 400);
     }
 
-    const amount = Number(booking.totalPrice);
+    const total = Number(booking.totalPrice);
     const method = String(req.body?.method || 'wallet').toLowerCase();
     if (method !== 'wallet') {
         throw new AppError('Unsupported payment method. Pay from your wallet.', 400);
@@ -439,41 +440,67 @@ export const payBooking = async (req, res) => {
         throw new AppError(`Payments in ${booking.listing.currency} are not supported yet.`, 400);
     }
     const label = `${booking.listing.vehicle.make} ${booking.listing.vehicle.model}`;
+    // What the renter saw on the Pay button; if an offer changed since, we stop instead of charging something else.
+    const expected = req.body?.expectedAmount === undefined ? null : Number(req.body.expectedAmount);
 
     // Claim the booking (CONFIRMED -> PAID) and debit the wallet in one
     // transaction: concurrent pay requests can only charge once, and a failed
     // debit rolls the status back.
-    await prisma.$transaction(async (tx) => {
-        const claimed = await tx.rentalBooking.updateMany({
-            where: { id: booking.id, renterId: req.user.id, status: 'CONFIRMED' },
-            data: { status: 'PAID' },
-        });
-        if (claimed.count === 0) {
-            throw new AppError('This booking is no longer awaiting payment.', 409);
-        }
+    let amount = total;
+    let applied = null;
+    try {
+        await prisma.$transaction(async (tx) => {
+            const claimed = await tx.rentalBooking.updateMany({
+                where: { id: booking.id, renterId: req.user.id, status: 'CONFIRMED' },
+                data: { status: 'PAID' },
+            });
+            if (claimed.count === 0) {
+                throw new AppError('This booking is no longer awaiting payment.', 409);
+            }
 
-        const spend = await debitWallet({
-            userId: req.user.id,
-            amount,
-            type: 'SPEND',
-            status: 'SUCCESS',
-            referenceId: `rental_${booking.id}`,
-            description: `Rental: ${label}`,
-            provider: 'INTERNAL',
-            metadata: { bookingId: booking.id },
-            tx,
-        });
-        await tx.payment.create({
-            data: {
+            // The best offer is decided here, inside the payment, never taken from the client.
+            applied = await bestDiscountFor({ userId: req.user.id, amount: total, vehicleType: booking.listing.vehicle.type }, tx);
+            const discount = applied?.discount || 0;
+            amount = round2(total - discount);
+            if (expected !== null && Number.isFinite(expected) && Math.abs(expected - amount) > 0.009) {
+                throw new AppError('The price changed since you opened this page. Please check the amount and pay again.', 409);
+            }
+
+            const spend = await debitWallet({
                 userId: req.user.id,
-                stripePaymentId: `wallet_${spend.transaction.id}`,
                 amount,
-                currency: 'inr',
-                status: 'succeeded',
-            },
+                type: 'SPEND',
+                status: 'SUCCESS',
+                referenceId: `rental_${booking.id}`,
+                description: applied ? `Rental: ${label} (offer: ${applied.offer.title})` : `Rental: ${label}`,
+                provider: 'INTERNAL',
+                metadata: { bookingId: booking.id, ...(applied ? { offerId: applied.offer.id, discount } : {}) },
+                tx,
+            });
+            await tx.payment.create({
+                data: {
+                    userId: req.user.id,
+                    stripePaymentId: `wallet_${spend.transaction.id}`,
+                    amount,
+                    currency: 'inr',
+                    status: 'succeeded',
+                },
+            });
+            if (applied) {
+                // (offerId, userId, seq) is unique, so two payments racing for the last use cannot both get it.
+                await tx.offerRedemption.create({
+                    data: { offerId: applied.offer.id, userId: req.user.id, bookingId: booking.id, seq: applied.seq, amount: discount },
+                });
+                await tx.rentalBooking.update({ where: { id: booking.id }, data: { discountAmount: discount } });
+            }
+            await createEarningForBooking(tx, { ...booking, discountAmount: discount });
         });
-        await createEarningForBooking(tx, booking);
-    });
+    } catch (err) {
+        if (err?.code === 'P2002' && applied) {
+            throw new AppError('That offer was just used on another booking. Please check the amount and pay again.', 409);
+        }
+        throw err;
+    }
 
     const updated = await prisma.rentalBooking.findUnique({
         where: { id: booking.id },
@@ -500,11 +527,35 @@ export const payBooking = async (req, res) => {
         userId: req.user.id,
         type: 'PAYMENT_RECEIVED',
         title: 'Payment successful',
-        body: `You paid ₹${amount.toLocaleString()} for ${label}${method === 'wallet' ? ' from your wallet' : ''}.`,
+        body: `You paid ₹${amount.toLocaleString('en-IN')} for ${label}${method === 'wallet' ? ' from your wallet' : ''}${applied ? ` (₹${applied.discount.toLocaleString('en-IN')} off with “${applied.offer.title}”)` : ''}.`,
         data: { bookingId: booking.id },
     });
 
-    res.json({ success: true, data: updated, paid: true, method });
+    res.json({ success: true, data: updated, paid: true, method, amount, discount: applied?.discount || 0 });
+};
+
+// GET /api/rentals/bookings/:id/quote — what the renter will pay now, after any offer
+export const quoteBooking = async (req, res) => {
+    const booking = await prisma.rentalBooking.findUnique({
+        where: { id: req.params.id },
+        include: { listing: { include: { vehicle: true } } },
+    });
+    if (!booking || booking.renterId !== req.user.id) throw new AppError('Booking not found.', 404);
+
+    const total = Number(booking.totalPrice);
+    const best = booking.status === 'CONFIRMED'
+        ? await bestDiscountFor({ userId: req.user.id, amount: total, vehicleType: booking.listing.vehicle.type })
+        : null;
+    const discount = best?.discount || 0;
+    res.json({
+        success: true,
+        data: {
+            total,
+            discount,
+            payable: round2(total - discount),
+            offer: best ? { id: best.offer.id, title: best.offer.title, summary: describeDiscount(best.offer) } : null,
+        },
+    });
 };
 
 // GET /api/rentals/bookings/my

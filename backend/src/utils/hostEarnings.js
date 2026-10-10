@@ -2,7 +2,7 @@ import { prisma } from './prisma.js';
 import { AppError } from './AppError.js';
 import { creditWallet } from './wallet.js';
 import { notifyUser } from './notify.js';
-import { earningReleaseHours, hostShareOf } from './commission.js';
+import { earningReleaseHours, hostShareOf, round2 } from './commission.js';
 
 /**
  * Record what the host is owed for a paid booking. Call inside the payment
@@ -15,7 +15,8 @@ export async function createEarningForBooking(tx, booking) {
             bookingId: booking.id,
             hostId: booking.listing.hostId,
             amount: hostShareOf(booking),
-            platformFee: booking.platformFee || 0,
+            // What PickAndSync keeps: the fee minus any offer discount it paid for (can be negative)
+            platformFee: round2((booking.platformFee || 0) - (booking.discountAmount || 0)),
             status: 'PENDING',
             releaseAt,
         },

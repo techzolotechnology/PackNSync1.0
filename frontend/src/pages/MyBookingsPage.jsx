@@ -25,6 +25,7 @@ export default function MyBookingsPage() {
     const [message, setMessage] = useState('');
     const [busyId, setBusyId] = useState(null);
     const [reviewDraft, setReviewDraft] = useState({}); // bookingId -> { rating, comment, open }
+    const [quotes, setQuotes] = useState({}); // bookingId -> { total, discount, payable, offer }
 
     useEffect(() => {
         if (!user) return;
@@ -42,12 +43,27 @@ export default function MyBookingsPage() {
             ]);
             setMyTrips(tripsRes.data.data || []);
             setMyRentals(renterRes.data.data || []);
+            loadQuotes(renterRes.data.data || []);
             setHostRentals(hostRes.data.data || []);
         } catch (err) {
             setMessage(err.response?.data?.message || 'Unable to load bookings.');
         } finally {
             setLoading(false);
         }
+    };
+
+    // What each booking awaiting payment costs right now, after any offer.
+    const loadQuotes = async (rentals) => {
+        const awaiting = rentals.filter((b) => b.status === 'CONFIRMED');
+        const entries = await Promise.all(awaiting.map(async (b) => {
+            try {
+                const res = await rentalsApi.quoteBooking(b.id);
+                return [b.id, res.data.data];
+            } catch {
+                return [b.id, null];
+            }
+        }));
+        setQuotes(Object.fromEntries(entries));
     };
 
     const runAction = async (id, action, successMsg) => {
@@ -58,6 +74,8 @@ export default function MyBookingsPage() {
             await fetchAll();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Action failed.');
+            // 409: the booking or its price changed meanwhile, so show the current state.
+            if (err.response?.status === 409) fetchAll();
         } finally {
             setBusyId(null);
         }
@@ -197,6 +215,7 @@ export default function MyBookingsPage() {
                         {myRentals.map((b) => {
                             const canCancel = ['PENDING', 'CONFIRMED'].includes(b.status);
                             const canPay = b.status === 'CONFIRMED';
+                            const quote = canPay ? quotes[b.id] : null;
                             const canReview = ['PAID', 'COMPLETED'].includes(b.status) && !b.driverReview;
                             const draft = reviewDraft[b.id];
                             const hostLabel = displayName(b.listing.host?.name, b.listing.host?.id || b.listing.hostId, user.id, 'Host');
@@ -270,6 +289,14 @@ export default function MyBookingsPage() {
                                                 {formatMoney(b.hostAmount, b.listing?.currency)} + {formatMoney(b.platformFee, b.listing?.currency)} service fee
                                             </small>
                                         )}
+                                        {quote?.discount > 0 && (
+                                            <small className="booking-offer">
+                                                {quote.offer.title}: −{formatMoney(quote.discount, b.listing?.currency)} · you pay {formatMoney(quote.payable, b.listing?.currency)}
+                                            </small>
+                                        )}
+                                        {b.discountAmount > 0 && !canPay && (
+                                            <small className="booking-offer">Offer saved you {formatMoney(b.discountAmount, b.listing?.currency)}</small>
+                                        )}
                                         <span className={`booking-status ${statusClass(b.status)}`}>{b.status}</span>
                                         <div className="booking-actions">
                                             <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
@@ -280,11 +307,11 @@ export default function MyBookingsPage() {
                                                     disabled={busyId === b.id}
                                                     onClick={() => runAction(
                                                         b.id,
-                                                        () => rentalsApi.payBooking(b.id, { method: 'wallet' }),
-                                                        'Paid from wallet.',
+                                                        () => rentalsApi.payBooking(b.id, { method: 'wallet', ...(quote ? { expectedAmount: quote.payable } : {}) }),
+                                                        quote?.discount > 0 ? `Paid from wallet, ${formatMoney(quote.discount, b.listing?.currency)} off.` : 'Paid from wallet.',
                                                     )}
                                                 >
-                                                    {busyId === b.id ? 'Paying…' : 'Pay with wallet'}
+                                                    {busyId === b.id ? 'Paying…' : `Pay ${formatMoney(quote?.payable ?? b.totalPrice, b.listing?.currency)} with wallet`}
                                                 </button>
                                             )}
                                             {canReview && !draft?.open && (

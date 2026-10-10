@@ -12,6 +12,8 @@ const ALERT_ACTIONS = new Set([
     'EARNING_RELEASE',
     'MFA_RESET',
     'BROADCAST_SEND',
+    'OFFER_SEND',
+    'OFFER_END',
 ]);
 
 /**
