@@ -6,31 +6,10 @@ import { walletApi, offersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import InviteFriendsCard from '../components/InviteFriendsCard.jsx';
+import { loadCashfreeSdk } from '../utils/cashfreeSdk.js';
 import './WalletPage.css';
 
 const PRESETS = [200, 500, 1000, 2000, 5000];
-
-function loadCashfreeSdk() {
-    return new Promise((resolve, reject) => {
-        if (window.Cashfree) {
-            resolve(window.Cashfree);
-            return;
-        }
-        const existing = document.querySelector('script[data-cashfree-sdk]');
-        if (existing) {
-            existing.addEventListener('load', () => resolve(window.Cashfree));
-            existing.addEventListener('error', () => reject(new Error('Cashfree SDK failed to load')));
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
-        script.async = true;
-        script.dataset.cashfreeSdk = '1';
-        script.onload = () => resolve(window.Cashfree);
-        script.onerror = () => reject(new Error('Cashfree SDK failed to load'));
-        document.body.appendChild(script);
-    });
-}
 
 const txLabel = (tx) => {
     const map = {

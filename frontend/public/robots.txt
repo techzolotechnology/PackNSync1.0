@@ -12,6 +12,7 @@ Disallow: /wallet
 Disallow: /verify
 Disallow: /trips/create
 Disallow: /reports
+Disallow: /pay
 Disallow: /login
 Disallow: /register
 Disallow: /*?auth=

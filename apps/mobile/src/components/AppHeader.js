@@ -1,18 +1,38 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { colors } from '../theme';
-import { AppButton } from './ui';
+import { AppButton, Icon, PressableScale } from './ui';
+
+// Android draws the app under the status bar; keep the header below it (SafeAreaView only does this on iOS).
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
 const desktopNav = [
-  ['Home', 'Travel Together'],
-  ['Rentals', 'Cars & Bikes'],
-  ['Host', 'Host a Vehicle'],
+  ['Home', 'Home', 'home'],
+  ['Trips', 'Group Trips', 'people'],
+  ['Rentals', 'Cars & Bikes', 'car-sport'],
+  ['Bookings', 'My Bookings', 'calendar'],
+  ['Wallet', 'Wallet', 'wallet'],
 ];
 
-export default function AppHeader({ activeTab, setTab, layout }) {
+// Signed in: your initial opens the account page. Signed out: the Sync In button.
+function AccountButton({ user, setTab, activeTab, compactStyle }) {
+  if (!user) return <AppButton compact icon="log-in-outline" onPress={() => setTab('Account')} style={compactStyle}>Sync In</AppButton>;
   return (
-    <View style={styles.header}>
+    <PressableScale
+      accessibilityLabel="Your account"
+      onPress={() => setTab('Account')}
+      scaleTo={0.9}
+      style={[styles.avatar, activeTab === 'Account' && styles.avatarActive]}
+    >
+      <Text style={styles.avatarText}>{String(user.name || 'P').slice(0, 1).toUpperCase()}</Text>
+    </PressableScale>
+  );
+}
+
+export default function AppHeader({ activeTab, setTab, layout, user }) {
+  return (
+    <View style={[styles.header, { paddingTop: statusBarHeight }]}>
       <View style={[styles.inner, { maxWidth: layout.contentMaxWidth, paddingHorizontal: layout.gutter }]}>
         <TouchableOpacity style={styles.brand} onPress={() => setTab('Home')} activeOpacity={0.8}>
           <Image source={require('../../assets/icon.png')} style={styles.brandIcon} />
@@ -25,19 +45,18 @@ export default function AppHeader({ activeTab, setTab, layout }) {
         {layout.tablet ? (
           <View style={styles.desktopActions}>
             <View style={styles.desktopNav}>
-              {desktopNav.map(([key, label]) => (
-                <TouchableOpacity key={key} onPress={() => setTab(key)} style={styles.navItem}>
+              {desktopNav.map(([key, label, icon]) => (
+                <PressableScale key={key} onPress={() => setTab(key)} scaleTo={0.95} accessibilityRole="tab" accessibilityState={{ selected: activeTab === key }} style={styles.navItem}>
+                  <Icon name={activeTab === key ? icon : `${icon}-outline`} size={17} color={activeTab === key ? colors.blue : colors.subtle} />
                   <Text style={[styles.navText, activeTab === key && styles.navTextActive]}>{label}</Text>
                   {activeTab === key && <View style={styles.navUnderline} />}
-                </TouchableOpacity>
+                </PressableScale>
               ))}
             </View>
-            <AppButton compact onPress={() => setTab('Account')}>Sync In</AppButton>
+            <AccountButton user={user} setTab={setTab} activeTab={activeTab} />
           </View>
         ) : (
-          <AppButton compact onPress={() => setTab('Account')} style={layout.compact && styles.compactButton}>
-            Sync In
-          </AppButton>
+          <AccountButton user={user} setTab={setTab} activeTab={activeTab} compactStyle={layout.compact && styles.compactButton} />
         )}
       </View>
     </View>
@@ -63,11 +82,14 @@ const styles = StyleSheet.create({
   logoCompact: { fontSize: 19 },
   tagline: { color: colors.subtle, fontWeight: '700', fontSize: 10, marginTop: 1 },
   desktopActions: { flexDirection: 'row', alignItems: 'center', gap: 24 },
-  desktopNav: { flexDirection: 'row', alignItems: 'stretch', gap: 18 },
-  navItem: { minHeight: 52, justifyContent: 'center', paddingHorizontal: 5 },
+  desktopNav: { flexDirection: 'row', alignItems: 'stretch', gap: 14 },
+  navItem: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 5 },
   navText: { color: colors.subtle, fontWeight: '700', fontSize: 14 },
   navTextActive: { color: colors.blue },
   navUnderline: { position: 'absolute', height: 2, backgroundColor: colors.blue, left: 4, right: 4, bottom: 4, borderRadius: 2 },
   compactButton: { minWidth: 76, paddingHorizontal: 13 },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blueSoft, borderWidth: 2, borderColor: 'transparent' },
+  avatarActive: { borderColor: colors.blue },
+  avatarText: { color: colors.blue, fontSize: 18, fontWeight: '900' },
 });
 

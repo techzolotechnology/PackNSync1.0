@@ -1,7 +1,4 @@
-const DEFAULT_BACKEND_ORIGIN =
-  process.env.EXPO_PUBLIC_API_URL
-    ? ''
-    : 'https://packandsync-api.onrender.com';
+const DEFAULT_BACKEND_ORIGIN = 'https://api.pickandsync.com';
 
 function trimTrailingSlash(value) {
   return String(value || '').trim().replace(/\/+$/, '');
@@ -13,3 +10,5 @@ export const API_BASE_URL = trimTrailingSlash(
   process.env.EXPO_PUBLIC_API_URL || `${DEFAULT_BACKEND_ORIGIN}/api`
 );
 
+// The website: Cashfree checkout for app top-ups runs there (pickandsync.com is whitelisted).
+export const WEBSITE_URL = trimTrailingSlash(process.env.EXPO_PUBLIC_SITE_URL || 'https://pickandsync.com');
