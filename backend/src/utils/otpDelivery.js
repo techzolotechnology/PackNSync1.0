@@ -4,6 +4,10 @@ import { otpEmail } from './emailTemplates.js';
 
 /** Normalize contact for DB lookup/storage */
 export function normalizeContact(contact) {
+    // Reject non-string input with a clean 400 instead of a 500 (e.g. contact sent as an object).
+    if (typeof contact !== 'string') {
+        throw new AppError('Enter a valid email address.', 400);
+    }
     const trimmed = contact.trim();
     const value = trimmed.toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
