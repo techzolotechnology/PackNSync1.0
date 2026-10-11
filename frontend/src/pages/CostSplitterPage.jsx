@@ -290,6 +290,10 @@ export default function CostSplitterPage() {
                             How to split costs fairly
                         </Link>
                     </div>
+                    <p className="text-muted" style={{ marginTop: 14 }}>
+                        Used Splitwise or Tricount before?{' '}
+                        <Link to="/split-expenses-app">See how PickAndSync compares</Link> — it settles up over UPI, not just tracks.
+                    </p>
                 </section>
             </div>
         </div>

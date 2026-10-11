@@ -42,6 +42,10 @@ export const ROUTE_SEO = {
         title: 'Split Expenses with Friends – Free Bill Splitter & Trip Cost Splitter | PickAndSync',
         description: 'Free bill-splitting app for trips and groups: split expenses with friends, track who paid, see who owes whom and settle up over UPI — not just track it. No sign-up, share on WhatsApp. A simple Splitwise & Tricount alternative.',
     },
+    'split-expenses-app': {
+        title: 'Free Split Expenses App – Splitwise & Tricount Alternative (UPI) | PickAndSync',
+        description: 'A free bill-splitting app for India and a simple Splitwise & Tricount alternative: split expenses with friends, see who owes whom, and settle up over UPI — not just track it. Plan the group trip and rent the car in the same app.',
+    },
     'become-a-host': {
         title: 'Rent Out Your Car or Bike in Bangalore – Earn as a Host | PickAndSync',
         description: 'List your car, CNG car or bike on PickAndSync and earn when you are not driving. ID-verified renters, your price, your dates, you approve every booking.',
