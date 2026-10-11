@@ -38,6 +38,12 @@ node ../security-tests/run-security-tests.mjs
 `DATABASE_URL` must point at the **same** database the server uses, so seeded
 fixtures are visible to it.
 
+> **Run the server with Cashfree *configured* (non-mock).** Case **E3** (forged
+> webhook) is only meaningful when the server has Cashfree keys set and
+> `CASHFREE_MOCK=false`. In mock mode a top-up credits by design, so E3 will
+> report a false failure. Dummy keys are fine — the point is that the webhook
+> path re-checks the order with the provider instead of trusting the payload.
+
 ### Options
 
 | Env var | Default | Purpose |
