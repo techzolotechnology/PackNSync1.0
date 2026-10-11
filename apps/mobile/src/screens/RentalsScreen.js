@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
 import { API_BASE_URL, WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
-import { AppButton, Field, Notice, PageIntro, Pill, ResponsiveGrid, Surface } from '../components/ui';
-import { rentalDays, today, tomorrow } from '../utils/dates';
+import { AppButton, Chip, DateStepper, EmptyState, Field, Icon, Notice, PageIntro, Pill, ResponsiveGrid, SegmentedControl, Skeleton, Surface } from '../components/ui';
+import { addDays, rentalDays, today, tomorrow } from '../utils/dates';
+import { errorFeedback, successFeedback } from '../utils/haptics';
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const imageUrl = (src) => {
@@ -14,12 +15,33 @@ const imageUrl = (src) => {
   return src.startsWith('/') ? `${API_ORIGIN}${src}` : null;
 };
 const round2 = (n) => Math.round(n * 100) / 100;
+const isTwoWheeler = (vehicle) => ['BIKE', 'SCOOTER'].includes(String(vehicle?.type || '').toUpperCase());
 
-export default function RentalsScreen({ user, setTab, layout }) {
+const CITIES = ['Bengaluru', 'Mumbai', 'Delhi', 'Goa', 'Pune', 'Jaipur'];
+const KINDS = [
+  { key: 'all', label: 'All', icon: 'apps-outline' },
+  { key: 'car', label: 'Cars', icon: 'car-sport-outline' },
+  { key: 'bike', label: 'Bikes', icon: 'bicycle-outline' },
+];
+
+function ListingSkeleton() {
+  return (
+    <Surface style={styles.listingCard}>
+      <Skeleton height={150} radius={16} />
+      <Skeleton width="70%" height={18} style={styles.skeletonGap} />
+      <Skeleton width="45%" height={13} style={styles.skeletonGap} />
+      <Skeleton height={48} radius={16} style={styles.skeletonGap} />
+    </Surface>
+  );
+}
+
+export default function RentalsScreen({ user, setTab, layout, registerRefresh }) {
   const [location, setLocation] = useState('');
+  const [kind, setKind] = useState('all');
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(tomorrow);
   const [listings, setListings] = useState([]);
+  const [searched, setSearched] = useState(false);
   const [feePercent, setFeePercent] = useState(2);
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('gold');
@@ -34,22 +56,46 @@ export default function RentalsScreen({ user, setTab, layout }) {
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
   const tell = (id, text, nextTone = 'gold') => setFeedback(text ? { id, text, tone: nextTone } : null);
 
-  const load = async () => {
+  // Keep the return at least a day after pickup.
+  const changeStart = (next) => {
+    setStartDate(next);
+    if (endDate <= next) setEndDate(addDays(next, 1));
+  };
+
+  const load = useCallback(async (overrides = {}) => {
+    const query = { location, kind, startDate, endDate, ...overrides };
     setLoading(true);
     say('');
     setFeedback(null);
     setTermsFor(null);
     try {
-      const response = await api.get('/rentals/listings', { location, startDate, endDate });
+      const response = await api.get('/rentals/listings', {
+        location: query.location,
+        kind: query.kind === 'all' ? undefined : query.kind,
+        startDate: query.startDate,
+        endDate: query.endDate,
+      });
       setListings(response.data || []);
+      setSearched(true);
       if (Number.isFinite(response.meta?.platformFeePercent)) setFeePercent(response.meta.platformFeePercent);
-      if (!(response.data || []).length) say('No vehicles match yet. Try another city or dates.');
     } catch (error) {
       say(error.message, 'error');
       setListings([]);
     } finally {
       setLoading(false);
     }
+  }, [location, kind, startDate, endDate]);
+
+  useEffect(() => (searched ? registerRefresh?.(load) : undefined), [searched, registerRefresh, load]);
+
+  const pickCity = (city) => {
+    setLocation(city);
+    load({ location: city });
+  };
+
+  const pickKind = (next) => {
+    setKind(next);
+    if (searched) load({ kind: next });
   };
 
   const sendRequest = async (listing) => {
@@ -58,9 +104,11 @@ export default function RentalsScreen({ user, setTab, layout }) {
       const res = await api.post('/rentals/bookings', { listingId: listing.id, startDate, endDate });
       const total = res.data?.totalPrice ?? res.pricing?.totalPrice;
       setBookedId(listing.id);
-      tell(listing.id, `Request sent${total ? ` (${rupees(total)} incl. service fee)` : ''}. Pay from My Bookings once the host confirms.`);
+      successFeedback();
+      tell(listing.id, `Request sent${total ? ` (${rupees(total)} incl. service fee)` : ''}. Pay from My Bookings once the host confirms.`, 'success');
     } catch (error) {
       if (/verif|aadhaar|licen[cs]e|kyc/i.test(error.message)) setNeedsVerification(true);
+      errorFeedback();
       tell(listing.id, error.message, 'error');
     }
   };
@@ -94,64 +142,85 @@ export default function RentalsScreen({ user, setTab, layout }) {
 
   return (
     <View>
-      <PageIntro eyebrow="CARS & BIKES" title="Pick your next ride." description="Self-drive cars and bikes from verified local hosts. Prices include a 2% service fee." layout={layout} />
+      <PageIntro eyebrow="CARS & BIKES" icon="car-sport" title="Pick your next ride." description={`Self-drive cars and bikes from verified local hosts. Prices include a ${feePercent}% service fee.`} layout={layout} />
       <Surface style={styles.searchPanel}>
+        <SegmentedControl options={KINDS} value={kind} onChange={pickKind} />
+        <Field label="PICKUP CITY" icon="location-outline" value={location} onChangeText={setLocation} placeholder="Bengaluru" autoCapitalize="words" returnKeyType="search" onSubmitEditing={() => load()} />
+        <View style={styles.cityRow}>
+          {CITIES.map((city) => <Chip key={city} label={city} active={location.trim().toLowerCase() === city.toLowerCase()} onPress={() => pickCity(city)} />)}
+        </View>
         <ResponsiveGrid columns={layout.formColumns} gap={12}>
-          <Field label="PICKUP CITY" value={location} onChangeText={setLocation} placeholder="Bengaluru" autoCapitalize="words" />
-          <Field label="START DATE" value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" />
-          <Field label="END DATE" value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" />
-          <View style={styles.searchButtonWrap}><AppButton onPress={load} disabled={loading}>{loading ? 'Searching…' : 'Search Cars & Bikes'}</AppButton></View>
+          <DateStepper label="PICKUP" value={startDate} min={today} onChange={changeStart} />
+          <DateStepper label="RETURN" value={endDate} min={addDays(startDate, 1)} onChange={setEndDate} />
         </ResponsiveGrid>
+        <AppButton icon="search" onPress={() => load()} loading={loading}>{loading ? 'Searching…' : `Search · ${days} ${days === 1 ? 'day' : 'days'}`}</AppButton>
         <Notice tone={tone}>{message}</Notice>
       </Surface>
 
+      {!loading && listings.length > 0 && (
+        <View style={styles.resultsHeader}>
+          <Text style={styles.resultsEyebrow}>AVAILABLE NEARBY</Text>
+          <Text style={styles.resultsTitle}>{listings.length} {listings.length === 1 ? 'vehicle' : 'vehicles'} found</Text>
+        </View>
+      )}
 
-      <View style={styles.resultsHeader}>
-        <View><Text style={styles.resultsEyebrow}>AVAILABLE NEARBY</Text><Text style={styles.resultsTitle}>{listings.length ? `${listings.length} vehicles found` : 'Explore local wheels'}</Text></View>
-        <Pill tone="blue">{days} {days === 1 ? 'day' : 'days'}</Pill>
-      </View>
-      {listings.length ? (
+      {loading ? (
+        <ResponsiveGrid columns={layout.cardColumns} gap={14}>
+          <ListingSkeleton />
+          <ListingSkeleton />
+        </ResponsiveGrid>
+      ) : listings.length ? (
         <ResponsiveGrid columns={layout.cardColumns} gap={14}>
           {listings.map((listing) => {
             const vehicle = listing.vehicle || {};
             const hostTotal = Number(listing.pricePerDay || 0) * days;
             const total = round2(hostTotal * (1 + feePercent / 100));
             const photo = imageUrl(vehicle.images?.[0]);
+            const twoWheeler = isTwoWheeler(vehicle);
             return (
               <Surface key={listing.id} style={styles.listingCard}>
-                {photo ? (
-                  <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" accessibilityLabel={`${vehicle.make || ''} ${vehicle.model || ''}`} />
-                ) : (
-                  <View style={styles.vehicleVisual}><Text style={styles.vehicleGlyph}>P&S</Text></View>
-                )}
+                <View style={styles.media}>
+                  {photo ? (
+                    <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" accessibilityLabel={`${vehicle.make || ''} ${vehicle.model || ''}`} />
+                  ) : (
+                    <View style={styles.vehicleVisual}><Icon name={twoWheeler ? 'bicycle' : 'car-sport'} size={54} color={colors.blue} /></View>
+                  )}
+                  <View style={styles.priceBadge}>
+                    <Text style={styles.priceBadgeText}>{rupees(listing.pricePerDay)}</Text>
+                    <Text style={styles.priceBadgeUnit}>/day</Text>
+                  </View>
+                </View>
                 <Text style={styles.vehicleName}>{vehicle.make || 'Vehicle'} {vehicle.model || ''}</Text>
                 <View style={styles.metaRow}>
-                  <Pill tone="blue">{listing.location || 'Local pickup'}</Pill>
-                  {!!vehicle.seats && <Pill>{vehicle.seats} seats</Pill>}
-                  {!!vehicle.fuelType && <Pill>{vehicle.fuelType}</Pill>}
+                  <Pill tone="blue" icon="location-outline">{listing.location || 'Local pickup'}</Pill>
+                  {!!vehicle.seats && <Pill tone="gray" icon="people-outline">{vehicle.seats} seats</Pill>}
+                  {!!vehicle.fuelType && <Pill tone="gray" icon="speedometer-outline">{vehicle.fuelType}</Pill>}
+                  {!!vehicle.transmission && !twoWheeler && <Pill tone="gray" icon="cog-outline">{vehicle.transmission}</Pill>}
                 </View>
-                <Text style={styles.price}>{rupees(listing.pricePerDay)}/day</Text>
-                <Text style={styles.total}>{rupees(total)} for {days} {days === 1 ? 'day' : 'days'}, incl. {feePercent}% service fee</Text>
+                <View style={styles.totalRow}>
+                  <Text style={styles.total}>{rupees(total)}</Text>
+                  <Text style={styles.totalNote}>for {days} {days === 1 ? 'day' : 'days'}, incl. {feePercent}% fee</Text>
+                </View>
                 {termsFor?.id === listing.id ? (
                   <View style={styles.terms}>
-                    <Text style={styles.termsTitle}>Rental Terms</Text>
+                    <View style={styles.termsHead}><Icon name="document-text" size={18} color={colors.blue} /><Text style={styles.termsTitle}>Rental Terms</Text></View>
                     <Text style={styles.termsText}>
                       Before your first booking, please read and accept the PickAndSync Rental Terms. You only need to do this once.
                     </Text>
-                    <AppButton variant="ghost" onPress={() => Linking.openURL(`${WEBSITE_URL}/terms`)}>Read the full terms</AppButton>
-                    <AppButton onPress={acceptAndBook}>Accept and request booking</AppButton>
+                    <AppButton variant="ghost" icon="open-outline" onPress={() => Linking.openURL(`${WEBSITE_URL}/terms`)}>Read the full terms</AppButton>
+                    <AppButton icon="checkmark-circle-outline" onPress={acceptAndBook}>Accept and request booking</AppButton>
                     <AppButton variant="ghost" onPress={() => setTermsFor(null)}>Not now</AppButton>
                   </View>
                 ) : (
-                  <AppButton onPress={() => book(listing)} disabled={bookedId === listing.id}>{bookedId === listing.id ? 'Request sent' : 'Request Booking'}</AppButton>
+                  <AppButton icon={bookedId === listing.id ? 'checkmark-done' : 'flash-outline'} onPress={() => book(listing)} disabled={bookedId === listing.id}>{bookedId === listing.id ? 'Request sent' : 'Request Booking'}</AppButton>
                 )}
                 {feedback?.id === listing.id && (
                   <>
                     <Notice tone={feedback.tone}>{feedback.text}</Notice>
                     {needsVerification && (
-                      <AppButton variant="ghost" onPress={() => Linking.openURL(`${WEBSITE_URL}/verify`)}>Verify your ID on the website</AppButton>
+                      <AppButton variant="ghost" icon="shield-checkmark-outline" onPress={() => Linking.openURL(`${WEBSITE_URL}/verify`)}>Verify your ID on the website</AppButton>
                     )}
-                    {bookedId === listing.id && <AppButton variant="ghost" onPress={() => setTab('Bookings')}>Go to My Bookings</AppButton>}
+                    {bookedId === listing.id && <AppButton variant="soft" icon="calendar-outline" onPress={() => setTab('Bookings')}>Go to My Bookings</AppButton>}
                   </>
                 )}
               </Surface>
@@ -159,10 +228,15 @@ export default function RentalsScreen({ user, setTab, layout }) {
           })}
         </ResponsiveGrid>
       ) : (
-        <Surface style={styles.empty}>
-          <Text style={styles.emptyTitle}>No vehicles loaded yet</Text>
-          <Text style={styles.emptyText}>Search a city, or publish your own car or bike from the Host screen.</Text>
-          <AppButton variant="ghost" onPress={() => setTab('Host')}>Host a Vehicle</AppButton>
+        <Surface>
+          <EmptyState
+            icon={searched ? 'search-outline' : 'compass-outline'}
+            title={searched ? 'No vehicles match yet' : 'Where are you picking up?'}
+            text={searched ? 'Try another city, shift your dates, or switch between cars and bikes.' : 'Pick a city above to see cars and bikes you can book for your dates.'}
+            actionLabel="Host your own vehicle"
+            actionIcon="key-outline"
+            onAction={() => setTab('Host')}
+          />
         </Surface>
       )}
     </View>
@@ -170,23 +244,26 @@ export default function RentalsScreen({ user, setTab, layout }) {
 }
 
 const styles = StyleSheet.create({
-  searchPanel: { marginBottom: 25 },
-  searchButtonWrap: { flex: 1, justifyContent: 'flex-end', minHeight: 73 },
-  terms: { marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
-  termsTitle: { color: colors.navy, fontSize: 19, fontWeight: '900' },
-  termsText: { color: colors.muted, lineHeight: 21, marginVertical: 8 },
-  resultsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, marginBottom: 14 },
+  searchPanel: { marginBottom: 22 },
+  cityRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -2, marginBottom: 14 },
+  resultsHeader: { marginBottom: 12 },
   resultsEyebrow: { color: colors.blue, fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
   resultsTitle: { color: colors.navy, fontSize: 22, fontWeight: '900', marginTop: 4 },
-  listingCard: { minHeight: 310 },
-  photo: { height: 150, borderRadius: 16, marginBottom: 15, backgroundColor: colors.blueSoft },
-  vehicleVisual: { height: 88, borderRadius: 16, backgroundColor: colors.blueSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 15 },
-  vehicleGlyph: { color: colors.blue, fontWeight: '900', fontSize: 25, letterSpacing: -1 },
+  listingCard: { padding: 14 },
+  skeletonGap: { marginTop: 12 },
+  media: { marginBottom: 14 },
+  photo: { height: 170, borderRadius: 16, backgroundColor: colors.blueSoft },
+  vehicleVisual: { height: 130, borderRadius: 16, backgroundColor: colors.blueSoft, alignItems: 'center', justifyContent: 'center' },
+  priceBadge: { position: 'absolute', right: 10, bottom: 10, flexDirection: 'row', alignItems: 'baseline', backgroundColor: colors.white, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: colors.border },
+  priceBadgeText: { color: colors.navy, fontWeight: '900', fontSize: 15 },
+  priceBadgeUnit: { color: colors.subtle, fontWeight: '700', fontSize: 12, marginLeft: 2 },
   vehicleName: { color: colors.navy, fontWeight: '900', fontSize: 20, marginBottom: 10 },
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 13 },
-  price: { color: colors.blue, fontWeight: '900', fontSize: 17 },
-  total: { color: colors.muted, fontSize: 13, marginTop: 2, marginBottom: 8 },
-  empty: { alignItems: 'center', paddingVertical: 32 },
-  emptyTitle: { color: colors.navy, fontSize: 20, fontWeight: '900', textAlign: 'center' },
-  emptyText: { color: colors.muted, lineHeight: 21, textAlign: 'center', maxWidth: 470, marginVertical: 8 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  totalRow: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
+  total: { color: colors.blue, fontWeight: '900', fontSize: 20 },
+  totalNote: { color: colors.muted, fontSize: 13 },
+  terms: { marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
+  termsHead: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  termsTitle: { color: colors.navy, fontSize: 18, fontWeight: '900' },
+  termsText: { color: colors.muted, lineHeight: 21, marginVertical: 8 },
 });

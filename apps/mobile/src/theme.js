@@ -16,6 +16,10 @@ export const colors = {
   goldPale: '#fff8d8',
   goldText: '#8a6500',
   danger: '#c2413b',
+  dangerPale: '#fff0ee',
+  success: '#047857',
+  successPale: '#e6f7ef',
+  skeleton: '#dcebf7',
 };
 
 export const shadows = {

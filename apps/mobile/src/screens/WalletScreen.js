@@ -1,26 +1,31 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppState, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
 import { WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
-import { AppButton, Field, Notice, PageIntro, Pill, Surface } from '../components/ui';
+import { AppButton, Chip, EmptyState, Field, Icon, ListRow, Notice, PageIntro, Pill, SectionHeader, Skeleton, SkeletonList, Surface } from '../components/ui';
 import { shortDate } from '../utils/dates';
+import { errorFeedback, successFeedback } from '../utils/haptics';
 
 const PRESETS = [200, 500, 1000, 2000];
 
-const TX_LABELS = {
-  TOPUP: 'Added money',
-  SPEND: 'Paid',
-  WITHDRAW: 'Withdrawn',
-  REFUND: 'Refund',
-  EARNING: 'Host earning',
-  EXPIRE: 'Credit expired',
+const TX_STYLES = {
+  TOPUP: { label: 'Added money', icon: 'add-circle', tone: 'green' },
+  SPEND: { label: 'Paid', icon: 'car-sport', tone: 'blue' },
+  WITHDRAW: { label: 'Withdrawn', icon: 'arrow-up-circle', tone: 'gray' },
+  REFUND: { label: 'Refund', icon: 'return-down-back', tone: 'green' },
+  EARNING: { label: 'Host earning', icon: 'trending-up', tone: 'green' },
+  EXPIRE: { label: 'Credit expired', icon: 'time', tone: 'red' },
 };
-const txLabel = (tx) => (tx.type === 'ADJUST' ? (tx.provider === 'PROMO' ? 'Promo credit' : 'Adjustment') : TX_LABELS[tx.type] || tx.type);
+const txStyle = (tx) => {
+  if (tx.type === 'ADJUST') return tx.provider === 'PROMO' ? { label: 'Promo credit', icon: 'gift', tone: 'gold' } : { label: 'Adjustment', icon: 'swap-horizontal', tone: 'gray' };
+  return TX_STYLES[tx.type] || { label: tx.type, icon: 'ellipse', tone: 'gray' };
+};
 const txOut = (tx) => ['SPEND', 'WITHDRAW', 'EXPIRE'].includes(tx.type);
+const daysLeft = (iso) => Math.ceil((new Date(iso) - Date.now()) / 86400000);
 
-export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, clearDeepLink }) {
+export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, clearDeepLink, registerRefresh }) {
   const [wallet, setWallet] = useState(null);
   const [txs, setTxs] = useState([]);
   const [offers, setOffers] = useState([]);
@@ -47,6 +52,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
     if (!user) return;
     refresh().catch((error) => say(error.message, 'error'));
   }, [user, refresh]);
+  useEffect(() => (user ? registerRefresh?.(refresh) : undefined), [user, registerRefresh, refresh]);
 
   // Check an order with the server: after returning from the browser, or from the app link.
   const verifyOrder = useCallback(async (orderId) => {
@@ -55,9 +61,10 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
       const res = await api.post('/wallet/topup/verify', { orderId });
       if (res.paid) {
         pendingOrder.current = null;
-        say('Payment received. Your wallet has been updated.');
+        successFeedback();
+        say('Payment received. Your wallet has been updated.', 'success');
       } else {
-        say('Payment not confirmed yet. If you paid, it will show here within a minute; pull back to this tab to check again.');
+        say('Payment not confirmed yet. If you paid, it will show here within a minute — pull down to check again.');
       }
       await refresh();
     } catch (error) {
@@ -80,13 +87,17 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
 
   const addMoney = async () => {
     const value = Number(amount);
-    if (!Number.isFinite(value) || value < 10) return say('Enter at least ₹10.', 'error');
+    if (!Number.isFinite(value) || value < 10) {
+      errorFeedback();
+      return say('Enter at least ₹10.', 'error');
+    }
     setBusy(true);
     say('');
     try {
       const res = await api.post('/wallet/topup', { amount: value, returnTo: 'app' });
       if (res.mock) {
-        say(`${rupees(value)} added (test mode).`);
+        successFeedback();
+        say(`${rupees(value)} added (test mode).`, 'success');
         await refresh();
         return;
       }
@@ -96,6 +107,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
       say('Complete the payment in your browser, then come back here. Your balance updates automatically.');
       await Linking.openURL(url);
     } catch (error) {
+      errorFeedback();
       say(error.message, 'error');
     } finally {
       setBusy(false);
@@ -105,10 +117,9 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
   if (!user) {
     return (
       <View style={styles.page}>
-        <PageIntro eyebrow="WALLET" title="Pay for rentals in one tap." description="Add money with UPI, cards or netbanking, see your promo credit and the offers sent to you." layout={layout} />
+        <PageIntro eyebrow="WALLET" icon="wallet" title="Pay for rentals in one tap." description="Add money with UPI, cards or netbanking, see your promo credit and the offers sent to you." layout={layout} />
         <Surface>
-          <Text style={styles.cardTitle}>Sign in to see your wallet</Text>
-          <AppButton onPress={() => setTab('Account')}>Sync In</AppButton>
+          <EmptyState icon="lock-closed" title="Sign in to see your wallet" text="Your balance, promo credit and offers live in your PickAndSync account." actionLabel="Sync In" actionIcon="log-in-outline" onAction={() => setTab('Account')} />
         </Surface>
       </View>
     );
@@ -117,81 +128,101 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
   const credits = wallet?.promoCredits || [];
   return (
     <View style={styles.page}>
-      <PageIntro eyebrow="WALLET" title="Your wallet." description="Promo credit is used first on car and bike rentals and can't be withdrawn." layout={layout} />
+      <PageIntro eyebrow="WALLET" icon="wallet" title="Your wallet." description="Promo credit is used first on car and bike rentals and can't be withdrawn." layout={layout} />
 
-      <Surface style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>AVAILABLE BALANCE</Text>
-        <Text style={styles.balance}>{rupees(wallet?.balance)}</Text>
-        {wallet?.promoBalance > 0 && <Text style={styles.balanceMeta}>+ {rupees(wallet.promoBalance)} promo credit</Text>}
-      </Surface>
+      <View style={styles.balanceCard}>
+        <View style={styles.ringLarge} />
+        <View style={styles.ringSmall} />
+        <View style={styles.balanceTop}>
+          <Text style={styles.balanceLabel}>AVAILABLE BALANCE</Text>
+          <Icon name="shield-checkmark" size={18} color="#cfe6ff" />
+        </View>
+        {wallet ? <Text style={styles.balance}>{rupees(wallet.balance)}</Text> : <Skeleton width={150} height={40} radius={10} style={styles.balanceSkeleton} />}
+        {wallet?.promoBalance > 0 && (
+          <View style={styles.promoBadge}>
+            <Icon name="gift" size={14} color={colors.goldText} />
+            <Text style={styles.promoBadgeText}>+ {rupees(wallet.promoBalance)} promo credit</Text>
+          </View>
+        )}
+      </View>
 
       {credits.length > 0 && (
         <Surface style={styles.section}>
-          <Text style={styles.sectionTitle}>Promo credit</Text>
-          <Text style={styles.muted}>Spent automatically on rentals, soonest-expiring first.</Text>
-          {credits.map((c) => (
-            <View key={c.id} style={styles.row}>
-              <View style={styles.rowMain}>
-                <Text style={styles.rowTitle}>{rupees(c.remaining)}</Text>
-                <Text style={styles.muted}>{c.note || (c.source === 'REFERRAL' ? 'Referral reward' : 'Promo credit')}</Text>
-              </View>
-              <Text style={[styles.expiry, !c.expiresAt && styles.noExpiry]}>{c.expiresAt ? `Use by ${shortDate(c.expiresAt)}` : 'No expiry'}</Text>
-            </View>
-          ))}
+          <SectionHeader title="Promo credit" subtitle="Spent automatically on rentals, soonest-expiring first." />
+          {credits.map((c, index) => {
+            const left = c.expiresAt ? daysLeft(c.expiresAt) : null;
+            return (
+              <ListRow
+                key={c.id}
+                icon="gift"
+                tone="gold"
+                title={rupees(c.remaining)}
+                subtitle={c.note || (c.source === 'REFERRAL' ? 'Referral reward' : 'Promo credit')}
+                last={index === credits.length - 1}
+                right={c.expiresAt
+                  ? <Pill tone={left <= 3 ? 'red' : 'gold'} icon="time-outline">{left <= 1 ? 'Ends today' : `Use by ${shortDate(c.expiresAt)}`}</Pill>
+                  : <Pill tone="gray">No expiry</Pill>}
+              />
+            );
+          })}
         </Surface>
       )}
 
       {offers.length > 0 && (
         <Surface style={styles.section}>
-          <Text style={styles.sectionTitle}>Your offers</Text>
-          <Text style={styles.muted}>Applied automatically when you pay for a matching rental.</Text>
-          {offers.map((o) => (
-            <View key={o.id} style={styles.offer}>
-              <Pill tone="blue">{o.validUntil ? `Until ${shortDate(o.validUntil)}` : 'No end date'}</Pill>
-              <Text style={styles.rowTitle}>{o.title}</Text>
-              <Text style={styles.muted}>{o.summary}{o.usesLeft > 1 ? ` · ${o.usesLeft} uses left` : ''}</Text>
-            </View>
+          <SectionHeader title="Your offers" subtitle="Applied automatically when you pay for a matching rental." actionLabel="Use now" actionIcon="car-sport-outline" onAction={() => setTab('Rentals')} />
+          {offers.map((o, index) => (
+            <ListRow
+              key={o.id}
+              icon="pricetag"
+              tone="blue"
+              title={o.title}
+              subtitle={`${o.summary}${o.usesLeft > 1 ? ` · ${o.usesLeft} uses left` : ''}`}
+              last={index === offers.length - 1}
+              right={<Pill tone="blue">{o.validUntil ? `Until ${shortDate(o.validUntil)}` : 'Ongoing'}</Pill>}
+            />
           ))}
-          <AppButton variant="ghost" onPress={() => setTab('Rentals')}>Browse cars & bikes</AppButton>
         </Surface>
       )}
 
       <Surface style={styles.section}>
-        <Text style={styles.sectionTitle}>Add money</Text>
-        <Text style={styles.muted}>Pay securely with UPI, cards or netbanking through Cashfree.</Text>
+        <SectionHeader title="Add money" subtitle="Pay securely with UPI, cards or netbanking through Cashfree." />
         <View style={styles.presets}>
           {PRESETS.map((p) => (
-            <TouchableOpacity
-              key={p}
-              accessibilityRole="button"
-              accessibilityState={{ selected: Number(amount) === p }}
-              onPress={() => setAmount(String(p))}
-              style={[styles.preset, Number(amount) === p && styles.presetActive]}
-            >
-              <Text style={[styles.presetText, Number(amount) === p && styles.presetTextActive]}>{rupees(p)}</Text>
-            </TouchableOpacity>
+            <Chip key={p} label={rupees(p)} active={Number(amount) === p} onPress={() => setAmount(String(p))} />
           ))}
         </View>
-        <Field label="AMOUNT (₹)" value={amount} onChangeText={setAmount} keyboardType="number-pad" maxLength={6} />
-        <AppButton onPress={addMoney} disabled={busy}>{busy ? 'Opening payment…' : `Add ${rupees(Number(amount) || 0)}`}</AppButton>
+        <Field label="AMOUNT (₹)" icon="cash-outline" value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={6} />
+        <AppButton icon="add-circle-outline" onPress={addMoney} loading={busy}>{busy ? 'Opening payment…' : `Add ${rupees(Number(amount) || 0)}`}</AppButton>
+        <View style={styles.secureRow}>
+          <Icon name="lock-closed" size={13} color={colors.subtle} />
+          <Text style={styles.secureText}>Payments are processed by Cashfree. We never see your card or UPI PIN.</Text>
+        </View>
         <Notice tone={tone}>{message}</Notice>
       </Surface>
 
       <Surface style={styles.section}>
-        <Text style={styles.sectionTitle}>Activity</Text>
-        {txs.length === 0 ? (
-          <Text style={styles.muted}>No transactions yet.</Text>
-        ) : txs.map((tx) => (
-          <View key={tx.id} style={styles.row}>
-            <View style={styles.rowMain}>
-              <Text style={styles.rowTitle}>{txLabel(tx)}</Text>
-              <Text style={styles.muted} numberOfLines={1}>{tx.description || '—'}</Text>
-              <Text style={styles.small}>{shortDate(tx.createdAt)} · {tx.status}</Text>
-            </View>
-            <Text style={[styles.amount, txOut(tx) ? styles.amountOut : styles.amountIn]}>{txOut(tx) ? '−' : '+'}{rupees(tx.amount)}</Text>
-          </View>
-        ))}
-        <AppButton variant="ghost" onPress={() => Linking.openURL(`${WEBSITE_URL}/wallet`)}>Withdraw on the website</AppButton>
+        <SectionHeader title="Activity" actionLabel="Withdraw" actionIcon="open-outline" onAction={() => Linking.openURL(`${WEBSITE_URL}/wallet`)} />
+        {!wallet ? (
+          <SkeletonList rows={4} />
+        ) : txs.length === 0 ? (
+          <EmptyState icon="receipt-outline" title="No transactions yet" text="Money you add, spend or earn shows up here." />
+        ) : txs.map((tx, index) => {
+          const look = txStyle(tx);
+          const out = txOut(tx);
+          return (
+            <ListRow
+              key={tx.id}
+              icon={look.icon}
+              tone={look.tone}
+              title={look.label}
+              subtitle={tx.description || '—'}
+              caption={`${shortDate(tx.createdAt)}${tx.status !== 'SUCCESS' ? ` · ${tx.status.toLowerCase()}` : ''}`}
+              last={index === txs.length - 1}
+              right={<Text style={[styles.amount, out ? styles.amountOut : styles.amountIn]}>{out ? '−' : '+'}{rupees(tx.amount)}</Text>}
+            />
+          );
+        })}
       </Surface>
     </View>
   );
@@ -199,27 +230,20 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
 
 const styles = StyleSheet.create({
   page: { width: '100%', maxWidth: 760, alignSelf: 'center' },
-  cardTitle: { color: colors.navy, fontSize: 20, fontWeight: '900', marginBottom: 12 },
-  balanceCard: { backgroundColor: colors.blueDark, borderColor: colors.blueDark, marginBottom: 14 },
+  balanceCard: { backgroundColor: colors.blueDark, borderRadius: 24, padding: 22, marginBottom: 14, overflow: 'hidden' },
+  ringLarge: { position: 'absolute', width: 210, height: 210, borderRadius: 105, borderWidth: 28, borderColor: 'rgba(255,255,255,0.07)', top: -70, right: -60 },
+  ringSmall: { position: 'absolute', width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.06)', bottom: -30, right: 70 },
+  balanceTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   balanceLabel: { color: '#cfe6ff', fontWeight: '800', fontSize: 12, letterSpacing: 1.2 },
-  balance: { color: colors.white, fontSize: 38, fontWeight: '900', marginTop: 4 },
-  balanceMeta: { color: '#e5f1ff', marginTop: 4, fontWeight: '600' },
+  balance: { color: colors.white, fontSize: 40, fontWeight: '900', marginTop: 6, letterSpacing: -0.5 },
+  balanceSkeleton: { marginTop: 10, opacity: 0.4 },
+  promoBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.goldPale, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6, marginTop: 10 },
+  promoBadgeText: { color: colors.goldText, fontWeight: '800', fontSize: 13 },
   section: { marginBottom: 14 },
-  sectionTitle: { color: colors.navy, fontSize: 19, fontWeight: '900' },
-  muted: { color: colors.muted, lineHeight: 20, marginTop: 2 },
-  small: { color: colors.subtle, fontSize: 12, marginTop: 2 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: colors.border },
-  rowMain: { flex: 1 },
-  rowTitle: { color: colors.navy, fontWeight: '800', fontSize: 16, marginTop: 6 },
-  expiry: { color: '#b45309', fontWeight: '800', fontSize: 13 },
-  noExpiry: { color: colors.subtle, fontWeight: '600' },
-  offer: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
-  presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 12 },
-  preset: { minHeight: 44, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1, borderColor: colors.inputBorder, justifyContent: 'center', backgroundColor: colors.white },
-  presetActive: { backgroundColor: colors.blue, borderColor: colors.blue },
-  presetText: { color: colors.navy, fontWeight: '800' },
-  presetTextActive: { color: colors.white },
+  presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6, marginBottom: 14 },
+  secureRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  secureText: { color: colors.subtle, fontSize: 12, flex: 1 },
   amount: { fontWeight: '900', fontSize: 15 },
-  amountIn: { color: '#047857' },
+  amountIn: { color: colors.success },
   amountOut: { color: colors.danger },
 });

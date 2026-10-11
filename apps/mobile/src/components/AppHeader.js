@@ -2,28 +2,28 @@ import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { colors } from '../theme';
-import { AppButton } from './ui';
+import { AppButton, Icon, PressableScale } from './ui';
 
 const desktopNav = [
-  ['Home', 'Home'],
-  ['Trips', 'Group Trips'],
-  ['Rentals', 'Cars & Bikes'],
-  ['Bookings', 'My Bookings'],
-  ['Wallet', 'Wallet'],
+  ['Home', 'Home', 'home'],
+  ['Trips', 'Group Trips', 'people'],
+  ['Rentals', 'Cars & Bikes', 'car-sport'],
+  ['Bookings', 'My Bookings', 'calendar'],
+  ['Wallet', 'Wallet', 'wallet'],
 ];
 
 // Signed in: your initial opens the account page. Signed out: the Sync In button.
 function AccountButton({ user, setTab, activeTab, compactStyle }) {
-  if (!user) return <AppButton compact onPress={() => setTab('Account')} style={compactStyle}>Sync In</AppButton>;
+  if (!user) return <AppButton compact icon="log-in-outline" onPress={() => setTab('Account')} style={compactStyle}>Sync In</AppButton>;
   return (
-    <TouchableOpacity
-      accessibilityRole="button"
+    <PressableScale
       accessibilityLabel="Your account"
       onPress={() => setTab('Account')}
+      scaleTo={0.9}
       style={[styles.avatar, activeTab === 'Account' && styles.avatarActive]}
     >
       <Text style={styles.avatarText}>{String(user.name || 'P').slice(0, 1).toUpperCase()}</Text>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
@@ -42,11 +42,12 @@ export default function AppHeader({ activeTab, setTab, layout, user }) {
         {layout.tablet ? (
           <View style={styles.desktopActions}>
             <View style={styles.desktopNav}>
-              {desktopNav.map(([key, label]) => (
-                <TouchableOpacity key={key} onPress={() => setTab(key)} style={styles.navItem}>
+              {desktopNav.map(([key, label, icon]) => (
+                <PressableScale key={key} onPress={() => setTab(key)} scaleTo={0.95} accessibilityRole="tab" accessibilityState={{ selected: activeTab === key }} style={styles.navItem}>
+                  <Icon name={activeTab === key ? icon : `${icon}-outline`} size={17} color={activeTab === key ? colors.blue : colors.subtle} />
                   <Text style={[styles.navText, activeTab === key && styles.navTextActive]}>{label}</Text>
                   {activeTab === key && <View style={styles.navUnderline} />}
-                </TouchableOpacity>
+                </PressableScale>
               ))}
             </View>
             <AccountButton user={user} setTab={setTab} activeTab={activeTab} />
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
   tagline: { color: colors.subtle, fontWeight: '700', fontSize: 10, marginTop: 1 },
   desktopActions: { flexDirection: 'row', alignItems: 'center', gap: 24 },
   desktopNav: { flexDirection: 'row', alignItems: 'stretch', gap: 14 },
-  navItem: { minHeight: 52, justifyContent: 'center', paddingHorizontal: 5 },
+  navItem: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 5 },
   navText: { color: colors.subtle, fontWeight: '700', fontSize: 14 },
   navTextActive: { color: colors.blue },
   navUnderline: { position: 'absolute', height: 2, backgroundColor: colors.blue, left: 4, right: 4, bottom: 4, borderRadius: 2 },
