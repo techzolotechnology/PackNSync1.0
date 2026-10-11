@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { formatMoney } from '../config/markets.js';
 import { computeSplit, decodeState, encodeState } from '../utils/splitCalculator.js';
 import { copyLink, shareLink } from '../utils/share.js';
+import useSeo from '../hooks/useSeo.js';
+import { ROUTE_SEO } from '../seo/seoConfig.js';
 import './Destinations.css';
 import './CostSplitterPage.css';
 
@@ -24,6 +26,7 @@ const emptyExpense = { title: '', amount: '', paidBy: '', splitAmong: [] };
 
 /** /tools/trip-cost-splitter — free, no-login expense splitter (shareable via link). */
 export default function CostSplitterPage() {
+    useSeo({ ...ROUTE_SEO['tools/trip-cost-splitter'], path: 'tools/trip-cost-splitter' });
     const [{ people, expenses }, setState] = useState(initialState);
     const [newName, setNewName] = useState('');
     const [form, setForm] = useState(emptyExpense);

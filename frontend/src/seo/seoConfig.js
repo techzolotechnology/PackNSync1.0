@@ -27,9 +27,9 @@ export const ROUTE_SEO = {
             'Rent self-drive cars, CNG cars, bikes and scooters by the day from verified local hosts. No driver, transparent per-day pricing, book in minutes.',
     },
     trips: {
-        title: 'Group Trips to Travel Together with Friends in India | PickAndSync',
+        title: 'Group Trips in India – Travel Together, Plan & Split Costs | PickAndSync',
         description:
-            'Join group trips and weekend getaways across India, or post your own. Meet verified travel buddies, plan the itinerary together and split costs fairly — even on a budget.',
+            'Join group trips and weekend getaways across India, or post your own. Meet verified travel buddies, plan the itinerary together, split trip expenses and settle up over UPI — see who owes whom, settle with the fewest payments.',
     },
     explore: {
         title: 'AI Trip Planner for Groups, Couples & Families | PickAndSync',
@@ -39,8 +39,8 @@ export const ROUTE_SEO = {
     destinations: DESTINATIONS_INDEX_SEO,
     guides: GUIDES_INDEX_SEO,
     'tools/trip-cost-splitter': {
-        title: 'Trip Cost Splitter – Split Group Travel Expenses Free | PickAndSync',
-        description: 'Free trip expense splitter: add your group and shared costs, see who owes whom and settle up with the fewest payments. No sign-up, share on WhatsApp.',
+        title: 'Split Expenses with Friends – Free Bill Splitter & Trip Cost Splitter | PickAndSync',
+        description: 'Free bill-splitting app for trips and groups: split expenses with friends, track who paid, see who owes whom and settle up over UPI — not just track it. No sign-up, share on WhatsApp. A simple Splitwise & Tricount alternative.',
     },
     'become-a-host': {
         title: 'Rent Out Your Car or Bike in Bangalore – Earn as a Host | PickAndSync',

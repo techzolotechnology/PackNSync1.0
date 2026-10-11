@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { readViewCache, viewCacheKey, writeViewCache } from '../utils/viewCache.js';
 import { TRIP_COVER_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
+import useSeo from '../hooks/useSeo.js';
+import { ROUTE_SEO } from '../seo/seoConfig.js';
 import './TripsPage.css';
 
 const STATUSES = ['', 'OPEN', 'FULL', 'IN_PROGRESS', 'COMPLETED'];
@@ -83,6 +85,7 @@ function TripCard({ trip, index, isMine, myRole }) {
 }
 
 export default function TripsPage() {
+    useSeo({ ...ROUTE_SEO.trips, path: 'trips' });
     const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
