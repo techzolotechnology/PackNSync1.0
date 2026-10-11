@@ -1,8 +1,11 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { colors } from '../theme';
 import { AppButton, Icon, PressableScale } from './ui';
+
+// Android draws the app under the status bar; keep the header below it (SafeAreaView only does this on iOS).
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
 const desktopNav = [
   ['Home', 'Home', 'home'],
@@ -29,7 +32,7 @@ function AccountButton({ user, setTab, activeTab, compactStyle }) {
 
 export default function AppHeader({ activeTab, setTab, layout, user }) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: statusBarHeight }]}>
       <View style={[styles.inner, { maxWidth: layout.contentMaxWidth, paddingHorizontal: layout.gutter }]}>
         <TouchableOpacity style={styles.brand} onPress={() => setTab('Home')} activeOpacity={0.8}>
           <Image source={require('../../assets/icon.png')} style={styles.brandIcon} />

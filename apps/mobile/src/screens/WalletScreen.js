@@ -4,6 +4,7 @@ import { AppState, Linking, StyleSheet, Text, View } from 'react-native';
 import { api, rupees } from '../api';
 import { WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
+import PaymentSheet from '../components/PaymentSheet';
 import { AppButton, Chip, EmptyState, Field, Icon, ListRow, Notice, PageIntro, Pill, SectionHeader, Skeleton, SkeletonList, Surface } from '../components/ui';
 import { shortDate } from '../utils/dates';
 import { errorFeedback, successFeedback } from '../utils/haptics';
@@ -33,7 +34,10 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('gold');
+  const [payment, setPayment] = useState(null);
   const pendingOrder = useRef(null);
+  const paymentOpen = useRef(false);
+  paymentOpen.current = !!payment;
 
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
 
@@ -55,7 +59,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
   useEffect(() => (user ? registerRefresh?.(refresh) : undefined), [user, registerRefresh, refresh]);
 
   // Check an order with the server: after returning from the browser, or from the app link.
-  const verifyOrder = useCallback(async (orderId) => {
+  const verifyOrder = useCallback(async (orderId, { left = false } = {}) => {
     if (!orderId) return;
     try {
       const res = await api.post('/wallet/topup/verify', { orderId });
@@ -63,6 +67,8 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
         pendingOrder.current = null;
         successFeedback();
         say('Payment received. Your wallet has been updated.', 'success');
+      } else if (left) {
+        say('Payment not completed. If money was taken, it shows here within a minute — pull down to check.');
       } else {
         say('Payment not confirmed yet. If you paid, it will show here within a minute — pull down to check again.');
       }
@@ -80,7 +86,8 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && pendingOrder.current) verifyOrder(pendingOrder.current);
+      // While the payment screen is open (a UPI app hands back to it), it reports the result itself.
+      if (state === 'active' && pendingOrder.current && !paymentOpen.current) verifyOrder(pendingOrder.current);
     });
     return () => sub.remove();
   }, [verifyOrder]);
@@ -103,9 +110,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
       }
       const { orderId, paymentSessionId, cashfreeMode } = res.data;
       pendingOrder.current = orderId;
-      const url = `${WEBSITE_URL}/pay?session=${encodeURIComponent(paymentSessionId)}&mode=${cashfreeMode === 'sandbox' ? 'sandbox' : 'production'}`;
-      say('Complete the payment in your browser, then come back here. Your balance updates automatically.');
-      await Linking.openURL(url);
+      setPayment({ orderId, paymentSessionId, mode: cashfreeMode === 'sandbox' ? 'sandbox' : 'production', amount: value });
     } catch (error) {
       errorFeedback();
       say(error.message, 'error');
@@ -113,6 +118,12 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
       setBusy(false);
     }
   };
+
+  const finishPayment = useCallback(({ orderId, returned }) => {
+    setPayment(null);
+    say(returned ? 'Checking your payment…' : '');
+    verifyOrder(orderId, { left: !returned });
+  }, [verifyOrder]);
 
   if (!user) {
     return (
@@ -129,6 +140,8 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
   return (
     <View style={styles.page}>
       <PageIntro eyebrow="WALLET" icon="wallet" title="Your wallet." description="Promo credit is used first on car and bike rentals and can't be withdrawn." layout={layout} />
+
+      <PaymentSheet payment={payment} onFinish={finishPayment} />
 
       <View style={styles.balanceCard}>
         <View style={styles.ringLarge} />
@@ -193,7 +206,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
           ))}
         </View>
         <Field label="AMOUNT (₹)" icon="cash-outline" value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={6} />
-        <AppButton icon="add-circle-outline" onPress={addMoney} loading={busy}>{busy ? 'Opening payment…' : `Add ${rupees(Number(amount) || 0)}`}</AppButton>
+        <AppButton icon="add-circle-outline" onPress={addMoney} loading={busy || !!payment}>{busy || payment ? 'Opening payment…' : `Add ${rupees(Number(amount) || 0)}`}</AppButton>
         <View style={styles.secureRow}>
           <Icon name="lock-closed" size={13} color={colors.subtle} />
           <Text style={styles.secureText}>Payments are processed by Cashfree. We never see your card or UPI PIN.</Text>

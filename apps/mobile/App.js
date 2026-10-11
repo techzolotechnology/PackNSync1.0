@@ -149,7 +149,7 @@ export default function App() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="dark" backgroundColor={colors.white} />
+        <StatusBar style={booted ? 'dark' : 'light'} />
         <AppHeader activeTab={tab} setTab={setTab} layout={layout} user={user} />
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
