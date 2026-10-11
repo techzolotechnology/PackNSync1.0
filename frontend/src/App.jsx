@@ -31,6 +31,7 @@ const loadDestination = () => import('./pages/DestinationPage.jsx');
 const loadGuides = () => import('./pages/GuidesPage.jsx');
 const loadGuide = () => import('./pages/GuidePage.jsx');
 const loadCostSplitter = () => import('./pages/CostSplitterPage.jsx');
+const loadCompare = () => import('./pages/ComparePage.jsx');
 const loadBecomeHost = () => import('./pages/BecomeHostPage.jsx');
 
 const AdminPage = lazy(() => import('./pages/AdminRoot.jsx'));
@@ -48,6 +49,7 @@ const DestinationPage = lazy(loadDestination);
 const GuidesPage = lazy(loadGuides);
 const GuidePage = lazy(loadGuide);
 const CostSplitterPage = lazy(loadCostSplitter);
+const ComparePage = lazy(loadCompare);
 const BecomeHostPage = lazy(loadBecomeHost);
 const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const NewReportPage = lazy(() => import('./pages/NewReportPage.jsx'));
@@ -242,6 +244,7 @@ export default function App() {
                     <Route path="/guides" element={<BlockAdminFromApp><GuidesPage /></BlockAdminFromApp>} />
                     <Route path="/guides/:slug" element={<BlockAdminFromApp><GuidePage /></BlockAdminFromApp>} />
                     <Route path="/tools/trip-cost-splitter" element={<CostSplitterPage />} />
+                    <Route path="/split-expenses-app" element={<BlockAdminFromApp><ComparePage /></BlockAdminFromApp>} />
                     <Route path="/become-a-host" element={<BlockAdminFromApp><BecomeHostPage /></BlockAdminFromApp>} />
                     <Route path="/destinations" element={<BlockAdminFromApp><DestinationsPage /></BlockAdminFromApp>} />
                     <Route path="/destinations/:slug" element={<BlockAdminFromApp><DestinationPage /></BlockAdminFromApp>} />

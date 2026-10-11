@@ -7,6 +7,7 @@ import AppHeader from './src/components/AppHeader';
 import BottomNav from './src/components/BottomNav';
 import { api } from './src/api';
 import { loadRefreshToken, saveRefreshToken } from './src/session';
+import { addNotificationResponseListener, registerForPush } from './src/push';
 import { AccountScreen, BookingsScreen, HomeScreen, HostScreen, RentalsScreen, TripsScreen, WalletScreen } from './src/screens';
 import { colors, createLayout } from './src/theme';
 
@@ -141,6 +142,12 @@ export default function App() {
       setRefreshing(false);
     }
   }, []);
+
+  // Register this device for push once signed in; tapping a notification opens the right tab.
+  useEffect(() => {
+    if (user) registerForPush();
+  }, [user]);
+  useEffect(() => addNotificationResponseListener((nextTab) => setTab(nextTab)), [setTab]);
 
   const clearDeepLink = useCallback(() => setDeepLinkOrderId(null), []);
   const Screen = screens[tab];

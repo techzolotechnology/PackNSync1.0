@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Linking, Share, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
+import { unregisterPush } from '../push';
 import { WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
 import { AppButton, Field, Icon, IconCircle, ListRow, Notice, OtpInput, PageIntro, Pill, SegmentedControl, Surface } from '../components/ui';
@@ -105,6 +106,8 @@ export default function AccountScreen({ user, setUser, setTab, layout, registerR
       text: 'Log out',
       style: 'destructive',
       onPress: async () => {
+        // Drop this device's push token while still authenticated, then sign out.
+        await unregisterPush();
         try { await api.post('/auth/logout'); } catch { /* signing out locally is enough */ }
         api.setToken(null);
         setUser(null);

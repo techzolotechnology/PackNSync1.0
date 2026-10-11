@@ -106,9 +106,29 @@ export const updateVehicle = async (req, res) => {
         throw new AppError('Only the owner can update this vehicle.', 403);
     }
 
+    // Whitelist: never let the request body set ownerId, isVerified, rcUrl, or timestamps.
+    const data = {};
+    const { make, model, year, type, seats, fuelType, transmission, images } = req.body;
+    if (make !== undefined) data.make = String(make).slice(0, 60);
+    if (model !== undefined) data.model = String(model).slice(0, 60);
+    if (year !== undefined) {
+        const y = Number(year);
+        if (!Number.isFinite(y) || y < 1900 || y > new Date().getFullYear() + 1) throw new AppError('Enter a valid year.', 400);
+        data.year = Math.round(y);
+    }
+    if (type !== undefined) data.type = normalizeVehicleType(type);
+    if (seats !== undefined) {
+        const s = Number(seats);
+        if (!Number.isFinite(s) || s < 1 || s > 60) throw new AppError('Enter a valid seat count.', 400);
+        data.seats = Math.round(s);
+    }
+    if (fuelType !== undefined) data.fuelType = String(fuelType).slice(0, 30);
+    if (transmission !== undefined) data.transmission = String(transmission).slice(0, 30);
+    if (images !== undefined) data.images = Array.isArray(images) ? images.slice(0, 10).map((u) => String(u).slice(0, 500)) : [];
+
     const updated = await prisma.vehicle.update({
         where: { id: req.params.id },
-        data: req.body,
+        data,
     });
     res.json({ success: true, data: updated });
 };
