@@ -1,3 +1,4 @@
+import { assertBusinessApproved, publicBusinessSelect } from '../utils/rentalBusiness.js';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import {
@@ -38,6 +39,7 @@ export const createListing = async (req, res) => {
     await assertFullyVerified(req.user.id);
     await assertPolicyAccepted(req.user.id, 'LISTING_TERMS');
 
+    assertBusinessApproved(await prisma.rentalBusinessProfile.findUnique({ where: { userId: req.user.id } }));
     const { vehicleId, pricePerDay, location, description, availableFrom, availableTo, country } = req.body;
     const market = resolveListingMarket(country);
     const start = new Date(availableFrom);
@@ -91,7 +93,7 @@ const endOfUtcDay = (value) => {
 export const getListings = async (req, res) => {
     const { location, minPrice, maxPrice, type, kind, startDate, endDate, fuelType, country } = req.query;
 
-    const where = { isActive: true };
+    const where = { isActive: true, OR: [ { host: { businessProfile: { is: null } } }, { host: { businessProfile: { is: { hostType: 'INDIVIDUAL' } } } }, { host: { businessProfile: { is: { hostType: 'RENTAL_SHOP', status: 'APPROVED' } } } } ] };
     if (country) where.country = String(country).trim().toUpperCase();
     if (location) where.location = { contains: location, mode: 'insensitive' };
     if (minPrice || maxPrice) {
@@ -132,7 +134,7 @@ export const getListings = async (req, res) => {
         where,
         include: {
             vehicle: true,
-            host: { select: { id: true, name: true, avatarUrl: true } },
+            host: { select: { id: true, name: true, avatarUrl: true, businessProfile: { select: publicBusinessSelect } } },
         },
         orderBy: { pricePerDay: 'asc' },
     });
@@ -172,7 +174,7 @@ export const getListingById = async (req, res) => {
         where: { id: req.params.id },
         include: {
             vehicle: true,
-            host: { select: { id: true, name: true, avatarUrl: true, bio: true } },
+            host: { select: { id: true, name: true, avatarUrl: true, bio: true, businessProfile: { select: publicBusinessSelect } } },
         },
     });
     if (!listing) throw new AppError('Listing not found.', 404);
@@ -191,6 +193,7 @@ export const bookRental = async (req, res) => {
         include: { vehicle: true },
     });
     if (!listing) throw new AppError('Listing not found.', 404);
+    assertBusinessApproved(await prisma.rentalBusinessProfile.findUnique({ where: { userId: listing.hostId } }));
     if (!listing.isActive) throw new AppError('Listing is no longer active.', 400);
 
     const start = new Date(startDate);
@@ -580,7 +583,7 @@ export const getHostBookings = async (req, res) => {
             listing: { hostId: req.user.id },
         },
         include: {
-            renter: { select: { id: true, name: true, email: true, avatarUrl: true } },
+            renter: { select: { id: true, name: true, email: true, avatarUrl: true, businessProfile: { select: publicBusinessSelect } } },
             listing: {
                 include: {
                     vehicle: true,

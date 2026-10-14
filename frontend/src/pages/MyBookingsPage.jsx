@@ -6,6 +6,7 @@ import { rentalsApi, usersApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
 import { displayName } from '../utils/displayName.js';
 import { formatMoney } from '../config/markets.js';
+import DamageInspectionModal from '../components/DamageInspectionModal.jsx';
 import './MyBookingsPage.css';
 
 const statusClass = (status) => {
@@ -26,6 +27,8 @@ export default function MyBookingsPage() {
     const [busyId, setBusyId] = useState(null);
     const [reviewDraft, setReviewDraft] = useState({}); // bookingId -> { rating, comment, open }
     const [quotes, setQuotes] = useState({}); // bookingId -> { total, discount, payable, offer }
+    const [inspectionBooking, setInspectionBooking] = useState(null);
+
 
     useEffect(() => {
         if (!user) return;
@@ -299,6 +302,14 @@ export default function MyBookingsPage() {
                                         )}
                                         <span className={`booking-status ${statusClass(b.status)}`}>{b.status}</span>
                                         <div className="booking-actions">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline btn-sm"
+                                                onClick={() => setInspectionBooking(b)}
+                                                title="AI Vehicle Damage Inspection (360° Check-In / Check-Out & Claims)"
+                                            >
+                                                🛡️ Vehicle inspection
+                                            </button>
                                             <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
                                             {canPay && (
                                                 <button
@@ -367,39 +378,58 @@ export default function MyBookingsPage() {
                                 <strong>{formatMoney(b.hostAmount ?? b.totalPrice, b.listing?.currency)}</strong>
                                 <small className="booking-fee">you earn</small>
                                 <span className={`booking-status ${statusClass(b.status)}`}>{b.status}</span>
-                                <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
-                                {b.status === 'PENDING' && (
-                                    <div className="booking-actions">
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary btn-sm"
-                                            disabled={busyId === b.id}
-                                            onClick={() => runAction(
-                                                b.id,
-                                                () => rentalsApi.respondToBooking(b.id, 'CONFIRMED'),
-                                                'Booking confirmed.'
-                                            )}
-                                        >
-                                            Confirm
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-ghost btn-sm"
-                                            disabled={busyId === b.id}
-                                            onClick={() => runAction(
-                                                b.id,
-                                                () => rentalsApi.respondToBooking(b.id, 'REJECTED'),
-                                                'Booking declined.'
-                                            )}
-                                        >
-                                            Reject
-                                        </button>
-                                    </div>
-                                )}
+                                <div className="booking-actions">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline btn-sm"
+                                        onClick={() => setInspectionBooking(b)}
+                                        title="AI Vehicle Damage Inspection"
+                                    >
+                                        🛡️ Vehicle inspection
+                                    </button>
+                                    <Link to={`/reports/new?bookingId=${b.id}`} className="btn btn-ghost btn-sm">Report a problem</Link>
+                                    {b.status === 'PENDING' && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary btn-sm"
+                                                disabled={busyId === b.id}
+                                                onClick={() => runAction(
+                                                    b.id,
+                                                    () => rentalsApi.respondToBooking(b.id, 'CONFIRMED'),
+                                                    'Booking confirmed.'
+                                                )}
+                                            >
+                                                Confirm
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-sm"
+                                                disabled={busyId === b.id}
+                                                onClick={() => runAction(
+                                                    b.id,
+                                                    () => rentalsApi.respondToBooking(b.id, 'REJECTED'),
+                                                    'Booking declined.'
+                                                )}
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </article>
                     ))}
                 </div>
+            )}
+
+            {inspectionBooking && (
+                <DamageInspectionModal
+                    booking={inspectionBooking}
+                    isOpen={Boolean(inspectionBooking)}
+                    onClose={() => setInspectionBooking(null)}
+                    onRefresh={fetchAll}
+                />
             )}
         </div>
     );

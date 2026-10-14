@@ -614,7 +614,8 @@ export default function RentalsPage({ city = null }) {
                                                 : <div className="cr-avatar fallback">{listing.host?.name?.[0] || '?'}</div>
                                             }
                                             <span>
-                                                {listing.host?.name || 'Host'}
+                                                {listing.host?.businessProfile?.hostType === 'RENTAL_SHOP' ? listing.host.businessProfile.businessName : (listing.host?.name || 'Host')}
+                                                {listing.host?.businessProfile?.hostType === 'RENTAL_SHOP' && listing.host.businessProfile.status === 'APPROVED' && <small> · Verified rental business</small>}
                                                 {listing.host?.averageRating != null && (
                                                     <em className="cr-host-rating">
                                                         {' '}★ {listing.host.averageRating}

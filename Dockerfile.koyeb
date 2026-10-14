@@ -20,6 +20,7 @@ COPY backend/prisma ./backend/prisma
 RUN npm ci --workspace=backend --include-workspace-root --omit=dev --ignore-scripts
 
 COPY backend ./backend
+COPY ["Damage AI Inspection", "./Damage AI Inspection"]
 
 WORKDIR /app/backend
 

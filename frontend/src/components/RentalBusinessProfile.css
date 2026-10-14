@@ -1,0 +1,5 @@
+.rental-business { padding: 24px; margin: 20px 0; }
+.rental-business form { display: grid; gap: 14px; max-width: 700px; }
+.rental-business label { display: grid; gap: 6px; }
+.rental-business input, .rental-business select, .rental-business textarea { width: 100%; padding: 12px; border: 1px solid #b8c5d6; border-radius: 8px; font: inherit; background: #fff; color: #172c46; }
+.rental-business p { overflow-wrap: anywhere; }
