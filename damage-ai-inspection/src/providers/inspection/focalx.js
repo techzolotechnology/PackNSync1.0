@@ -1,0 +1,1 @@
+export const focalxInspectionProvider = { name: 'disabled', async inspect() { throw new Error('External inspection services are disabled.'); }, async fileClaim() { throw new Error('External insurance services are disabled.'); } };

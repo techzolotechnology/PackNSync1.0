@@ -46,5 +46,47 @@ jobs:
       - name: Backend syntax check
         run: node --check backend/src/index.js
 
+      - name: Owned inspection workflow tests
+        run: node --test "Damage AI Inspection/test/*.test.mjs"
+
       - name: Backend tests
         run: npm test --workspace=backend
+
+  inspection-integration:
+    name: Owned inspections · PostgreSQL and HTTP
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: inspection_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d inspection_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/inspection_test
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/inspection_test
+      INSPECTION_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/inspection_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install backend and test dependencies
+        run: npm ci --workspace=backend --include-workspace-root --ignore-scripts
+      - name: Initialize isolated test schema
+        run: npx prisma db push --schema=backend/prisma/schema.prisma
+      - name: Inspect decoding and workflow rules
+        run: node --test "Damage AI Inspection/test/*.test.mjs"
+      - name: Validate deployment migration
+        run: node "Damage AI Inspection/test/migration.integration.mjs"
+      - name: Validate PostgreSQL transactions and payout holds
+        run: node "Damage AI Inspection/test/database.integration.mjs"
+      - name: Validate JWT authorization, MFA and private evidence routes
+        run: node "Damage AI Inspection/test/http.integration.mjs"

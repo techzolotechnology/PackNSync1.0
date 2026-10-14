@@ -35,7 +35,16 @@ export async function releaseEarning(earningId, { allowedFrom = ['PENDING', 'ON_
             include: { booking: { include: { listing: { include: { vehicle: { select: { make: true, model: true } } } } } } },
         });
         if (!earning) throw new AppError('Earning not found.', 404);
-        if (earning.booking.status !== 'PAID') {
+        // Share the inspection workflow's lock to prevent a payout/dispute race.
+        await tx.$queryRaw`SELECT "id" FROM "rental_bookings" WHERE "id" = ${earning.bookingId} FOR UPDATE`;
+        const inspection = await tx.rentalInspection.findUnique({ where: { bookingId: earning.bookingId }, select: { reviewStatus: true } });
+        if (inspection && inspection.reviewStatus !== 'PASSED') {
+            throw new AppError('This booking has an inspection awaiting resolution.', 409);
+        }
+        const unresolvedReports = await tx.report.count({ where: { bookingId: earning.bookingId, status: { in: ['OPEN', 'IN_REVIEW'] } } });
+        if (unresolvedReports) throw new AppError('Resolve this booking’s open disputes before releasing earnings.', 409);
+        const currentBooking = await tx.rentalBooking.findUnique({ where: { id: earning.bookingId }, select: { status: true } });
+        if (currentBooking?.status !== 'PAID') {
             throw new AppError('This booking is no longer paid, so the earning cannot be released.', 400);
         }
 

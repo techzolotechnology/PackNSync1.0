@@ -17,6 +17,7 @@ import { adminMoneyRouter } from './adminMoney.routes.js';
 import { adminReportsRouter } from './adminReports.routes.js';
 import { adminContentRouter } from './adminContent.routes.js';
 import { adminOffersRouter } from './adminOffers.routes.js';
+import { adminInspectionsRouter } from './adminInspections.routes.js';
 import { requireAdminMfa } from '../middleware/adminMfa.middleware.js';
 import {
     listVerifications,
@@ -47,6 +48,7 @@ adminRouter.use(adminMoneyRouter);
 adminRouter.use(adminReportsRouter);
 adminRouter.use(adminContentRouter);
 adminRouter.use(adminOffersRouter);
+adminRouter.use(adminInspectionsRouter);
 
 // GET /api/admin/stats
 adminRouter.get('/stats', async (_req, res) => {

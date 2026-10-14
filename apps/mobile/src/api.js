@@ -85,6 +85,7 @@ const withQuery = (path, params) => {
 };
 
 export const api = {
+  authorizationHeaders: () => (token ? { Authorization: `Bearer ${token}` } : {}),
   setToken: (nextToken, nextRefreshToken = null) => {
     token = nextToken;
     setRefreshToken(nextToken ? nextRefreshToken : null);

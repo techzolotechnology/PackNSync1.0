@@ -105,16 +105,21 @@ adminReportsRouter.post('/reports/:id/messages', async (req, res) => {
     const report = await prisma.report.findUnique({ where: { id: req.params.id } });
     if (!report) throw new AppError('Report not found.', 404);
 
-    await prisma.$transaction([
-        prisma.reportMessage.create({ data: { reportId: report.id, authorId: req.user.id, fromAdmin: true, body } }),
-        prisma.report.update({
+    await prisma.$transaction(async (tx) => {
+        if (report.bookingId) {
+            await tx.$queryRaw`SELECT "id" FROM "rental_bookings" WHERE "id" = ${report.bookingId} FOR UPDATE`;
+        }
+        const current = await tx.report.findUnique({ where: { id: report.id } });
+        if (!current) throw new AppError('Report not found.', 404);
+        await tx.reportMessage.create({ data: { reportId: report.id, authorId: req.user.id, fromAdmin: true, body } });
+        await tx.report.update({
             where: { id: report.id },
             data: {
-                ...(report.status === 'OPEN' ? { status: 'IN_REVIEW' } : {}),
-                ...(report.assignedAdminId ? {} : { assignedAdminId: req.user.id }),
+                ...(current.status === 'OPEN' ? { status: 'IN_REVIEW' } : {}),
+                ...(current.assignedAdminId ? {} : { assignedAdminId: req.user.id }),
             },
-        }),
-    ]);
+        });
+    });
     await notifyUser({
         userId: report.reporterId,
         type: 'SYSTEM',
@@ -149,7 +154,24 @@ adminReportsRouter.patch('/reports/:id', async (req, res) => {
     if (req.body?.assignToMe) data.assignedAdminId = req.user.id;
     if (!Object.keys(data).length) throw new AppError('Nothing to update.', 400);
 
-    const updated = await prisma.report.update({ where: { id: report.id }, data });
+    const updated = await prisma.$transaction(async (tx) => {
+        if (report.bookingId) {
+            await tx.$queryRaw`SELECT "id" FROM "rental_bookings" WHERE "id" = ${report.bookingId} FOR UPDATE`;
+        }
+        const updated = await tx.report.update({ where: { id: report.id }, data });
+        if (report.bookingId && status && ['OPEN', 'IN_REVIEW'].includes(status)) {
+            const inspection = await tx.rentalInspection.findFirst({ where: { reportId: report.id } });
+            await tx.hostEarning.updateMany({ where: { bookingId: report.bookingId, status: 'PENDING' }, data: { status: 'ON_HOLD', note: inspection ? 'Inspection report reopened' : 'Report reopened for review' } });
+            if (inspection) {
+                await tx.rentalInspection.update({ where: { id: inspection.id }, data: {
+                    reviewStatus: 'DISPUTED', version: { increment: 1 },
+                    review: { status: 'DISPUTED', reason: 'Linked report reopened for review.', by: req.user.id, at: new Date().toISOString() },
+                } });
+                await tx.inspectionEvent.create({ data: { inspectionId: inspection.id, actorId: req.user.id, action: 'REPORT_REOPEN', data: { reportId: report.id, status } } });
+            }
+        }
+        return updated;
+    });
 
     if (status && status !== report.status) {
         const closed = ['RESOLVED', 'DISMISSED'].includes(status);

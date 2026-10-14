@@ -27,3 +27,7 @@ node_modules.*/
 .tmp-*/
 *.tgz
 agent-work/
+
+# Private inspection evidence
+backend/data/
+data/
