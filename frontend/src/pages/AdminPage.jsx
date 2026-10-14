@@ -10,6 +10,7 @@ import AdminUserDrawer from '../components/admin/AdminUserDrawer.jsx';
 import AdminAudit from '../components/admin/AdminAudit.jsx';
 import AdminSecurity from '../components/admin/AdminSecurity.jsx';
 import AdminReports from '../components/admin/AdminReports.jsx';
+import AdminBusinesses from '../components/admin/AdminBusinesses.jsx';
 import AdminInspections from '../components/admin/AdminInspections.jsx';
 import AdminEarnings from '../components/admin/AdminEarnings.jsx';
 import AdminStuckTopups from '../components/admin/AdminStuckTopups.jsx';
@@ -26,6 +27,7 @@ const TABS = [
     { id: 'Overview', label: 'Overview' },
     { id: 'Reports', label: 'Reports' },
     { id: 'Inspections', label: 'Inspections' },
+    { id: 'Businesses', label: 'Rental businesses' },
     { id: 'Trust', label: 'Trust' },
     { id: 'Travel', label: 'Trips' },
     { id: 'Rentals', label: 'Rentals' },
@@ -887,6 +889,7 @@ export default function AdminPage() {
                 )}
 
                 {tab === 'Inspections' && <AdminInspections />}
+                {tab === 'Businesses' && <AdminBusinesses />}
 
                 {tab === 'People' && (
                     <div className="admin-panel">

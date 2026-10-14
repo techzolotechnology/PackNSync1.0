@@ -3,7 +3,10 @@ import { getUserById, updateUser, deleteUser, getUserTrips, uploadAvatar, getMyR
 import { authenticate, optionalAuth } from '../middleware/auth.middleware.js';
 import { vehicleImageUpload } from '../middleware/vehicleUpload.middleware.js';
 
+import { businessRouter } from './rentalBusiness.routes.js';
+
 export const userRouter = Router();
+userRouter.use('/me/business', authenticate, businessRouter);
 
 userRouter.post('/avatar', authenticate, vehicleImageUpload.single('image'), uploadAvatar);
 userRouter.get('/me/referral', authenticate, getMyReferral);
