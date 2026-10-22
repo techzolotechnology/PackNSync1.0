@@ -131,7 +131,11 @@ reportRouter.post('/', async (req, res) => {
     }
 
     const { priority } = REPORT_CATEGORIES[category];
-    const report = await prisma.report.create({
+    const { report, earningHeld } = await prisma.$transaction(async (tx) => {
+    if (booking) {
+        await tx.$queryRaw`SELECT "id" FROM "rental_bookings" WHERE "id" = ${booking.id} FOR UPDATE`;
+    }
+    const report = await tx.report.create({
         data: {
             reporterId: req.user.id,
             category,
@@ -149,8 +153,10 @@ reportRouter.post('/', async (req, res) => {
     // A renter disputing a paid booking freezes the host's payout until an admin decides.
     let earningHeld = false;
     if (booking && booking.renterId === req.user.id) {
-        earningHeld = await holdEarningForBooking(booking.id, `Renter dispute: ${subject}`);
+        earningHeld = await holdEarningForBooking(booking.id, `Renter dispute: ${subject}`, tx);
     }
+    return { report, earningHeld };
+    });
 
     if (priority === 'HIGH') {
         sendAdminAlert({

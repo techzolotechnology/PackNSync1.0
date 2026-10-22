@@ -208,7 +208,12 @@ export const rentalsApi = {
     quoteBooking: (id) => api.get(`/rentals/bookings/${id}/quote`),
     reviewDriver: (id, data) => api.post(`/rentals/bookings/${id}/driver-review`, data),
     getDriverReviews: (userId) => api.get(`/rentals/drivers/${userId}/reviews`),
+    getInspection: (bookingId) => api.get(`/rentals/bookings/${bookingId}/inspection`),
+    checkinInspection: (bookingId, data) => api.post(`/rentals/bookings/${bookingId}/inspection/checkin`, data),
+    checkoutInspection: (bookingId, data) => api.post(`/rentals/bookings/${bookingId}/inspection/checkout`, data),
+    fileClaim: (bookingId, data = {}) => api.post(`/rentals/bookings/${bookingId}/claim`, data),
 };
+
 
 export const walletApi = {
     get: () => api.get('/wallet'),

@@ -121,6 +121,7 @@ model User {
   referredBy            User?          @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals             User[]         @relation("Referrals")
   adminActions          AdminAuditLog[]
+  businessProfile       RentalBusinessProfile?
   hostEarnings          HostEarning[]
   reportsFiled          Report[]        @relation("ReportReporter")
   reportsAssigned       Report[]        @relation("ReportAssignee")
@@ -638,9 +639,62 @@ model RentalBooking {
   driverReview    DriverReview?
   hostEarning     HostEarning?
   reports         Report[]
-  offerRedemption OfferRedemption?
+    offerRedemption OfferRedemption?
+    inspection      RentalInspection?
 
   @@map("rental_bookings")
+}
+
+/// Immutable evidence snapshots with a separate audited review lifecycle.
+model RentalInspection {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+  vehicleId     String
+  checkin       Json?
+  checkout      Json?
+  comparison    Json?
+  confirmations Json     @default("{}")
+  reviewStatus  String   @default("AWAITING_REVIEW")
+  review        Json?
+  reportId      String?
+  version       Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  booking       RentalBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  images        InspectionImage[]
+  events        InspectionEvent[]
+
+  @@index([reviewStatus, createdAt])
+  @@index([vehicleId, createdAt])
+  @@map("rental_inspections")
+}
+
+model InspectionImage {
+  id           String   @id @default(uuid())
+  inspectionId String
+  stage        String
+  angle        String
+  sha256       String
+  original     Bytes
+  display      Bytes
+  createdAt    DateTime @default(now())
+  inspection   RentalInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@unique([inspectionId, stage, angle])
+  @@map("inspection_images")
+}
+
+model InspectionEvent {
+  id           String   @id @default(uuid())
+  inspectionId String
+  actorId      String
+  action       String
+  data         Json
+  createdAt    DateTime @default(now())
+  inspection   RentalInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId, createdAt])
+  @@map("inspection_events")
 }
 
 /// Renter rates the car host / driver after a paid rental booking.
@@ -893,4 +947,23 @@ model OfferRedemption {
 
   @@unique([offerId, userId, seq])
   @@map("offer_redemptions")
+}
+
+model RentalBusinessProfile {
+  userId String @id
+  hostType String @default("INDIVIDUAL")
+  businessName String @default("")
+  address String @default("")
+  contactNumber String @default("")
+  gstNumber String @default("")
+  registrationReference String @default("")
+  status String @default("NONE")
+  reviewNotes String @default("")
+  reviewedBy String?
+  reviewedAt DateTime?
+  version Int @default(1)
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([status])
+  @@map("rental_business_profiles")
 }

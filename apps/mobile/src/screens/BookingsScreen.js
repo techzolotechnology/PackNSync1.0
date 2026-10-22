@@ -6,6 +6,7 @@ import { colors } from '../theme';
 import { AppButton, EmptyState, Icon, IconCircle, Notice, PageIntro, Pill, SectionHeader, SkeletonList, Surface } from '../components/ui';
 import { shortDate } from '../utils/dates';
 import { errorFeedback, successFeedback } from '../utils/haptics';
+import InspectionScreen from './InspectionScreen';
 
 const STATUS = {
   PENDING: { text: 'Waiting for the host', icon: 'hourglass-outline', tone: 'gold' },
@@ -27,6 +28,7 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
   const [loaded, setLoaded] = useState(false);
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('gold');
+  const [inspectionBooking, setInspectionBooking] = useState(null);
 
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
 
@@ -38,7 +40,7 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
       ]);
       const rentals = renter.data || [];
       setMine(rentals);
-      setHosting((host.data || []).filter((b) => b.status === 'PENDING'));
+      setHosting(host.data || []);
       // What each confirmed booking costs right now, after any offer.
       const entries = await Promise.all(rentals.filter((b) => b.status === 'CONFIRMED').map(async (b) => {
         try {
@@ -96,6 +98,9 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
     status === 'CONFIRMED' ? 'Request accepted. The renter can now pay.' : 'Request declined.',
   );
 
+  const hostRequests = hosting.filter(b => b.status === 'PENDING');
+  const hostInspections = hosting.filter(b => ['PAID', 'COMPLETED'].includes(b.status));
+
   if (!user) {
     return (
       <View style={styles.page}>
@@ -107,16 +112,18 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
     );
   }
 
+  if (inspectionBooking) return <InspectionScreen key={inspectionBooking.id} booking={inspectionBooking} layout={layout} onClose={() => { setInspectionBooking(null); load(); }} />;
+
   return (
     <View style={styles.page}>
       <PageIntro eyebrow="MY BOOKINGS" icon="calendar" title="Your rentals." description="Pay for confirmed bookings from your wallet. Offers are applied automatically." layout={layout} />
       <Notice tone={tone}>{message}</Notice>
       {message.toLowerCase().includes('insufficient') && <AppButton icon="wallet-outline" onPress={() => setTab('Wallet')}>Add money to your wallet</AppButton>}
 
-      {hosting.length > 0 && (
+      {hostRequests.length > 0 && (
         <Surface style={[styles.section, styles.hostSection]}>
-          <SectionHeader title="Requests for your vehicles" subtitle={`${hosting.length} waiting for your answer`} />
-          {hosting.map((b) => (
+          <SectionHeader title="Requests for your vehicles" subtitle={`${hostRequests.length} waiting for your answer`} />
+          {hostRequests.map((b) => (
             <View key={b.id} style={styles.card}>
               <View style={styles.cardTop}>
                 <IconCircle name={vehicleIcon(b)} tone="gold" />
@@ -131,6 +138,26 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
                 <AppButton compact icon="checkmark" loading={busyId === b.id} onPress={() => respond(b, 'CONFIRMED')} style={styles.flex}>Accept</AppButton>
                 <AppButton compact variant="danger" icon="close" disabled={busyId === b.id} onPress={() => respond(b, 'REJECTED')} style={styles.flex}>Decline</AppButton>
               </View>
+            </View>
+          ))}
+        </Surface>
+      )}
+
+      {hostInspections.length > 0 && (
+        <Surface style={styles.section}>
+          <SectionHeader title="Hosted rentals · inspections" subtitle="Paid and completed bookings for your vehicles" />
+          {hostInspections.map((b, index) => (
+            <View key={b.id} style={[styles.card, index === hostInspections.length - 1 && styles.cardLast]}>
+              <View style={styles.cardTop}>
+                <IconCircle name={vehicleIcon(b)} tone="blue" />
+                <View style={styles.flex}>
+                  <Text style={styles.name}>{vehicleName(b)}</Text>
+                  <View style={styles.metaRow}><Icon name="person-outline" size={13} color={colors.subtle} /><Text style={styles.meta}>{b.renter?.name || 'A renter'}</Text></View>
+                  <View style={styles.metaRow}><Icon name="calendar-outline" size={13} color={colors.subtle} /><Text style={styles.meta}>{shortDate(b.startDate)} → {shortDate(b.endDate)}</Text></View>
+                </View>
+              </View>
+              <Pill tone="blue" style={styles.status}>{b.status === 'PAID' ? 'Paid rental' : 'Completed rental'}</Pill>
+              <AppButton compact icon="camera-outline" onPress={() => setInspectionBooking(b)} style={styles.status}>Inspect vehicle</AppButton>
             </View>
           ))}
         </Surface>
@@ -161,6 +188,7 @@ export default function BookingsScreen({ user, setTab, layout, registerRefresh }
                 </View>
               </View>
               <Pill tone={status.tone} icon={status.icon} style={styles.status}>{status.text}</Pill>
+              {['PAID', 'COMPLETED'].includes(b.status) && <AppButton compact icon="camera-outline" onPress={() => setInspectionBooking(b)} style={styles.status}>Vehicle inspection</AppButton>}
               {canPay && quote?.discount > 0 && (
                 <View style={styles.offerRow}>
                   <Icon name="pricetag" size={14} color={colors.success} />

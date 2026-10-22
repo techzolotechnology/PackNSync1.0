@@ -191,6 +191,7 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
                   </View>
                 </View>
                 <Text style={styles.vehicleName}>{vehicle.make || 'Vehicle'} {vehicle.model || ''}</Text>
+                {listing.host?.businessProfile?.hostType === 'RENTAL_SHOP' && <Text>{listing.host.businessProfile.businessName}{listing.host.businessProfile.status === 'APPROVED' ? ' · Verified rental business' : ''}</Text>}
                 <View style={styles.metaRow}>
                   <Pill tone="blue" icon="location-outline">{listing.location || 'Local pickup'}</Pill>
                   {!!vehicle.seats && <Pill tone="gray" icon="people-outline">{vehicle.seats} seats</Pill>}

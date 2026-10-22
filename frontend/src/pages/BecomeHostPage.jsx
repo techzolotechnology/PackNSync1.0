@@ -19,6 +19,7 @@ const STEPS = [
 ];
 
 const FAQS = [
+    { q: 'Can a rental shop list its fleet?', a: 'Yes. Choose Car / bike rental shop owner in your host dashboard and submit your business details for admin review. Each vehicle still needs its own document approval.' },
     {
         q: 'Who can rent my car?',
         a: 'Only renters who have completed ID verification (Aadhaar and driving licence) and accepted the rental terms can send a booking request.',

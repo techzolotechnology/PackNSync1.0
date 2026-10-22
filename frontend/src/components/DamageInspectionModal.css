@@ -1,0 +1,48 @@
+.inspection-modal-overlay { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(10,23,40,.78); backdrop-filter:blur(6px); }
+.inspection-modal-card { width:min(1040px,100%); max-height:92vh; display:flex; flex-direction:column; background:var(--bg-surface,#fff); color:var(--text-primary,#142339); border-radius:22px; box-shadow:0 24px 90px #0005; overflow:hidden; }
+.inspection-modal-header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:24px 28px; background:linear-gradient(120deg,#0d3541,#18566a); color:#fff; }
+.inspection-modal-header small { letter-spacing:.14em; font-size:10px; color:#a8e3e2; }
+.inspection-modal-header h2 { margin:8px 0 0; font-size:23px; }
+.inspection-modal-header button { color:#fff; background:#ffffff18; border-color:#ffffff40; }
+.inspection-modal-body { padding:26px; overflow-y:auto; overscroll-behavior:contain; display:flex; flex-direction:column; gap:22px; }
+.inspection-modal-card button,.inspection-admin button { padding:10px 16px; border:1px solid #b8cbd3; border-radius:9px; background:var(--bg-surface,#fff); color:inherit; cursor:pointer; font-weight:600; }
+.inspection-modal-card button:disabled,.inspection-admin button:disabled { opacity:.5; cursor:not-allowed; }
+.inspection-modal-card :focus-visible,.inspection-admin :focus-visible { outline:3px solid #23a9b0; outline-offset:3px; }
+.inspection-modal-card label,.inspection-admin label { display:flex; flex-direction:column; gap:7px; font-size:14px; font-weight:600; margin:12px 0; }
+.inspection-modal-card input:not([type=checkbox]),.inspection-modal-card select,.inspection-modal-card textarea,.inspection-admin select { width:100%; padding:11px; border:1px solid #b8cbd3; border-radius:8px; background:var(--bg-surface,#fff); color:inherit; font:inherit; box-sizing:border-box; }
+.inspection-modal-card textarea { min-height:86px; resize:vertical; }
+.inspection-modal-card fieldset { border:0; padding:0; margin:0; min-width:0; }
+.inspection-modal-card legend { text-transform:capitalize; font-size:22px; font-weight:700; padding-top:18px; }
+.inspection-modal-card p,.inspection-admin p { line-height:1.6; overflow-wrap:anywhere; }
+.inspection-toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.inspection-toolbar p { margin:0; }
+.inspection-toolbar button { flex-shrink:0; }
+.inspection-capture,.inspection-actions { border:1px solid #d9e4e8; border-radius:16px; padding:22px; }
+.inspection-capture progress { width:100%; height:8px; accent-color:#15858a; }
+.inspection-steps { display:grid; grid-template-columns:repeat(6,1fr); gap:7px; margin:18px 0; }
+.inspection-steps button { padding:10px 5px; font-size:12px; text-transform:capitalize; }
+.inspection-steps [aria-current] { background:#e1f4f2; color:#11636a; border-color:#15858a; }
+.inspection-capture-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:24px; margin:14px 0 22px; }
+.inspection-preview { width:100%; max-height:360px; object-fit:contain; border-radius:12px; background:#edf3f5; }
+.inspection-placeholder { min-height:180px; background:#edf3f5; color:#526e7a; border:1px dashed #9ab7c0; border-radius:12px; display:flex; justify-content:center; align-items:center; text-align:center; padding:15px; }
+.inspection-note { border-left:3px solid #d99939; padding:8px 14px; margin:12px 0; background:var(--bg-subtle,#f6f8fa); border-radius:8px; }
+.inspection-pair { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.inspection-modal-card .inspection-checkbox { flex-direction:row; align-items:flex-start; font-weight:400; line-height:1.5; }
+.inspection-checkbox input { margin-top:4px; accent-color:#15858a; }
+.inspection-modal-card .inspection-primary { background:#126e78; border-color:#126e78; color:#fff; }
+.inspection-muted { color:var(--text-muted,#627985); font-size:13px; }
+.inspection-banner { padding:16px 20px; border-radius:12px; background:#eaf5f5; color:#174e5b; border:1px solid #bcdddf; line-height:1.6; }
+.inspection-error { padding:14px; background:#fff0ed; color:#a13522; border-radius:9px; }
+.inspection-evidence-angle { border:1px solid #d9e4e8; border-radius:14px; padding:18px; margin:18px 0; }
+.inspection-evidence-angle h4 { text-transform:capitalize; font-size:18px; margin:0; }
+.inspection-photo { position:relative; background:#edf3f5; border-radius:10px; overflow:hidden; }
+.inspection-photo img { display:block; width:100%; height:auto; }
+.inspection-photo svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.inspection-photo rect { fill:#fbbf241c; stroke:#f5a623; stroke-width:.006; }
+.inspection-modal-card code { font-size:11px; overflow-wrap:anywhere; }
+.inspection-modal-card pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
+.inspection-actions > button { margin:8px 8px 8px 0; }
+.inspection-admin { padding:24px; background:var(--bg-surface,#fff); border:1px solid #d9e4e8; border-radius:16px; }
+.inspection-admin > label { max-width:300px; }
+@media(max-width:680px) { .inspection-modal-overlay { padding:8px; } .inspection-modal-card { max-height:96dvh; border-radius:14px; } .inspection-modal-header,.inspection-modal-body { padding:18px; } .inspection-capture,.inspection-actions { padding:14px; } .inspection-capture-grid { grid-template-columns:1fr; } .inspection-steps { grid-template-columns:repeat(3,1fr); } .inspection-pair { gap:10px; } .inspection-toolbar { flex-wrap:wrap; } }
+@media(prefers-reduced-motion:reduce) { .inspection-modal-card * { scroll-behavior:auto; } }

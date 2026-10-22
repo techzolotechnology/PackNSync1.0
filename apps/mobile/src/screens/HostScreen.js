@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 
+import RentalBusinessProfile from '../components/RentalBusinessProfile';
 import { api } from '../api';
 import { WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
@@ -78,6 +79,7 @@ export default function HostScreen({ user, setTab, layout }) {
   return (
     <View>
       <PageIntro eyebrow="HOST WITH PICKANDSYNC" icon="key" title="Put your vehicle to work." description="Create a clean listing that appears across the connected PickAndSync experience." layout={layout} />
+      <RentalBusinessProfile user={user} />
       <View style={[styles.hostLayout, layout.tablet && styles.hostLayoutWide]}>
         <Surface style={styles.formSurface}>
           <SectionHeader title="Vehicle details" subtitle="Add the essentials now. You can manage availability through the platform." />
