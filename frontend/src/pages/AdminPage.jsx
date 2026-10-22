@@ -10,6 +10,7 @@ import AdminUserDrawer from '../components/admin/AdminUserDrawer.jsx';
 import AdminAudit from '../components/admin/AdminAudit.jsx';
 import AdminSecurity from '../components/admin/AdminSecurity.jsx';
 import AdminReports from '../components/admin/AdminReports.jsx';
+import AdminAviation from '../components/admin/AdminAviation.jsx';
 import AdminBusinesses from '../components/admin/AdminBusinesses.jsx';
 import AdminInspections from '../components/admin/AdminInspections.jsx';
 import AdminEarnings from '../components/admin/AdminEarnings.jsx';
@@ -494,6 +495,7 @@ export default function AdminPage() {
                             <div className="admin-subtabs">
                                 <button type="button" className={trustSub === 'kyc' ? 'active' : ''} onClick={() => setTrustSub('kyc')}>KYC docs</button>
                                 <button type="button" className={trustSub === 'vehicles' ? 'active' : ''} onClick={() => setTrustSub('vehicles')}>Vehicle RC</button>
+                                <button type="button" className={trustSub === 'aviation' ? 'active' : ''} onClick={() => setTrustSub('aviation')}>Helicopter operators</button>
                             </div>
                             {trustSub === 'kyc' && (
                                 <select className="form-input admin-filter-select" value={kycFilter} onChange={(e) => setKycFilter(e.target.value)} style={{ maxWidth: 200 }}>
@@ -505,7 +507,7 @@ export default function AdminPage() {
                             )}
                         </div>
 
-                        {trustSub === 'kyc' ? (
+                        {trustSub === 'aviation' ? <AdminAviation /> : trustSub === 'kyc' ? (
                             <div className="admin-table-wrap">
                                 <table className="admin-table">
                                     <thead>

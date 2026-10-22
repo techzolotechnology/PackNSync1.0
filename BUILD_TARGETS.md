@@ -1,12 +1,15 @@
 # PickAndSync Build Targets
 
-This repo now has three client targets:
+This repo has four client targets:
 
 - Website: existing Vite app in `frontend`
 - Android/Web mobile app: Expo React Native app in `apps/mobile`
+- Car host app: separate Expo app in `apps/host-mobile` (see its README for backend prerequisites)
 - Windows desktop app: Electron wrapper in `desktop`
 
 ## Install
+
+Host app: `npm run dev:host`, `npm run build:host:web`, or `npm run build:host:apk` from the repository root.
 
 ```powershell
 npm install

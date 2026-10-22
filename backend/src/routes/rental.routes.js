@@ -14,11 +14,14 @@ import { inspectionWriteLimiter } from '../middleware/inspectionLimiter.js';
 import { requireAdminMfa } from '../middleware/adminMfa.middleware.js';
 import { createDriverReview, getDriverReviews } from '../controllers/driverReview.controller.js';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware.js';
+import { getHostListings, updateHostListing } from '../controllers/hostListing.controller.js';
 
 export const rentalRouter = Router();
 
 rentalRouter.post('/listings', authenticate, createListing);
 rentalRouter.get('/listings', getListings);
+rentalRouter.get('/listings/host', authenticate, getHostListings);
+rentalRouter.patch('/listings/:id', authenticate, updateHostListing);
 rentalRouter.get('/suggestions', optionalAuth, getCarSuggestions);
 rentalRouter.get('/listings/:id', getListingById);
 rentalRouter.post('/bookings', authenticate, bookRental);

@@ -174,6 +174,7 @@ export default function Navbar() {
         setNotifOpen(false);
         const data = n.data || {};
         if (data.reportId) navigate(`/reports/${data.reportId}`);
+        else if (data.charterInquiryId) navigate('/helicopter-charters');
         else if (data.earningId) navigate('/host');
         else if (data.promo || data.referral) navigate('/wallet');
         else if (data.tripId) navigate(`/trips/${data.tripId}`);

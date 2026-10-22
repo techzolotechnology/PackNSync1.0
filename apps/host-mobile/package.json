@@ -1,0 +1,34 @@
+{
+  "name": "pickandsync-host",
+  "version": "1.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "web": "expo start --web",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "build:web": "expo export --platform web --max-workers 2 --output-dir dist/web",
+    "build:android:bundle": "expo export --platform android --max-workers 2 --output-dir dist/android",
+    "build:android:apk": "eas build --platform android --profile preview",
+    "test": "vitest run --config vitest.config.js",
+    "lint": "eslint App.js src --ext .js,.jsx --ignore-pattern '*.test.js'"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~3.2.3",
+    "@expo/vector-icons": "^14.0.3",
+    "expo": "~51.0.39",
+    "expo-image-picker": "~15.0.7",
+    "expo-secure-store": "~13.0.2",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-safe-area-context": "4.10.5",
+    "react-native-web": "~0.19.12"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0"
+  }
+}

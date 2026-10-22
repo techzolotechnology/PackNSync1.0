@@ -13,7 +13,7 @@ export const SITE_NAME = 'PickAndSync';
 export const DEFAULT_IMAGE = `${SITE_URL}/images/stock/trip-road.jpg`;
 
 export const DEFAULT_SEO = {
-    title: 'Travel Together – Group Trip Planner & Self Drive Rentals | PickAndSync',
+    title: 'PickAndSync | Pick & Sync Group Travel, Expense Splitter & Rentals',
     description:
         'Travel together with friends, family or your partner. Plan group trips, split costs, chat, and rent self-drive cars and bikes from verified hosts across India.',
 };
@@ -49,6 +49,10 @@ export const ROUTE_SEO = {
     'become-a-host': {
         title: 'Rent Out Your Car or Bike in Bangalore – Earn as a Host | PickAndSync',
         description: 'List your car, CNG car or bike on PickAndSync and earn when you are not driving. ID-verified renters, your price, your dates, you approve every booking.',
+    },
+    'helicopter-charters': {
+        title: 'Helicopter Charter Enquiries & Operator Quotes | PickAndSync',
+        description: 'Browse published helicopter charter listings, view indicative hourly rates and request an operator quote for your route, date and passenger count.',
     },
     'privacy-policy': {
         title: 'Privacy Policy | PickAndSync',

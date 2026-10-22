@@ -8,7 +8,8 @@
     "frontend",
     "backend",
     "apps/mobile",
-    "desktop"
+    "desktop",
+    "apps/host-mobile"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
@@ -26,13 +27,18 @@
     "install:all": "npm install",
     "test": "vitest run",
     "lint": "npm run lint --workspace=frontend",
-    "postinstall": "npm run build:backend"
+    "postinstall": "npm run build:backend",
+    "dev:host": "npm run start --workspace=apps/host-mobile",
+    "build:host:web": "npm run build:web --workspace=apps/host-mobile",
+    "build:host:apk": "npm run build:android:apk --workspace=apps/host-mobile",
+    "test:host": "npm test --workspace=apps/host-mobile"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
     "prisma": "5.22.0"
   },
   "devDependencies": {
+    "@expo/config-plugins": "8.0.11",
     "concurrently": "^8.2.2"
   },
   "overrides": {

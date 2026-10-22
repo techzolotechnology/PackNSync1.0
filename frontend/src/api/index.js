@@ -364,3 +364,13 @@ export const reportsApi = {
     /** Evidence photos are private; fetch with auth as a blob. */
     evidenceBlob: (url) => api.get(url.replace(/^\/api/, ''), { responseType: 'blob' }),
 };
+
+export const aviationApi = {
+    aircraft: () => api.get('/aviation/aircraft'),
+    enquire: (id, data) => api.post(`/aviation/aircraft/${id}/inquiries`, data),
+    mine: () => api.get('/aviation/inquiries/my'),
+    cancel: (id) => api.patch(`/aviation/inquiries/${id}/cancel`, {}),
+    reviews: () => api.get('/admin/aviation'),
+    review: (vehicleId, data) => api.patch(`/admin/aviation/${vehicleId}/review`, data),
+    document: (vehicleId, kind) => api.get(`/admin/aviation/${vehicleId}/documents/${kind}`, { responseType: 'blob' }),
+};

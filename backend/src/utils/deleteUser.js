@@ -39,6 +39,7 @@ export async function deleteUserAccount(userId) {
     }
 
     await prisma.$transaction(async (tx) => {
+        await tx.charterInquiry.deleteMany({ where: { OR: [{ requesterId: userId }, { aircraft: { vehicle: { ownerId: userId } } }] } });
         // Bookings on this user's listings, and bookings they made as a renter.
         await tx.rentalBooking.deleteMany({
             where: { OR: [{ renterId: userId }, { listing: { hostId: userId } }] },

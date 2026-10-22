@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "PickAndSync Host",
+    "slug": "pickandsync-host",
+    "version": "1.1.0",
+    "orientation": "default",
+    "scheme": "pickandsynchost",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f4f7fb"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.pickandsync.host",
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007bff"
+      },
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.pickandsync.host",
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PickAndSync Host uses the photos you choose for your vehicle listings and registration certificate review.",
+          "cameraPermission": "PickAndSync Host uses the camera to photograph your vehicle and registration certificate.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7758fc8d-b07b-4f0b-9023-53c4f897fd59"
+      }
+    },
+    "owner": "kartikgauttam"
+  }
+}

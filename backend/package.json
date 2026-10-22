@@ -11,6 +11,9 @@
     "postinstall": "npx prisma@5.22.0 generate",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "start:production": "prisma migrate deploy && node src/index.js",
+    "db:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
+    "db:check": "node scripts/check-database.mjs",
     "db:migrate": "npx prisma@5.22.0 migrate dev",
     "db:generate": "npx prisma@5.22.0 generate",
     "db:studio": "prisma studio",
@@ -19,8 +22,7 @@
     "db:seed:showcase:remove": "node prisma/seedShowcase.js --remove",
     "admin:upsert": "node scripts/upsert_admin_user.js",
     "hero:upload": "node scripts/upload_hero_video.js",
-    "test": "vitest run",
-    "db:deploy": "prisma migrate deploy --schema=prisma/schema.prisma"
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
@@ -44,11 +46,11 @@
     "passport-jwt": "^4.0.1",
     "prisma": "5.22.0",
     "redis": "^4.6.13",
+    "sharp": "^0.34.5",
     "socket.io": "^4.7.4",
     "stripe": "^14.21.0",
     "tesseract.js": "^7.0.0",
-    "uuid": "^9.0.1",
-    "sharp": "^0.34.5"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",

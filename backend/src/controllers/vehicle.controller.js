@@ -7,21 +7,10 @@ import {
 } from '../utils/verificationHelpers.js';
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
 import { publicFileUrl } from '../utils/publicUrl.js';
+import { normalizeVehicleType, isTwoWheelerType } from '../utils/vehicleCategories.js';
+import { aircraftInput } from '../utils/aviation.js';
 
-const ALLOWED_VEHICLE_TYPES = new Set(['CAR', 'BIKE', 'SCOOTER']);
-const TWO_WHEELER_TYPES = ['BIKE', 'SCOOTER'];
-
-export function normalizeVehicleType(raw) {
-    const type = String(raw || 'CAR').trim().toUpperCase();
-    if (type === 'TWO_WHEELER' || type === 'MOTORCYCLE') return 'BIKE';
-    if (type === 'CNG_CAR' || type === 'CNG') return 'CAR';
-    if (ALLOWED_VEHICLE_TYPES.has(type)) return type;
-    return 'CAR';
-}
-
-export function isTwoWheelerType(type) {
-    return TWO_WHEELER_TYPES.includes(normalizeVehicleType(type));
-}
+export { normalizeVehicleType, isTwoWheelerType };
 
 // POST /api/vehicles
 export const registerVehicle = async (req, res) => {
@@ -30,10 +19,12 @@ export const registerVehicle = async (req, res) => {
 
     const { make, model, year, type, licensePlate, seats, fuelType, transmission, images, rcUrl } = req.body;
     const normalizedType = normalizeVehicleType(type);
-    const seatCount = Number(seats);
-    const resolvedSeats = Number.isFinite(seatCount) && seatCount > 0
-        ? seatCount
-        : (isTwoWheelerType(normalizedType) ? 2 : 5);
+    const isAircraft = normalizedType === 'HELICOPTER';
+    const aircraft = isAircraft ? aircraftInput(req.body.aircraft) : null;
+    if (!make?.trim() || !model?.trim() || typeof licensePlate !== 'string' || !licensePlate.trim()) throw new AppError('Make, model and registration number are required.', 400);
+    if (!Number.isInteger(Number(year)) || Number(year) < 1900 || Number(year) > new Date().getFullYear() + 1) throw new AppError('Enter a valid manufacturing year.', 400);
+    const resolvedSeats = seats === undefined ? (isTwoWheelerType(normalizedType) ? 2 : isAircraft ? 4 : 5) : Number(seats);
+    if (!Number.isInteger(resolvedSeats) || resolvedSeats < 1 || resolvedSeats > (isTwoWheelerType(normalizedType) ? 2 : 60) || typeof seats === 'boolean') throw new AppError('Enter a valid seat count for this category.', 400);
 
     const existing = await prisma.vehicle.findUnique({ where: { licensePlate } });
     if (existing) throw new AppError('A vehicle with this license plate already exists.', 400);
@@ -47,10 +38,11 @@ export const registerVehicle = async (req, res) => {
             type: normalizedType,
             licensePlate,
             seats: resolvedSeats,
-            fuelType,
-            transmission,
+            fuelType: isAircraft ? 'Aviation fuel' : fuelType,
+            transmission: isAircraft ? 'Operator flown' : transmission,
             images: images || [],
             rcUrl,
+            ...(aircraft ? { aircraftHosting: { create: aircraft } } : {}),
         },
     });
 
@@ -62,6 +54,7 @@ export const getMyVehicles = async (req, res) => {
     const vehicles = await prisma.vehicle.findMany({
         where: { ownerId: req.user.id },
         include: {
+            aircraftHosting: true,
             _count: { select: { listings: true } },
             listings: {
                 where: { isActive: true },
@@ -116,7 +109,11 @@ export const updateVehicle = async (req, res) => {
         if (!Number.isFinite(y) || y < 1900 || y > new Date().getFullYear() + 1) throw new AppError('Enter a valid year.', 400);
         data.year = Math.round(y);
     }
-    if (type !== undefined) data.type = normalizeVehicleType(type);
+    if (type !== undefined) {
+        const nextType = normalizeVehicleType(type);
+        if (nextType !== vehicle.type) throw new AppError('Category cannot be changed after registration. Add a new vehicle in the correct category.', 400);
+    }
+    if (vehicle.type === 'HELICOPTER') throw new AppError('Use charter setup to edit an aircraft and its operator details.', 400);
     if (seats !== undefined) {
         const s = Number(seats);
         if (!Number.isFinite(s) || s < 1 || s > 60) throw new AppError('Enter a valid seat count.', 400);
@@ -161,6 +158,7 @@ export const deleteVehicle = async (req, res) => {
         throw new AppError('Only the owner can delete this vehicle.', 403);
     }
 
+    if (vehicle.type === 'HELICOPTER' && await prisma.charterInquiry.count({ where: { aircraft: { vehicleId: vehicle.id } } })) throw new AppError('This aircraft has charter enquiry history. Pause its charter listing instead of deleting it.', 409);
     await prisma.vehicle.delete({ where: { id: req.params.id } });
     res.json({ success: true, message: 'Vehicle deleted.' });
 };

@@ -15,13 +15,11 @@ services:
       - key: PORT
         value: "3001"
       - key: DATABASE_URL
-        fromDatabase:
-          name: packandsync-db
-          property: connectionString
+        # Supply the Supabase session pooler URL in Render's environment settings.
+        sync: false
       - key: DIRECT_URL
-        fromDatabase:
-          name: packandsync-db
-          property: connectionString
+        # Use Supabase session mode (5432) or a reachable direct connection for migrations.
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
@@ -104,6 +102,8 @@ services:
         generateValue: true
 
 databases:
+  # Retained to avoid removing an existing Blueprint-managed database during cutover.
+  # The API no longer obtains its connection from this resource.
   - name: packandsync-db
     plan: free
     databaseName: packandsync
