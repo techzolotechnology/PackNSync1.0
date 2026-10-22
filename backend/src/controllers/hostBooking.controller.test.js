@@ -5,6 +5,7 @@ vi.mock('../utils/prisma.js', () => ({ prisma: {
     $transaction: vi.fn(), $executeRaw: vi.fn(),
     rentalBooking: { findUnique: vi.fn(), findFirst: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
     rentalListing: { findUnique: vi.fn() },
+    rentalBusinessProfile: { findUnique: vi.fn() },
     hostEarning: { findMany: vi.fn(), groupBy: vi.fn() },
 } }));
 vi.mock('../utils/verificationHelpers.js', () => ({ assertFullyVerified: vi.fn(), assertPolicyAccepted: vi.fn(), assertVehicleVerified: vi.fn() }));
@@ -15,6 +16,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     prisma.$transaction.mockImplementation((fn) => fn(prisma));
     prisma.rentalListing.findUnique.mockResolvedValue(listing);
+    prisma.rentalBusinessProfile.findUnique.mockResolvedValue(null);
 });
 describe('host booking concurrency', () => {
     it('rejects a price change while a new guest booking waited for the listing lock', async () => {
