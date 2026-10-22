@@ -48,3 +48,11 @@ jobs:
 
       - name: Backend tests
         run: npm test --workspace=backend
+
+      - name: Host app lint and tests
+        run: |
+          npm run lint --workspace=apps/host-mobile
+          npm test --workspace=apps/host-mobile
+
+      - name: Host Android bundle
+        run: npm run build:android:bundle --workspace=apps/host-mobile

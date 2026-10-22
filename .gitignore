@@ -6,6 +6,8 @@ release/
 dist-apk/
 graphify-out/
 apps/mobile/android/
+apps/host-mobile/android/
+apps/host-mobile/ios/
 frontend/public/downloads/*.apk
 frontend/public/downloads/*.exe
 desktop/release/

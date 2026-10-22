@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
+import { assertRoadVehicle, ROAD_TYPES } from '../utils/vehicleCategories.js';
 import { mockDigiLockerDocuments } from '../utils/digilocker.js';
 import { evaluateRcMatch, runRcOcr } from '../utils/rcOcr.js';
 import { cloudinary, isCloudinaryConfigured } from '../utils/cloudinary.js';
@@ -60,7 +61,7 @@ const upsertVerification = async ({ userId, documentType, documentNumber, docume
 
 const markVehicleVerified = async ({ userId, licensePlate, rcUrl, isVerified }) => {
     await prisma.vehicle.updateMany({
-        where: { ownerId: userId, licensePlate },
+        where: { ownerId: userId, licensePlate, type: { in: ROAD_TYPES } },
         data: { rcUrl, isVerified },
     });
 };
@@ -114,6 +115,7 @@ export const submitRcViaDigiLocker = async (req, res) => {
         where: { ownerId: req.user.id, licensePlate: plate },
     });
     if (!vehicle) throw new AppError('Add this vehicle to your fleet before submitting RC.', 404);
+    assertRoadVehicle(vehicle);
 
     const [rcDoc] = mockDigiLockerDocuments({ userId: req.user.id, includeRc: true, rcNumber: plate });
     const verification = await upsertVerification({
@@ -144,6 +146,7 @@ export const uploadRcForOcr = async (req, res) => {
         where: { ownerId: req.user.id, licensePlate: plate },
     });
     if (!vehicle) throw new AppError('Add this vehicle to your fleet before uploading RC.', 404);
+    assertRoadVehicle(vehicle);
 
     // Served only to admins (see GET /api/admin/rc-files/:filename).
     let documentUrl = `/api/admin/rc-files/${req.file.filename}`;

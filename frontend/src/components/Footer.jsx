@@ -45,6 +45,7 @@ const Footer = () => {
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
                             <li><Link to="/refund-policy">Refund Policy</Link></li>
                             <li><Link to="/reports/new">Report a problem</Link></li>
+                            <li><Link to="/helicopter-charters">Helicopter charters</Link></li>
                             <li><a href="mailto:kartikgauttam@techzolo.in">Contact Us</a></li>
                         </ul>
                     </div>

@@ -18,6 +18,8 @@ import { grantReferralRewards } from '../utils/referrals.js';
 import { platformFeePercent, priceWithFee, hostShareOf, round2 } from '../utils/commission.js';
 import { bestDiscountFor, describeDiscount } from '../utils/offers.js';
 import { createEarningForBooking } from '../utils/hostEarnings.js';
+import { listingChanges } from './hostListing.controller.js';
+import { assertRoadVehicle, ROAD_TYPES } from '../utils/vehicleCategories.js';
 
 // GET /api/rentals/suggestions — cars matched to trip dates / destination / seats
 export const getCarSuggestions = async (req, res) => {
@@ -40,32 +42,29 @@ export const createListing = async (req, res) => {
 
     const { vehicleId, pricePerDay, location, description, availableFrom, availableTo, country } = req.body;
     const market = resolveListingMarket(country);
-    const start = new Date(availableFrom);
-    const end = new Date(availableTo);
-
     if (!vehicleId || !pricePerDay || !location || !availableFrom || !availableTo) {
         throw new AppError('Vehicle, price, location, and availability dates are required.', 400);
     }
-    if (Number(pricePerDay) <= 0) throw new AppError('Price per day must be greater than zero.', 400);
-    if (end <= start) throw new AppError('Available to date must be after available from date.', 400);
+    const checked = listingChanges({ pricePerDay, location, description: description ?? '', availableFrom, availableTo }, {});
 
     // Verify vehicle ownership
     const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
     if (!vehicle) throw new AppError('Vehicle not found.', 404);
     if (vehicle.ownerId !== req.user.id) throw new AppError('Only the vehicle owner can create a listing.', 403);
+    assertRoadVehicle(vehicle);
     await assertVehicleVerified(vehicle);
 
     const listing = await prisma.rentalListing.create({
         data: {
             vehicleId,
             hostId: req.user.id,
-            pricePerDay: Number(pricePerDay),
+            pricePerDay: checked.pricePerDay,
             country: market.country,
             currency: market.currency,
-            location,
-            description,
-            availableFrom: start,
-            availableTo: end,
+            location: checked.location,
+            description: checked.description,
+            availableFrom: checked.availableFrom,
+            availableTo: checked.availableTo,
         },
         include: { vehicle: true },
     });
@@ -91,7 +90,7 @@ const endOfUtcDay = (value) => {
 export const getListings = async (req, res) => {
     const { location, minPrice, maxPrice, type, kind, startDate, endDate, fuelType, country } = req.query;
 
-    const where = { isActive: true };
+    const where = { isActive: true, vehicle: { type: { in: ROAD_TYPES } } };
     if (country) where.country = String(country).trim().toUpperCase();
     if (location) where.location = { contains: location, mode: 'insensitive' };
     if (minPrice || maxPrice) {
@@ -107,6 +106,7 @@ export const getListings = async (req, res) => {
     } else if (kindNorm === 'car' || kindNorm === 'cars') {
         where.vehicle = { ...(where.vehicle || {}), type: 'CAR' };
     } else if (typeNorm) {
+        if (typeNorm.split(',').some((t) => !ROAD_TYPES.includes(t.trim()))) throw new AppError('Use the helicopter charter directory for aircraft enquiries.', 400);
         if (typeNorm.includes(',')) {
             const types = typeNorm.split(',').map((t) => t.trim()).filter(Boolean);
             where.vehicle = { ...(where.vehicle || {}), type: { in: types } };
@@ -176,6 +176,7 @@ export const getListingById = async (req, res) => {
         },
     });
     if (!listing) throw new AppError('Listing not found.', 404);
+    assertRoadVehicle(listing.vehicle);
     res.json({ success: true, data: listing });
 };
 
@@ -191,6 +192,7 @@ export const bookRental = async (req, res) => {
         include: { vehicle: true },
     });
     if (!listing) throw new AppError('Listing not found.', 404);
+    assertRoadVehicle(listing.vehicle);
     if (!listing.isActive) throw new AppError('Listing is no longer active.', 400);
 
     const start = new Date(startDate);
@@ -218,6 +220,15 @@ export const bookRental = async (req, res) => {
     // two simultaneous requests cannot both pass the overlap check.
     const booking = await prisma.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${listingId}))`;
+
+        // A host may have paused or edited this listing while the request waited for the lock.
+        const currentListing = await tx.rentalListing.findUnique({ where: { id: listingId } });
+        if (!currentListing || !currentListing.isActive
+            || currentListing.pricePerDay !== listing.pricePerDay
+            || +new Date(currentListing.availableFrom) !== +new Date(listing.availableFrom)
+            || +new Date(currentListing.availableTo) !== +new Date(listing.availableTo)) {
+            throw new AppError('This listing changed. Refresh it and request your dates again.', 409);
+        }
 
         const overlappingBooking = await tx.rentalBooking.findFirst({
             where: {
@@ -328,9 +339,14 @@ export const cancelBooking = async (req, res) => {
         throw new AppError(`Cannot cancel a booking with status ${booking.status}.`, 400);
     }
 
-    const updated = await prisma.rentalBooking.update({
-        where: { id: booking.id },
+    const cancelled = await prisma.rentalBooking.updateMany({
+        where: { id: booking.id, status: { in: ['PENDING', 'CONFIRMED'] } },
         data: { status: 'CANCELLED' },
+    });
+    if (!cancelled.count) throw new AppError('This booking changed. Refresh it before trying again.', 409);
+
+    const updated = await prisma.rentalBooking.findUnique({
+        where: { id: booking.id },
         include: {
             listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
         },
@@ -374,9 +390,14 @@ export const respondToBooking = async (req, res) => {
         throw new AppError('Only pending bookings can be confirmed or rejected.', 400);
     }
 
-    const updated = await prisma.rentalBooking.update({
-        where: { id: booking.id },
+    const claimed = await prisma.rentalBooking.updateMany({
+        where: { id: booking.id, status: 'PENDING' },
         data: { status },
+    });
+    if (!claimed.count) throw new AppError('This request was already handled. Refresh your bookings.', 409);
+
+    const updated = await prisma.rentalBooking.findUnique({
+        where: { id: booking.id },
         include: {
             listing: { include: { vehicle: true, host: { select: { id: true, name: true } } } },
             renter: { select: { id: true, name: true, email: true } },
@@ -425,6 +446,7 @@ export const payBooking = async (req, res) => {
         include: { listing: { include: { vehicle: true } } },
     });
     if (!booking) throw new AppError('Booking not found.', 404);
+    assertRoadVehicle(booking.listing.vehicle);
     if (booking.renterId !== req.user.id) throw new AppError('Only the renter can pay for this booking.', 403);
     if (booking.status !== 'CONFIRMED') {
         throw new AppError('Pay after the host confirms your booking.', 400);
@@ -541,6 +563,7 @@ export const quoteBooking = async (req, res) => {
         include: { listing: { include: { vehicle: true } } },
     });
     if (!booking || booking.renterId !== req.user.id) throw new AppError('Booking not found.', 404);
+    assertRoadVehicle(booking.listing.vehicle);
 
     const total = Number(booking.totalPrice);
     const best = booking.status === 'CONFIRMED'
@@ -608,7 +631,10 @@ export const getMyEarnings = async (req, res) => {
         orderBy: { createdAt: 'desc' },
         take: 50,
     });
-    const sum = (status) => earnings.filter((e) => status.includes(e.status)).reduce((s, e) => s + e.amount, 0);
+    const totals = await prisma.hostEarning.groupBy({
+        by: ['status'], where: { hostId: req.user.id }, _sum: { amount: true },
+    });
+    const sum = (statuses) => totals.filter((row) => statuses.includes(row.status)).reduce((total, row) => total + (row._sum.amount || 0), 0);
     res.json({
         success: true,
         data: {

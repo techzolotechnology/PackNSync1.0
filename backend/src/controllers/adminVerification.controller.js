@@ -2,6 +2,7 @@ import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
 import { logAdminAction } from '../utils/audit.js';
+import { assertRoadVehicle, ROAD_TYPES } from '../utils/vehicleCategories.js';
 
 // GET /api/admin/verifications
 export const listVerifications = async (req, res) => {
@@ -44,6 +45,7 @@ export const approveVerification = async (req, res) => {
             where: {
                 ownerId: verification.userId,
                 licensePlate: verification.documentNumber,
+                type: { in: ROAD_TYPES },
             },
             data: { isVerified: true },
         });
@@ -112,6 +114,7 @@ export const rejectVerification = async (req, res) => {
 // GET /api/admin/vehicles
 export const listVehiclesForReview = async (req, res) => {
     const vehicles = await prisma.vehicle.findMany({
+        where: { type: { in: ROAD_TYPES } },
         include: {
             owner: { select: { id: true, name: true, email: true, phoneNumber: true } },
             _count: { select: { listings: true } },
@@ -126,6 +129,7 @@ export const listVehiclesForReview = async (req, res) => {
 export const verifyVehicle = async (req, res) => {
     const vehicle = await prisma.vehicle.findUnique({ where: { id: req.params.id } });
     if (!vehicle) throw new AppError('Vehicle not found.', 404);
+    assertRoadVehicle(vehicle);
 
     const updated = await prisma.vehicle.update({
         where: { id: vehicle.id },
@@ -166,6 +170,7 @@ export const rejectVehicle = async (req, res) => {
     const { reason } = req.body;
     const vehicle = await prisma.vehicle.findUnique({ where: { id: req.params.id } });
     if (!vehicle) throw new AppError('Vehicle not found.', 404);
+    assertRoadVehicle(vehicle);
 
     const updated = await prisma.vehicle.update({
         where: { id: vehicle.id },

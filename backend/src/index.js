@@ -29,6 +29,7 @@ import { walletRouter } from './routes/wallet.routes.js';
 import { shareRouter } from './routes/share.routes.js';
 import { reportRouter } from './routes/report.routes.js';
 import { offerRouter } from './routes/offer.routes.js';
+import { aviationRouter } from './routes/aviation.routes.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
@@ -189,6 +190,7 @@ app.use('/api/explore', exploreRouter);
 app.use('/api/wallet', walletRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/offers', offerRouter);
+app.use('/api/aviation', aviationRouter);
 
 // Link-preview pages for shared trips (Open Graph for WhatsApp etc.)
 app.use('/share', shareRouter);

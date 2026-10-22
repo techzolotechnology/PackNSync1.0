@@ -55,6 +55,7 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const NewReportPage = lazy(() => import('./pages/NewReportPage.jsx'));
 // Wallet top-ups started in the mobile app (pay in the browser, then back to the app)
 const PayPage = lazy(() => import('./pages/PayPage.jsx'));
+const HelicopterChartersPage = lazy(() => import('./pages/HelicopterChartersPage.jsx'));
 const PayDonePage = lazy(() => import('./pages/PayPage.jsx').then((m) => ({ default: m.PayDonePage })));
 
 /** Pages people usually open next; fetched once the browser is idle so they open without a wait. */
@@ -246,6 +247,7 @@ export default function App() {
                     <Route path="/tools/trip-cost-splitter" element={<CostSplitterPage />} />
                     <Route path="/split-expenses-app" element={<BlockAdminFromApp><ComparePage /></BlockAdminFromApp>} />
                     <Route path="/become-a-host" element={<BlockAdminFromApp><BecomeHostPage /></BlockAdminFromApp>} />
+                    <Route path="/helicopter-charters" element={<BlockAdminFromApp><HelicopterChartersPage /></BlockAdminFromApp>} />
                     <Route path="/destinations" element={<BlockAdminFromApp><DestinationsPage /></BlockAdminFromApp>} />
                     <Route path="/destinations/:slug" element={<BlockAdminFromApp><DestinationPage /></BlockAdminFromApp>} />
                     <Route path="/explore" element={<BlockAdminFromApp><ExplorePage /></BlockAdminFromApp>} />
