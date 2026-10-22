@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { rentalsApi, vehiclesApi, verificationsApi } from '../api/index.js';
+import RentalBusinessProfile from '../components/RentalBusinessProfile.jsx';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import { formatMoney } from '../config/markets.js';
@@ -264,6 +265,7 @@ export default function HostDashboard() {
                     </button>
                 </header>
 
+                <RentalBusinessProfile />
                 {message && <div className="host-banner warn">{message}</div>}
 
                 {earnings && (earnings.upcoming > 0 || earnings.onHold > 0 || earnings.released > 0) && (

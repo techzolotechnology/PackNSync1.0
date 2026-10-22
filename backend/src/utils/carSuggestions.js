@@ -1,3 +1,4 @@
+import { publicBusinessSelect } from './rentalBusiness.js';
 const BLOCKING_BOOKING = ['PENDING', 'CONFIRMED', 'ACTIVE', 'PAID'];
 // PENDING/CONFIRMED are primary; ACTIVE/PAID kept if used later
 
@@ -81,6 +82,7 @@ export const findSuggestedCars = async (prisma, {
     const listings = await prisma.rentalListing.findMany({
         where: {
             isActive: true,
+            OR: [{ host: { businessProfile: { is: null } } }, { host: { businessProfile: { is: { hostType: 'INDIVIDUAL' } } } }, { host: { businessProfile: { is: { hostType: 'RENTAL_SHOP', status: 'APPROVED' } } } }],
             availableFrom: { lte: start },
             availableTo: { gte: end },
             vehicle: { type: 'CAR' },
@@ -88,7 +90,7 @@ export const findSuggestedCars = async (prisma, {
         },
         include: {
             vehicle: true,
-            host: { select: { id: true, name: true, avatarUrl: true } },
+            host: { select: { id: true, name: true, avatarUrl: true, businessProfile: { select: publicBusinessSelect } } },
             bookings: {
                 where: {
                     status: { in: BLOCKING_BOOKING },

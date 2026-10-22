@@ -1,0 +1,11 @@
+{
+  "name": "damage-ai-inspection",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PickAndSync owned photo evidence and condition reports; no external inspection APIs.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test"
+  }
+}
