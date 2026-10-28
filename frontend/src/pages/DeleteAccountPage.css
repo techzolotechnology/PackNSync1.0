@@ -1,0 +1,100 @@
+.delete-account-page {
+    min-height: 75vh;
+    padding: clamp(3rem, 7vw, 6rem) 1rem;
+    background:
+        radial-gradient(circle at 8% 4%, rgba(0, 123, 255, 0.12), transparent 28rem),
+        linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+}
+
+.delete-account-container {
+    width: min(100%, 820px);
+    margin-inline: auto;
+}
+
+.delete-account-header {
+    max-width: 720px;
+    margin: 0 auto 2rem;
+    text-align: center;
+}
+
+.delete-account-eyebrow {
+    color: #0066d6;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.delete-account-header h1 {
+    margin: 0.65rem 0;
+    color: #0f172a;
+    font-size: clamp(2.1rem, 6vw, 3.5rem);
+    line-height: 1.1;
+}
+
+.delete-account-header > p,
+.delete-account-card p,
+.delete-account-card li {
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.delete-account-card {
+    margin: 1rem 0;
+    padding: clamp(1.3rem, 4vw, 2rem);
+    border: 1px solid #e2e8f0;
+    border-radius: 1.1rem;
+    background: #fff;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.06);
+}
+
+.delete-account-card h2 {
+    margin: 0 0 0.9rem;
+    color: #0f172a;
+    font-size: 1.35rem;
+}
+
+.delete-account-card ol {
+    padding-left: 1.3rem;
+}
+
+.delete-account-card li + li {
+    margin-top: 0.45rem;
+}
+
+.delete-account-button {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.7rem;
+    padding: 0.75rem 1.2rem;
+    border-radius: 0.7rem;
+    background: #0878e8;
+    color: #fff;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.delete-account-button:hover,
+.delete-account-button:focus-visible {
+    background: #005fc4;
+}
+
+.delete-account-card a:not(.delete-account-button) {
+    color: #005fc4;
+    font-weight: 650;
+}
+
+.delete-account-email {
+    margin-bottom: 0;
+    font-size: 0.92rem !important;
+}
+
+.delete-account-operator {
+    margin: 1.5rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    text-align: center;
+}

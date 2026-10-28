@@ -43,6 +43,7 @@ const WalletPage = lazy(loadWallet);
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions.jsx'));
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.jsx'));
+const DeleteAccountPage = lazy(() => import('./pages/DeleteAccountPage.jsx'));
 const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'));
 const DestinationsPage = lazy(loadDestinations);
 const DestinationPage = lazy(loadDestination);
@@ -261,6 +262,7 @@ export default function App() {
                     <Route path="/terms" element={<TermsAndConditions />} />
                     <Route path="/terms/:type" element={<TermsPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/delete-account" element={<DeleteAccountPage />} />
                     <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="/pay" element={<PayPage />} />
                     <Route path="/pay/done" element={<PayDonePage />} />

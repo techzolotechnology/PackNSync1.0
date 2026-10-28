@@ -58,6 +58,10 @@ export const ROUTE_SEO = {
         title: 'Privacy Policy | PickAndSync',
         description: 'How PickAndSync collects, uses and protects your personal data.',
     },
+    'delete-account': {
+        title: 'Delete Your PickAndSync or PackNSync Account',
+        description: 'How to request deletion of your PickAndSync or PackNSync account and associated personal data.',
+    },
     'refund-policy': {
         title: 'Refund Policy | PickAndSync',
         description: 'Cancellation and refund rules for PickAndSync rentals, trips and wallet payments.',

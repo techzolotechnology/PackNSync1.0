@@ -83,6 +83,10 @@ const PrivacyPolicy = () => {
                             (ii) to request rectification or erasure; (iii) to restrict the processing of your personal information;
                             and (iv) if applicable, to data portability.
                         </p>
+                        <p>
+                            PickAndSync and PackNSync account holders can request account and associated data deletion
+                            without reinstalling the app. See the <Link to="/delete-account">account deletion instructions</Link>.
+                        </p>
                     </section>
 
                     <section className="privacy-section">
