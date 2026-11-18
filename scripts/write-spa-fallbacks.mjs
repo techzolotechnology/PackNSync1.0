@@ -44,6 +44,49 @@ const escapeAttr = (value) => String(value)
   .replace(/"/g, '&quot;')
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;');
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+function staticBody(route) {
+  const guide = GUIDES.find((item) => `guides/${item.slug}` === route);
+  if (guide) {
+    const sections = guide.sections.map((section) => `<section class="guide-section">
+      <h2>${escapeHtml(section.heading)}</h2>
+      ${(section.paragraphs || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('\n')}
+      ${section.list ? `<ul>${section.list.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : ''}
+      ${section.steps ? `<ol>${section.steps.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol>` : ''}
+      ${section.link ? `<p><a href="${escapeAttr(section.link.to)}">${escapeHtml(section.link.label)}</a></p>` : ''}
+    </section>`).join('\n');
+    return `<div class="dst-page page-atmosphere"><article class="container guide-article">
+      <header><h1>${escapeHtml(guide.title)}</h1><p class="dst-lead">${escapeHtml(guide.intro)}</p></header>
+      ${sections}
+      <p><a href="${escapeAttr(guide.cta.to)}">${escapeHtml(guide.cta.label)}</a></p>
+      <p><a href="/trips/create/">Create a group trip</a></p>
+    </article></div>`;
+  }
+
+  if (route === 'trips') {
+    return `<main class="container guide-article"><h1>Travel Together</h1>
+      <p class="dst-lead">Browse group trips posted by travelers, join a plan, and coordinate the itinerary and shared costs with your group.</p>
+      <p><a href="/trips/create/">Post a group trip</a></p>
+      <p><a href="/tools/trip-cost-splitter/">Split trip costs with the free calculator</a></p>
+    </main>`;
+  }
+
+  const city = RENTAL_CITIES.find((item) => `rentals/${item.slug}` === route);
+  if (city) {
+    return `<main class="container guide-article"><h1>Self Drive Car Rental in ${escapeHtml(city.name)}</h1>
+      <p class="dst-lead">${escapeHtml(city.intro)}</p>
+      <p>Browse available cars, bikes and scooters, compare daily prices, and choose dates before requesting a booking.</p>
+      ${city.getaways?.length ? `<h2>Popular drives from ${escapeHtml(city.name)}</h2><ul>${city.getaways.map((place) => `<li>${escapeHtml(place.name)}${place.km ? ` — about ${escapeHtml(place.km)} km` : ''}</li>`).join('')}</ul>` : ''}
+      <p><a href="/trips/">Plan a group trip</a> · <a href="/tools/trip-cost-splitter/">Split the trip costs</a> · <a href="/host/">List your vehicle</a></p>
+    </main>`;
+  }
+
+  return '';
+}
 
 function seoFor(route) {
   if (ROUTE_SEO[route]) return { ...ROUTE_SEO[route], noindex: false };
@@ -89,6 +132,10 @@ function withSeo(html, route) {
     </header></main>`;
     out = replaceTag(out, /<div id="root"><\/div>/, `<div id="root">${header}</div>`, route);
   }
+  const body = staticBody(route);
+  if (body) out = replaceTag(out, /<div id="root"><\/div>/, `<div id="root">${body}</div>`, route);
+  const routeDepth = route.split('/').length;
+  out = out.replace(/((?:src|href)=")\.\/(assets\/|favicon\.svg)/g, `$1${'../'.repeat(routeDepth)}$2`);
   return out;
 }
 

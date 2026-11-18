@@ -89,7 +89,7 @@ export default function HostScreen({ user, setTab, layout }) {
             <Field label="MODEL" icon={twoWheeler ? 'bicycle-outline' : 'car-outline'} value={model} onChangeText={setModel} placeholder={twoWheeler ? 'Classic 350' : 'Innova'} autoCapitalize="words" />
             <Field label="LICENCE PLATE" icon="reader-outline" value={licensePlate} onChangeText={setLicensePlate} placeholder="KA01AB1234" autoCapitalize="characters" />
             <Field label="PRICE PER DAY (₹)" icon="cash-outline" value={pricePerDay} onChangeText={(v) => setPricePerDay(v.replace(/\D/g, ''))} placeholder="2000" keyboardType="number-pad" maxLength={6} />
-            <Field label="PICKUP CITY" icon="location-outline" value={location} onChangeText={setLocation} placeholder="Bangalore" autoCapitalize="words" />
+            <Field label="PICKUP CITY" icon="location-outline" value={location} onChangeText={setLocation} placeholder="e.g. Gurugram, Haryana" autoCapitalize="words" />
           </ResponsiveGrid>
           <AppButton icon="rocket-outline" onPress={publish} loading={loading}>{loading ? 'Publishing…' : 'Publish Listing'}</AppButton>
           <Notice tone={tone}>{message}</Notice>

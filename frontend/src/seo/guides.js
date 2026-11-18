@@ -189,6 +189,85 @@ export const GUIDES = [
         ],
         cta: { label: 'Plan a Thailand group trip', to: '/destinations/thailand/' },
     },
+    {
+        slug: 'group-trip-planning-checklist-india',
+        title: 'How to Plan a Group Trip with Friends in India: Checklist',
+        description: 'Plan a group trip in India with a practical checklist for dates, budget, transport, stays, itinerary, shared tasks and trip expenses.',
+        published: '2026-11-18',
+        updated: '2026-11-18',
+        readMinutes: 6,
+        tags: ['group trip planner', 'India', 'checklist'],
+        intro: 'Group trips work best when everyone agrees on the important decisions early. Set the dates, budget and destination together, then keep bookings, plans and shared costs easy for the whole group to follow.',
+        sections: [
+            {
+                heading: 'Agree on dates, group size and trip length',
+                paragraphs: [
+                    'Start with a date range instead of asking everyone to choose from every possible weekend. Confirm who is genuinely joining before booking anything that needs a deposit. The final headcount affects room choices, vehicle size and each person’s share of the costs.',
+                ],
+                list: [
+                    'Share two or three date options and set a clear reply deadline.',
+                    'Decide how many nights the group can travel without rushing.',
+                    'Ask about mobility, food or other needs that affect the plan.',
+                ],
+            },
+            {
+                heading: 'Choose a destination that fits the group',
+                paragraphs: [
+                    'Compare travel time, total cost and the kind of break people want. A nearby road trip may suit a short weekend, while a longer holiday can leave room for a farther destination. Check current opening times, local conditions and travel requirements before you confirm activities.',
+                ],
+                link: { label: 'Explore destinations for a group trip', to: '/destinations/' },
+            },
+            {
+                heading: 'Set a budget everyone can accept',
+                paragraphs: [
+                    'Agree on a comfortable per-person range before choosing a stay or transport. Estimate the large shared costs first, then add food, activities and a buffer. Keep optional upgrades separate so nobody feels pressured to spend more than planned.',
+                ],
+                list: [
+                    'Transport to and around the destination.',
+                    'Accommodation, including any deposit or cancellation terms.',
+                    'Meals and shared groceries.',
+                    'Activities, tickets and local transport.',
+                    'A contingency amount for price changes or unexpected costs.',
+                ],
+                link: { label: 'Estimate each person’s share with the trip cost splitter', to: '/tools/trip-cost-splitter/' },
+            },
+            {
+                heading: 'Assign bookings and responsibilities',
+                paragraphs: [
+                    'Give each important booking one owner and a deadline. Keep the confirmation and cancellation details in the shared plan. Before anyone pays a deposit, confirm the dates, guest count, pickup details and refund conditions with the provider.',
+                ],
+                list: [
+                    'Name one person to coordinate the stay and another for transport.',
+                    'Share booking confirmations with everyone who is travelling.',
+                    'Record who paid and whether the amount is refundable.',
+                ],
+            },
+            {
+                heading: 'Build a flexible itinerary',
+                steps: [
+                    'Choose one or two priorities for each day, then add nearby stops.',
+                    'Group activities by area to reduce unnecessary travel.',
+                    'Leave time for meals, breaks and changes to weather or timing.',
+                    'Share the plan and agree which activities are optional.',
+                ],
+            },
+            {
+                heading: 'Agree how shared expenses will be split',
+                paragraphs: [
+                    'Decide in advance which costs are shared equally and which are personal. Add each shared payment while the details are fresh, including who paid and who took part. This avoids rebuilding the trip’s accounts from messages and receipts after everyone gets home.',
+                ],
+                link: { label: 'Read how to split trip expenses fairly', to: '/guides/how-to-split-trip-expenses-with-friends/' },
+            },
+            {
+                heading: 'Use one shared place for the plan',
+                paragraphs: [
+                    'Keep the destination, dates, itinerary and group updates together so every traveller can catch up. PickAndSync lets a group create a trip, invite friends and organize shared trip details in one place.',
+                ],
+                link: { label: 'Create a group trip on PickAndSync', to: '/trips/create/' },
+            },
+        ],
+        cta: { label: 'Start planning your group trip', to: '/trips/create/' },
+    },
 ];
 
 export const findGuide = (slug) =>
@@ -201,7 +280,7 @@ export const guideSeo = (g) => ({
 
 export const GUIDES_INDEX_SEO = {
     title: 'Group Travel Guides – Trip Plans, Budgets & Tips | PickAndSync',
-    description: 'Practical guides for travelling together: weekend road trips from Bangalore, international group trips from India, and how to split trip costs fairly.',
+    description: 'Practical checklists for planning group trips in India, weekend road trips, travel budgets and splitting shared costs fairly.',
 };
 
 /** schema.org Article for a guide page. */

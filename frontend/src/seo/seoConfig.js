@@ -153,6 +153,13 @@ export const RENTAL_CITIES = [
         location: 'Jaipur',
         intro: 'Rent a self-drive car in Jaipur for forts, palaces and road trips across Rajasthan.',
     },
+    {
+        slug: 'haryana',
+        name: 'Haryana',
+        location: 'Haryana',
+        intro: 'Search for self-drive cars, bikes and scooters across Haryana, including Gurugram and Faridabad. Local host listings and your travel dates determine availability.',
+        seoDescription: 'Search cars, bikes and scooters for rent across Haryana, including Gurugram and Faridabad. Browse local host listings and check your dates before requesting a booking.',
+    },
 ];
 
 export const findRentalCity = (slug) =>
@@ -160,7 +167,7 @@ export const findRentalCity = (slug) =>
 
 export const citySeo = (city) => ({
     title: `Self Drive Car Rental in ${city.name} – Cars & Bikes on Rent | PickAndSync`,
-    description: `Book self-drive cars, CNG cars and bikes in ${city.name} from verified local hosts. Per-day pricing, no driver, easy booking. ${city.intro}`.slice(0, 300),
+    description: city.seoDescription || `Book self-drive cars, CNG cars and bikes in ${city.name} from verified local hosts. Per-day pricing, no driver, easy booking. ${city.intro}`.slice(0, 300),
 });
 
 /** Every indexable path (with leading slash) — used to build sitemap.xml. */
