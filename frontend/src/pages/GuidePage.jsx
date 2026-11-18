@@ -46,6 +46,9 @@ export default function GuidePage() {
                         {section.steps && (
                             <ol>{section.steps.map((item) => <li key={item}>{item}</li>)}</ol>
                         )}
+                        {section.link && (
+                            <p><Link to={section.link.to}>{section.link.label}</Link></p>
+                        )}
                     </section>
                 ))}
 

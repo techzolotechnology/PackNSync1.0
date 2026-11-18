@@ -4,7 +4,7 @@ import { formatMoney } from '../config/markets.js';
 import { computeSplit, decodeState, encodeState } from '../utils/splitCalculator.js';
 import { copyLink, shareLink } from '../utils/share.js';
 import useSeo from '../hooks/useSeo.js';
-import { ROUTE_SEO } from '../seo/seoConfig.js';
+import { ROUTE_SEO, TRIP_SPLITTER_HEADER } from '../seo/seoConfig.js';
 import './Destinations.css';
 import './CostSplitterPage.css';
 
@@ -114,12 +114,9 @@ export default function CostSplitterPage() {
         <div className="dst-page page-atmosphere page-enter">
             <div className="container">
                 <header className="dst-header">
-                    <p className="dst-kicker">Free tool · no sign-up</p>
-                    <h1>Trip Cost Splitter</h1>
-                    <p className="dst-lead">
-                        Add your group and every shared expense. We work out who owes whom and the fewest
-                        payments to settle up — then share the result on WhatsApp.
-                    </p>
+                    <p className="dst-kicker">{TRIP_SPLITTER_HEADER.kicker}</p>
+                    <h1>{TRIP_SPLITTER_HEADER.title}</h1>
+                    <p className="dst-lead">{TRIP_SPLITTER_HEADER.intro}</p>
                 </header>
 
                 {error && <p className="splitter-error" role="alert">{error}</p>}
