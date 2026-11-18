@@ -86,10 +86,16 @@ function staticBody(route) {
   }
 
   if (route === 'trips') {
-    return `<main class="container guide-article"><h1>Travel Together</h1>
-      <p class="dst-lead">Browse group trips posted by travelers, join a plan, and coordinate the itinerary and shared costs with your group.</p>
-      <p><a href="/trips/create/">Post a group trip</a></p>
-      <p><a href="/tools/trip-cost-splitter/">Split trip costs with the free calculator</a></p>
+    return `<main class="container guide-article"><h1>Plan a Group Trip with Friends</h1>
+      <p class="dst-lead">Use PickAndSync as a group trip planner in India: browse open trips to find travel companions, or post a trip of your own.</p>
+      <p>Share the destination and dates, coordinate the itinerary and trip chat, and keep shared costs together with the group.</p>
+      <p><a href="/trips/create/">Post a group trip</a> · <a href="/guides/group-trip-planning-checklist-india/">Read the group trip planning checklist</a></p>
+      <section><h2>Find travel companions for an open trip</h2>
+        <p>Browse trips posted by travelers, review the plan, and request to join when it suits your dates and destination.</p>
+      </section>
+      <section><h2>Plan the itinerary and split trip costs</h2>
+        <p>Keep trip details and shared expenses with the group. Try the <a href="/tools/trip-cost-splitter/">free trip cost splitter</a> to see who owes whom.</p>
+      </section>
     </main>`;
   }
 
