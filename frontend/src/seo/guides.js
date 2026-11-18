@@ -117,13 +117,13 @@ export const GUIDES = [
     },
     {
         slug: 'thailand-group-trip-from-india-checklist',
-        title: 'Thailand Group Trip from India: Planning Checklist',
-        description: 'Plan a Thailand group trip from India with a sample 6-day Bangkok and Krabi itinerary, an example budget in rupees, and a checklist for sharing costs.',
+        title: 'Thailand Group Travel from India: 6-Day Plan',
+        description: 'Plan group travel to Thailand from India with a sample 6-day Bangkok and Krabi itinerary, an example budget for four friends, and practical cost-sharing tips.',
         published: '2026-10-05',
         updated: '2026-11-18',
         readMinutes: 6,
         tags: ['Thailand', 'international', 'group travel', 'checklist'],
-        intro: 'Thailand is the classic first international trip for groups of friends from India — short flights, great food and beaches, and plenty to do on any budget. Use this checklist to plan it without the last-minute chaos.',
+        intro: 'Planning group travel to Thailand from India? Use this sample six-day Bangkok and Krabi plan to coordinate your itinerary, budget and shared costs with friends. Check current travel requirements and prices before booking.',
         sections: [
             {
                 heading: '6–8 weeks before',
