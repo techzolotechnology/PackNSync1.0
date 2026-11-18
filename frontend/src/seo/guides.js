@@ -118,8 +118,9 @@ export const GUIDES = [
     {
         slug: 'thailand-group-trip-from-india-checklist',
         title: 'Thailand Group Trip from India: Planning Checklist',
-        description: 'Planning a Thailand trip with friends from India? A step-by-step checklist: when to go, a 6-day route, booking as a group, money and splitting costs.',
+        description: 'Plan a Thailand group trip from India with a sample 6-day Bangkok and Krabi itinerary, an example budget in rupees, and a checklist for sharing costs.',
         published: '2026-10-05',
+        updated: '2026-11-18',
         readMinutes: 6,
         tags: ['Thailand', 'international', 'group travel', 'checklist'],
         intro: 'Thailand is the classic first international trip for groups of friends from India — short flights, great food and beaches, and plenty to do on any budget. Use this checklist to plan it without the last-minute chaos.',
@@ -134,13 +135,30 @@ export const GUIDES = [
                 ],
             },
             {
-                heading: 'A simple 6-day route',
+                heading: 'Sample 6-day Thailand itinerary for friends',
                 steps: [
-                    'Days 1–2: Bangkok — temples, street food and night markets.',
-                    'Day 3: Fly to Phuket or Krabi (short domestic flight).',
-                    'Days 4–5: Island hopping — Phi Phi, the Krabi islands or James Bond Island.',
-                    'Day 6: Beach morning, then fly home.',
+                    'Day 1: Arrive in Bangkok, check in and meet for dinner near your hotel.',
+                    'Day 2: Visit the Grand Palace and Wat Pho, then pick a night market for dinner.',
+                    'Day 3: Travel from Bangkok to Krabi, check in near Ao Nang and keep the evening free.',
+                    'Day 4: Take an island tour from Krabi if the operator confirms conditions are suitable.',
+                    'Day 5: Keep a flexible day for Railay Beach, local food or moving the island tour if needed.',
+                    'Day 6: Check out and leave time for the airport transfer and any connecting flight.',
                 ],
+            },
+            {
+                heading: 'Example Thailand trip budget for four friends',
+                paragraphs: [
+                    'This six-day example allows ₹52,000 per person, or ₹2,08,000 for four travelers. These are sample amounts for planning. Check current prices for your departure city, dates and room setup before booking.',
+                ],
+                list: [
+                    'Return flights from India: ₹24,000 per person.',
+                    'Domestic transport: ₹5,000 per person.',
+                    'Accommodation: ₹7,500 per person, based on ₹30,000 in shared rooms.',
+                    'Meals and local transport: ₹6,000 per person.',
+                    'Tours and activities: ₹5,000 per person.',
+                    'Buffer for insurance and unexpected costs: ₹4,500 per person.',
+                ],
+                link: { label: 'Split these costs with the free trip calculator', to: '/tools/trip-cost-splitter/' },
             },
             {
                 heading: 'Book as a group',

@@ -11,6 +11,11 @@ import { GUIDES, GUIDES_INDEX_SEO } from './guides.js';
 export const SITE_URL = 'https://pickandsync.com';
 export const SITE_NAME = 'PickAndSync';
 export const DEFAULT_IMAGE = `${SITE_URL}/images/stock/trip-road.jpg`;
+export const TRIP_SPLITTER_HEADER = {
+    title: 'Trip Cost Splitter',
+    kicker: 'Free tool · no sign-up',
+    intro: 'Add your group and every shared expense. See who owes whom and how to settle up, then share the result on WhatsApp.',
+};
 
 export const DEFAULT_SEO = {
     title: 'PickAndSync | Pick & Sync Group Travel, Expense Splitter & Rentals',

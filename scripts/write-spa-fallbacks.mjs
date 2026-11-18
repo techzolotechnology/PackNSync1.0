@@ -16,6 +16,7 @@ import {
   RENTAL_CITIES,
   ROUTE_SEO,
   SITEMAP_PATHS,
+  TRIP_SPLITTER_HEADER,
   canonicalUrl,
   citySeo,
 } from '../frontend/src/seo/seoConfig.js';
@@ -79,6 +80,15 @@ function withSeo(html, route) {
   out = replaceTag(out, /<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${url}" />`, route);
   out = replaceTag(out, /<meta name="twitter:title" content="[^"]*"\s*\/?>/, `<meta name="twitter:title" content="${t}" />`, route);
   out = replaceTag(out, /<meta name="twitter:description" content="[^"]*"\s*\/?>/, `<meta name="twitter:description" content="${d}" />`, route);
+  if (route === 'tools/trip-cost-splitter') {
+    const { title, kicker, intro } = TRIP_SPLITTER_HEADER;
+    const header = `<main class="container"><header class="dst-header">
+      <p class="dst-kicker">${escapeAttr(kicker)}</p>
+      <h1>${escapeAttr(title)}</h1>
+      <p class="dst-lead">${escapeAttr(intro)}</p>
+    </header></main>`;
+    out = replaceTag(out, /<div id="root"><\/div>/, `<div id="root">${header}</div>`, route);
+  }
   return out;
 }
 
