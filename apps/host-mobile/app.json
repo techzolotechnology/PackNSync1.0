@@ -2,7 +2,7 @@
   "expo": {
     "name": "PickAndSync Host",
     "slug": "pickandsync-host",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "default",
     "scheme": "pickandsynchost",
     "icon": "./assets/icon.png",
@@ -17,7 +17,7 @@
     ],
     "android": {
       "package": "com.pickandsync.host",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#007bff"
