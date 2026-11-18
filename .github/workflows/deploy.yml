@@ -50,6 +50,9 @@ jobs:
 
       - name: Write SPA route folders for GitHub Pages
         run: node scripts/write-spa-fallbacks.mjs frontend/dist
+        env:
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+          VITE_HERO_VIDEO_ID: ${{ secrets.VITE_HERO_VIDEO_ID }}
 
       - name: Ensure Pages domain + no Jekyll
         run: |
