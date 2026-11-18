@@ -17,7 +17,7 @@ const imageUrl = (src) => {
 const round2 = (n) => Math.round(n * 100) / 100;
 const isTwoWheeler = (vehicle) => ['BIKE', 'SCOOTER'].includes(String(vehicle?.type || '').toUpperCase());
 
-const CITIES = ['Bengaluru', 'Mumbai', 'Delhi', 'Goa', 'Pune', 'Jaipur'];
+const CITIES = ['Bengaluru', 'Mumbai', 'Delhi', 'Goa', 'Pune', 'Jaipur', 'Haryana'];
 const KINDS = [
   { key: 'all', label: 'All', icon: 'apps-outline' },
   { key: 'car', label: 'Cars', icon: 'car-sport-outline' },

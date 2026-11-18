@@ -156,7 +156,7 @@ function ListingEditor({ vehicle, listing, onClose, onDone }) {
     {error ? <Notice error>{error}</Notice> : null}
     <Field label={`Your daily price (${listing?.currency || 'INR'})`} placeholder="e.g. 2000" value={price} onChangeText={setPrice} keyboardType="decimal-pad" />
     <Body>PickAndSync adds its platform fee to the guest total. Your existing booking prices stay unchanged.</Body>
-    <Field label="Pickup city / area" placeholder="e.g. Indiranagar, Bengaluru" value={location} onChangeText={setLocation} maxLength={200} />
+    <Field label="Pickup city / area" placeholder="e.g. Gurugram, Haryana" value={location} onChangeText={setLocation} maxLength={200} />
     <Field label="Available from (YYYY-MM-DD)" value={from} onChangeText={setFrom} maxLength={10} autoCapitalize="none" />
     <Field label="Available until (YYYY-MM-DD)" placeholder="YYYY-MM-DD" value={to} onChangeText={setTo} maxLength={10} autoCapitalize="none" />
     <Field label="Description" value={description} onChangeText={setDescription} placeholder="Pickup instructions and useful vehicle details" multiline maxLength={3000} />

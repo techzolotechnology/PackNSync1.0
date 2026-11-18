@@ -75,14 +75,13 @@ function staticBody(route) {
     </main>`;
   }
 
-  if (route === 'rentals/bangalore') {
-    const city = RENTAL_CITIES.find((item) => item.slug === 'bangalore');
-    return `<main class="container guide-article"><h1>Self Drive Car Rental in Bangalore</h1>
+  const city = RENTAL_CITIES.find((item) => `rentals/${item.slug}` === route);
+  if (city) {
+    return `<main class="container guide-article"><h1>Self Drive Car Rental in ${escapeHtml(city.name)}</h1>
       <p class="dst-lead">${escapeHtml(city.intro)}</p>
       <p>Browse available cars, bikes and scooters, compare daily prices, and choose dates before requesting a booking.</p>
-      <h2>Popular drives from Bangalore</h2>
-      <ul>${city.getaways.map((place) => `<li>${escapeHtml(place.name)}${place.km ? ` — about ${escapeHtml(place.km)} km` : ''}</li>`).join('')}</ul>
-      <p><a href="/trips/">Plan a group trip</a> · <a href="/tools/trip-cost-splitter/">Split the trip costs</a></p>
+      ${city.getaways?.length ? `<h2>Popular drives from ${escapeHtml(city.name)}</h2><ul>${city.getaways.map((place) => `<li>${escapeHtml(place.name)}${place.km ? ` — about ${escapeHtml(place.km)} km` : ''}</li>`).join('')}</ul>` : ''}
+      <p><a href="/trips/">Plan a group trip</a> · <a href="/tools/trip-cost-splitter/">Split the trip costs</a> · <a href="/host/">List your vehicle</a></p>
     </main>`;
   }
 
