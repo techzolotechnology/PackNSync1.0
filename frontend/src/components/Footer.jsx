@@ -17,7 +17,7 @@ const Footer = () => {
                     </div>
 
                     <div className="footer-links-group">
-                        <h4>Platform</h4>
+                        <h2>Platform</h2>
                         <ul>
                             <li><Link to="/trips">Travel Together</Link></li>
                             <li><Link to="/rentals">Cars & Bikes</Link></li>
@@ -30,7 +30,7 @@ const Footer = () => {
                     </div>
 
                     <div className="footer-links-group">
-                        <h4>Self Drive Rentals</h4>
+                        <h2>Self Drive Rentals</h2>
                         <ul>
                             {RENTAL_CITIES.map((c) => (
                                 <li key={c.slug}><Link to={`/rentals/${c.slug}/`}>Car rental in {c.name}</Link></li>
@@ -39,7 +39,7 @@ const Footer = () => {
                     </div>
 
                     <div className="footer-links-group">
-                        <h4>Company</h4>
+                        <h2>Company</h2>
                         <ul>
                             <li><Link to="/terms">Terms & Conditions</Link></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
@@ -52,7 +52,7 @@ const Footer = () => {
                     </div>
 
                     <div className="footer-newsletter">
-                        <h4>Stay Updated</h4>
+                        <h2>Stay Updated</h2>
                         <p>Join our newsletter for travel tips.</p>
                         <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
                             <input type="email" placeholder="Email address" className="form-input" />

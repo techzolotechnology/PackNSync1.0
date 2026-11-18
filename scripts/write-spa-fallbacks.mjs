@@ -138,6 +138,15 @@ function withSeo(html, route) {
   const d = escapeAttr(description);
 
   let out = html;
+  if (!route) {
+    const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
+    const heroId = process.env.VITE_HERO_VIDEO_ID?.trim() || 'packandsync/hero-bg';
+    if (/^[a-zA-Z0-9_-]+$/.test(cloudName || '') && /^[a-zA-Z0-9/_-]+$/.test(heroId)) {
+      const poster = `https://res.cloudinary.com/${cloudName}/video/upload/so_1,w_1280,q_auto,f_auto/${heroId}.jpg`;
+      const preload = `<link rel="preconnect" href="https://res.cloudinary.com" crossorigin />\n    <link rel="preload" as="image" fetchpriority="high" href="${poster}" />`;
+      out = replaceTag(out, /<\/head>/, `${preload}\n  </head>`, route);
+    }
+  }
   out = replaceTag(out, /<title>[\s\S]*?<\/title>/, `<title>${t}</title>`, route);
   out = replaceTag(out, /<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${d}" />`, route);
   out = replaceTag(out, /<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${noindex ? 'noindex, nofollow' : 'index, follow'}" />`, route);
