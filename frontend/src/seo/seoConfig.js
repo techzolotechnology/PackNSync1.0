@@ -18,9 +18,9 @@ export const TRIP_SPLITTER_HEADER = {
 };
 
 export const DEFAULT_SEO = {
-    title: 'PickAndSync | Pick & Sync Group Travel, Expense Splitter & Rentals',
+    title: 'Group Trip Planner & Car Rentals | PickAndSync',
     description:
-        'Travel together with friends, family or your partner. Plan group trips, split costs, chat, and rent self-drive cars and bikes from verified hosts across India.',
+        'Plan group trips with friends in India: create shared itineraries, invite travelers, split trip expenses, and find self-drive cars, bikes and scooters.',
 };
 
 /** Static, indexable routes. Keys are paths without the leading slash ('' = home). */

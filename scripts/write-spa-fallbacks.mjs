@@ -52,7 +52,7 @@ const escapeHtml = (value) => String(value)
 function staticBody(route) {
   if (!route) {
     return `<main class="container guide-article home-seo-content">
-      <h1>PickAndSync brings group trips, cost splitting and rentals together</h1>
+      <h1>Plan group trips with friends.</h1>
       <p class="dst-lead">Plan a trip with friends, coordinate the details, split shared expenses, and find self-drive cars, bikes or scooters from local hosts across India.</p>
       <p><a href="/trips/">Browse or plan a group trip</a> · <a href="/tools/trip-cost-splitter/">Split trip costs for free</a> · <a href="/rentals/">Explore vehicle rentals</a></p>
       <section><h2>Plan a group trip with friends</h2>

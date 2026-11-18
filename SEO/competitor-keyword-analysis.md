@@ -36,3 +36,16 @@ These are observed keyword themes, not confirmed Google search volumes or compet
 After deployment, inspect Google Search Console for impressions and queries for `/trips/`, `/trips/create/`, the planning checklist, and the cost splitter. Compare query impressions and clicks over the following 28 days; do not treat a keyword appearing on the page as proof that rankings or traffic have improved.
 
 The screenshot's truncated labels do not support a reliable full competitor inventory. For exact competitor-by-competitor coverage, use the complete domains from the original list when available.
+
+## TinyFish search snapshot and applied homepage update
+
+**Checked:** 18 November 2026 · India-targeted web and Google Play searches.
+
+- The broad query **“trip”** returned dictionary/definition pages and Trip.com brand results. It has mixed intent and is not a realistic primary target for a group-planning app.
+- Results for **“group trip planner India”** included COHY, WanderOn and dedicated group-planner apps such as Triplly and Chuni. Their snippets repeatedly lead with planning a trip with friends, shared itineraries, group coordination and expenses.
+- Results for **“plan a trip with friends”** included a dedicated collaborative trip-planning landing page. This supports targeting the phrase through PickAndSync's actual shared-trip workflow.
+- The customer app's public Play listing is titled **“PickAndSync: Trips & Rentals”**; its short description already mentions group trips. The long description also exposes an internal “Search topics to use naturally” heading and keyword list. Replace that with normal feature copy when updating the Play listing; do not submit a listing change until its review status is confirmed.
+
+The homepage title, description and visible heading now lead with **group trip planner / plan group trips with friends**, while retaining the real itinerary, expense-splitting and vehicle-rental value. The existing `/trips/` page remains the focused destination for group-trip searches.
+
+Examples observed in results: [COHY group creation](https://cohy.in/create-a-group), [WanderOn](https://wanderon.in/), [Triplly group trip planner](https://triplly.app/group-trip-planner), [Chuni on Google Play](https://play.google.com/store/apps/details?id=app.ctp.planner), and [SmartTrippy's collaborative planner](https://smarttrippy.com/plan-trip-with-friends).

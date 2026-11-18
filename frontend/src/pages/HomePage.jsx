@@ -232,9 +232,9 @@ export default function HomePage() {
                 <div className="container home-hero-copy ps-reveal">
                     <div className="hero-logo"><AnimatedLogo size={120} /></div>
                     <p className="home-hero-brand">PickAndSync</p>
-                    <h1>Travel together. Book wheels. Split fairly.</h1>
+                    <h1>Plan group trips with friends.</h1>
                     <p className="home-hero-sub">
-                        Join group trips, rent community cars or bikes, and keep every cost clear — built for crews on the move.
+                        Share an itinerary, coordinate your group, split trip costs, and find self-drive cars, bikes or scooters on PickAndSync.
                     </p>
                 </div>
 
