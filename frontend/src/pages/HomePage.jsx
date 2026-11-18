@@ -149,7 +149,8 @@ export default function HomePage() {
     }, []);
 
     useEffect(() => {
-        if (reduceMotion) return undefined;
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (reduceMotion || connection?.saveData || /^(slow-)?[23]g$/.test(connection?.effectiveType || '')) return undefined;
         const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 200));
         const cancel = window.cancelIdleCallback || window.clearTimeout;
         const id = idle(() => setLoadHeroVideo(true));

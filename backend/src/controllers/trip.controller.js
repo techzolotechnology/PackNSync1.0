@@ -1,7 +1,7 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
-import { assertFullyVerified, getUserVerificationState } from '../utils/verificationHelpers.js';
+import { assertFullyVerified, getVerifiedUserIds } from '../utils/verificationHelpers.js';
 import { findSuggestedCars } from '../utils/carSuggestions.js';
 import { fetchCoverSuggestions } from '../utils/coverSuggestions.js';
 import { canViewTrip } from '../utils/tripAccess.js';
@@ -13,21 +13,17 @@ async function withVerificationFlags(trip) {
         trip.organizerId,
         ...(trip.members || []).map((m) => m.userId),
     ].filter(Boolean);
-    const uniqueIds = [...new Set(userIds)];
-    const states = await Promise.all(uniqueIds.map((id) => getUserVerificationState(id)));
-    const verifiedMap = Object.fromEntries(
-        uniqueIds.map((id, i) => [id, states[i].isFullyVerified])
-    );
+    const verifiedIds = await getVerifiedUserIds([...new Set(userIds)]);
 
     return {
         ...trip,
         organizer: trip.organizer
-            ? { ...trip.organizer, isVerified: Boolean(verifiedMap[trip.organizerId]) }
+            ? { ...trip.organizer, isVerified: verifiedIds.has(trip.organizerId) }
             : trip.organizer,
         members: (trip.members || []).map((m) => ({
             ...m,
             user: m.user
-                ? { ...m.user, isVerified: Boolean(verifiedMap[m.userId]) }
+                ? { ...m.user, isVerified: verifiedIds.has(m.userId) }
                 : m.user,
         })),
     };
@@ -72,7 +68,7 @@ export const getTrips = async (req, res) => {
 
     res.json({
         success: true,
-        data: trips,
+        data: trips.map((trip) => ({ ...trip, shareUrl: shareTripUrl(req, trip.id) })),
         pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / limit) },
     });
 };

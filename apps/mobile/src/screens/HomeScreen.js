@@ -4,6 +4,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { api, rupees } from '../api';
 import { colors } from '../theme';
 import { Icon, IconCircle, ResponsiveGrid, Surface } from '../components/ui';
+import { prefetchTrips } from './TripsScreen';
 
 const quickActions = [
   { tab: 'Rentals', icon: 'car-sport', tone: 'blue', title: 'Find a ride', caption: 'Cars & bikes near you' },
@@ -42,6 +43,7 @@ export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
 
   useEffect(() => { loadWallet(); }, [loadWallet]);
   useEffect(() => registerRefresh?.(loadWallet), [registerRefresh, loadWallet]);
+  useEffect(() => { prefetchTrips(); }, []);
 
   const firstName = String(user?.name || '').trim().split(/\s+/)[0];
 

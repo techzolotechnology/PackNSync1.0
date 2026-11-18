@@ -25,6 +25,32 @@ const MODES = [
   { key: 'create', label: 'Create trip', icon: 'add-circle-outline' },
 ];
 
+const TRIP_CACHE_MS = 60_000;
+let cachedTrips = null;
+let cachedTripsAt = 0;
+let tripsRequest = null;
+
+function requestOpenTrips(force = false) {
+  if (!force && cachedTrips && Date.now() - cachedTripsAt < TRIP_CACHE_MS) {
+    return Promise.resolve(cachedTrips);
+  }
+  if (tripsRequest) return tripsRequest;
+  tripsRequest = api.get('/trips', { status: 'OPEN', limit: 8 })
+    .then((response) => {
+      cachedTrips = response.data || [];
+      cachedTripsAt = Date.now();
+      return cachedTrips;
+    })
+    .finally(() => { tripsRequest = null; });
+  return tripsRequest;
+}
+
+// Warm the public trip list while the user is on Home so the Trips tab opens immediately.
+export function prefetchTrips() {
+  if (tripsRequest || (cachedTrips && Date.now() - cachedTripsAt < TRIP_CACHE_MS)) return;
+  requestOpenTrips().catch(() => {});
+}
+
 function Meta({ icon, children }) {
   return (
     <View style={styles.metaRow}>
@@ -37,20 +63,20 @@ function Meta({ icon, children }) {
 export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
   const [mode, setMode] = useState('discover');
   const [form, setForm] = useState(defaultForm);
-  const [trips, setTrips] = useState([]);
+  const [trips, setTrips] = useState(() => cachedTrips || []);
   const [message, setMessage] = useState('');
   const [tone, setTone] = useState('gold');
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(() => cachedTrips !== null);
   const [creating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [needsVerification, setNeedsVerification] = useState(false);
 
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
 
-  const loadTrips = useCallback(async () => {
+  const loadTrips = useCallback(async (force = false) => {
     try {
-      const response = await api.get('/trips', { status: 'OPEN', limit: 8 });
-      setTrips(response.data || []);
+      const data = await requestOpenTrips(force);
+      setTrips(data);
     } catch (error) {
       say(error.message, 'error');
     } finally {
@@ -58,8 +84,9 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
     }
   }, []);
 
-  useEffect(() => { loadTrips(); }, [loadTrips]);
-  useEffect(() => registerRefresh?.(loadTrips), [registerRefresh, loadTrips]);
+  useEffect(() => { loadTrips(!cachedTrips || Date.now() - cachedTripsAt >= TRIP_CACHE_MS); }, [loadTrips]);
+  const refreshTrips = useCallback(() => loadTrips(true), [loadTrips]);
+  useEffect(() => registerRefresh?.(refreshTrips), [registerRefresh, refreshTrips]);
 
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const changeStart = (next) => setForm((current) => ({
@@ -81,8 +108,7 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
         url = res.data?.shareUrl || res.data?.url || url;
         text = `Join my trip "${trip.title}" to ${trip.destination} on PickAndSync — tap to join:`;
       } else {
-        const res = await api.get(`/trips/${trip.id}`).catch(() => null);
-        url = res?.data?.shareUrl || url;
+        url = trip.shareUrl || url;
       }
       await Share.share({ message: `${text} ${url}`, title: trip.title });
     } catch (error) {
@@ -150,7 +176,7 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
       setForm(defaultForm);
       setMode('discover');
       setTrips((current) => [response.data, ...current].filter(Boolean));
-      await loadTrips();
+      await loadTrips(true);
       successFeedback();
       say('Trip created. Tap Invite friends on it to share a private join link.', 'success');
     } catch (error) {

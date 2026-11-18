@@ -52,6 +52,21 @@ export const getUserVerificationState = async (userId) => {
     return buildVerificationState(verifications, policies);
 };
 
+export const getVerifiedUserIds = async (userIds) => {
+    if (!userIds.length) return new Set();
+    const records = await prisma.verification.findMany({
+        where: { userId: { in: userIds }, documentType: { in: REQUIRED_KYC } },
+        select: { userId: true, documentType: true, status: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+    });
+    const byUser = new Map();
+    for (const record of records) {
+        if (!byUser.has(record.userId)) byUser.set(record.userId, []);
+        byUser.get(record.userId).push(record);
+    }
+    return new Set(userIds.filter((id) => buildVerificationState(byUser.get(id)).isFullyVerified));
+};
+
 export const hasAcceptedPolicy = (policies, policyType) => {
     const version = POLICY_VERSIONS[policyType];
     return policies.some((p) => p.policyType === policyType && p.policyVersion === version);

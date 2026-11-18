@@ -36,7 +36,7 @@ export default function AccountScreen({ user, updateUser, onSignOut }) {
     <Section title="Profile details" /><Card><Field label="Your name" value={name} onChangeText={setName} maxLength={100} /><Field label="City" value={city} onChangeText={setCity} maxLength={100} /><Button busy={busy} onPress={save}>Save profile</Button></Card>
     <Section title="Help & policies" /><View style={{ gap: 10, marginBottom: 22 }}><WebsiteButton path="/reports/new">Report a problem</WebsiteButton><WebsiteButton path="/terms">Terms & conditions</WebsiteButton><WebsiteButton path="/privacy-policy">Privacy policy</WebsiteButton></View>
     <Button secondary danger icon="log-out-outline" onPress={() => setSignOut(true)}>Sign out</Button>
-    <Body style={{ textAlign: 'center', fontSize: 12, marginTop: 23 }}>PickAndSync Host · Version 1.1.0</Body>
+    <Body style={{ textAlign: 'center', fontSize: 12, marginTop: 23 }}>PickAndSync Host · Version 1.1.7</Body>
     <Sheet visible={signOut} title="Sign out of the host app?" onClose={() => setSignOut(false)}><Body>You can sign in again with a code sent to your email.</Body><Button danger onPress={onSignOut}>Sign out</Button></Sheet>
   </View>;
 }

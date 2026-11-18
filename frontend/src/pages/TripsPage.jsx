@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { tripsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -27,7 +27,7 @@ const coverFor = (trip, index) =>
 
 function Avatar({ user, className = '' }) {
     if (user?.avatarUrl) {
-        return <img src={user.avatarUrl} alt={user.name || ''} className={`tt-avatar ${className}`} />;
+        return <img src={user.avatarUrl} alt={user.name || ''} className={`tt-avatar ${className}`} loading="lazy" decoding="async" />;
     }
     return (
         <div className={`tt-avatar tt-avatar-fallback ${className}`} aria-hidden="true">
@@ -46,12 +46,13 @@ function TripCard({ trip, index, isMine, myRole }) {
     const role = myRole || (isMine ? 'ORGANIZER' : null);
 
     return (
-        <article className={`tt-card ${glow} ps-reveal ps-image-reveal ps-lift`} style={{ '--ps-delay': `${(index % 4) * 90}ms` }}>
+        <article className={`tt-card ${glow} ps-lift`}>
             <div className="tt-card-media">
                 <img
                     src={coverFor(trip, index)}
                     alt={trip.title}
-                    loading="lazy"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
                     width={STOCK_IMG_SIZE.cardCover.width}
                     height={STOCK_IMG_SIZE.cardCover.height}
                 />
@@ -92,11 +93,15 @@ export default function TripsPage() {
     const tab = searchParams.get('tab') === 'mine' ? 'mine' : 'all';
 
     const [search, setSearch] = useState(() => searchParams.get('q') || '');
+    const [query, setQuery] = useState(() => search.trim());
     const [status, setStatus] = useState(() => searchParams.get('status') || '');
     const [page, setPage] = useState(1);
+    const [retry, setRetry] = useState(0);
+    const [loadFailed, setLoadFailed] = useState(false);
+    const userId = tab === 'mine' ? user?.id || null : null;
     // Returning to this list shows the last results straight away (no skeleton, no jump).
     const [initialCache] = useState(() => readViewCache(
-        viewCacheKey('trips', { tab, search, status, page: 1, user: user?.id || null }),
+        viewCacheKey('trips', { tab, search: query, status, page: 1, user: userId }),
     ));
     const [trips, setTrips] = useState(() => initialCache?.trips ?? []);
     const [isLoading, setIsLoading] = useState(() => !initialCache);
@@ -117,14 +122,24 @@ export default function TripsPage() {
         setPage(1);
     };
 
-    const fetchTrips = useCallback(async () => {
-        if (tab === 'mine' && !user) {
+    useEffect(() => {
+        if (search.trim() === query) return;
+        const timer = window.setTimeout(() => {
+            setQuery(search.trim());
+            setPage(1);
+        }, 250);
+        return () => window.clearTimeout(timer);
+    }, [search, query]);
+
+    useEffect(() => {
+        setLoadFailed(false);
+        if (tab === 'mine' && !userId) {
             setTrips([]);
             setPagination(null);
             setIsLoading(false);
             return;
         }
-        const key = viewCacheKey('trips', { tab, search, status, page, user: user?.id || null });
+        const key = viewCacheKey('trips', { tab, search: query, status, page, user: userId });
         const cached = readViewCache(key);
         if (cached) {
             setTrips(cached.trips);
@@ -132,24 +147,25 @@ export default function TripsPage() {
             setIsLoading(false);
         } else {
             setIsLoading(true);
+            setPagination(null);
         }
-        try {
-            const params = { search, status, page, limit: 12 };
-            const res = tab === 'mine'
-                ? await tripsApi.getMine(params)
-                : await tripsApi.getAll(params);
-            setTrips(res.data.data);
-            setPagination(res.data.pagination);
-            writeViewCache(key, { trips: res.data.data, pagination: res.data.pagination });
-        } catch (err) {
-            console.error(err);
+        const controller = new AbortController();
+        const params = { search: query || undefined, status: status || undefined, page, limit: 12 };
+        const request = tab === 'mine' ? tripsApi.getMine : tripsApi.getAll;
+        request(params, controller.signal).then(({ data }) => {
+            if (controller.signal.aborted) return;
+            setTrips(data.data);
+            setPagination(data.pagination);
+            writeViewCache(key, { trips: data.data, pagination: data.pagination });
+        }).catch(() => {
+            if (controller.signal.aborted) return;
             if (!cached) setTrips([]);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [search, status, page, tab, user]);
-
-    useEffect(() => { fetchTrips(); }, [fetchTrips]);
+            setLoadFailed(true);
+        }).finally(() => {
+            if (!controller.signal.aborted) setIsLoading(false);
+        });
+        return () => controller.abort();
+    }, [query, status, page, tab, userId, retry]);
 
     useEffect(() => {
         if (tab === 'mine' && !user) navigate('/login');
@@ -216,7 +232,7 @@ export default function TripsPage() {
                             type="search"
                             placeholder="Search destinations, trip names..."
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => setSearch(e.target.value)}
                         />
                     </label>
                     <label className="tt-filter">
@@ -235,6 +251,13 @@ export default function TripsPage() {
                     </label>
                 </div>
 
+                {loadFailed && (
+                    <div className="tt-empty" role="status">
+                        <p>{trips.length ? 'Showing previously loaded trips. Refresh failed.' : 'Trips could not load.'}</p>
+                        <button type="button" className="tt-post-btn" onClick={() => setRetry((value) => value + 1)}>Try again</button>
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div className="tt-grid">
                         {Array.from({ length: 8 }).map((_, i) => (
@@ -248,7 +271,7 @@ export default function TripsPage() {
                             </div>
                         ))}
                     </div>
-                ) : trips.length === 0 ? (
+                ) : trips.length === 0 ? !loadFailed && (
                     <div className="tt-empty">
                         <h3>{tab === 'mine' ? 'No trips yet' : 'No trips found'}</h3>
                         <p>

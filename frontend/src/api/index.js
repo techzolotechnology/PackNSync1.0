@@ -11,6 +11,9 @@ const api = axios.create({
     timeout: 45000,
 });
 
+// Public discovery can use a simple cross-origin GET without a token or a preflight.
+const publicApi = axios.create({ baseURL: API_BASE_URL, timeout: 45000 });
+
 // Request interceptor: attach access token; let the browser set multipart boundaries
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token');
@@ -128,8 +131,8 @@ export const authApi = {
 };
 
 export const tripsApi = {
-    getAll: (params) => api.get('/trips', { params }),
-    getMine: (params) => api.get('/trips/mine', { params }),
+    getAll: (params, signal) => publicApi.get('/trips', { params, signal }),
+    getMine: (params, signal) => api.get('/trips/mine', { params, signal }),
     getCoverSuggestions: (q) => api.get('/trips/cover-suggestions', { params: { q } }),
     getById: (id, params) => api.get(`/trips/${id}`, { params }),
     getCarSuggestions: (id, params) => api.get(`/trips/${id}/car-suggestions`, { params }),

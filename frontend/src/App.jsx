@@ -193,7 +193,7 @@ export default function App() {
     const [booted, setBooted] = useState(false);
     const location = useLocation();
     const { pathname } = location;
-    const hasTripsVideoBackground = pathname === '/trips';
+    const isTripsPage = pathname === '/trips' || pathname === '/trips/';
 
     useEffect(() => {
         fetchMe();
@@ -201,22 +201,18 @@ export default function App() {
     usePreloadPages();
 
     return (
-        <div className={`app-shell ${hasTripsVideoBackground ? 'app-shell--trips-video' : ''}`}>
-            {hasTripsVideoBackground && HERO_MEDIA && (
-                <video
+        <div className={`app-shell ${isTripsPage ? 'app-shell--trips-video' : ''}`}>
+            {isTripsPage && HERO_MEDIA && (
+                <img
                     className="app-shell-video"
-                    poster={HERO_MEDIA.poster}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
+                    src={HERO_MEDIA.poster}
+                    alt=""
+                    fetchPriority="low"
+                    decoding="async"
                     aria-hidden="true"
-                >
-                    <source src={HERO_MEDIA.video} type="video/mp4" />
-                </video>
+                />
             )}
-            {hasTripsVideoBackground && <div className="app-shell-video-overlay" aria-hidden="true" />}
+            {isTripsPage && <div className="app-shell-video-overlay" aria-hidden="true" />}
             {!booted && <SplashScreen ready={hydrated} onDone={() => setBooted(true)} />}
             <RouteSeo />
             <Navbar />

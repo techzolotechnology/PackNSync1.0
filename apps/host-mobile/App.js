@@ -23,7 +23,7 @@ const tabs = [
 ];
 const CharterBookings = () => <BookingsScreen initialMode="charters" />;
 const components = { Home: DashboardScreen, Fleet: FleetScreen, Bookings: BookingsScreen, Charters: CharterBookings, Calendar: CalendarScreen, Earnings: EarningsScreen, Account: AccountScreen, Inbox: InboxScreen };
-const dependencies = { Home: ['vehicles', 'bookings', 'charters', 'earnings', 'wallet', 'verification'], Fleet: ['vehicles', 'listings'], Bookings: ['bookings'], Charters: ['charters'], Calendar: ['bookings'], Earnings: ['earnings', 'wallet'], Account: ['verification'], Inbox: ['notifications'] };
+const dependencies = { Home: ['vehicles', 'bookings', 'charters', 'earnings', 'wallet', 'verification'], Fleet: ['vehicles', 'listings', 'verification', 'policies'], Bookings: ['bookings'], Charters: ['charters'], Calendar: ['bookings'], Earnings: ['earnings', 'wallet'], Account: ['verification'], Inbox: ['notifications', 'transactions', 'wallet'] };
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -62,8 +62,14 @@ function HostShell({ user, updateUser, onSignOut }) {
     return () => handler.remove();
   }, []);
   useEffect(() => { scroll.current?.scrollTo({ y: positions.current[tab] || 0, animated: false }); }, [tab]);
-  // Refresh when returning from document verification or another application.
-  useEffect(() => { const sub = AppState.addEventListener('change', (state) => { if (state === 'active') refresh(); }); return () => sub.remove(); }, [refresh]);
+  // Fetch a tab's data only when it is opened; keep the visible tab fresh while the app is active.
+  useEffect(() => { refresh(dependencies[tab] || []); }, [refresh, tab]);
+  useEffect(() => {
+    const sync = () => { if (AppState.currentState === 'active') refresh(dependencies[tab] || []); };
+    const sub = AppState.addEventListener('change', (state) => { if (state === 'active') sync(); });
+    const timer = setInterval(sync, 60000);
+    return () => { sub.remove(); clearInterval(timer); };
+  }, [refresh, tab]);
   const Screen = components[tab];
   const pending = (resources.bookings?.data || []).filter((b) => b.status === 'PENDING').length + (resources.charters?.data || []).filter((i) => i.status === 'NEW').length;
   const activeTab = tab === 'Charters' ? 'Bookings' : tab;
@@ -72,7 +78,7 @@ function HostShell({ user, updateUser, onSignOut }) {
   const initial = loading && (dependencies[tab] || []).every((key) => !resources[key]?.loaded);
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <View style={styles.header}><Row><Logo size={35} /><View><Label>PickAndSync</Label><Text style={{ color: c.muted, fontSize: 10, letterSpacing: 2, marginTop: 2 }}>HOST</Text></View></Row><Row><IconButton name="notifications-outline" label="Open updates" badge={unread} onPress={() => navigate('Inbox')} /><Pressable accessibilityRole="button" accessibilityLabel="Open host account" onPress={() => navigate('Account')} style={styles.avatar}><Text style={{ color: c.navy, fontSize: 16, fontWeight: '800' }}>{user.name?.slice(0, 1).toUpperCase() || 'H'}</Text></Pressable></Row></View>
-    <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={loading && !initial} onRefresh={refresh} tintColor={c.blue} />} onScroll={(event) => { positions.current[tab] = event.nativeEvent.contentOffset.y; }} scrollEventThrottle={100}>
+    <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={loading && !initial} onRefresh={() => refresh(dependencies[tab] || [])} tintColor={c.blue} />} onScroll={(event) => { positions.current[tab] = event.nativeEvent.contentOffset.y; }} scrollEventThrottle={100}>
       {['Account', 'Inbox'].includes(tab) && <Pressable accessibilityRole="button" onPress={() => navigate('Home')} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, minHeight: 44, marginBottom: 8 }}><Icon name="arrow-back" size={18} color={c.blue} /><Text style={{ color: c.blue, fontWeight: '700' }}>Host dashboard</Text></Pressable>}
       {failures.length > 0 && <Notice error action="Try again" onAction={refresh}>{failures.length === 1 ? resources[failures[0]].error : 'Some account information could not load.'} {failures.some((key) => resources[key]?.loaded) ? 'Previously loaded information may be out of date.' : ''}</Notice>}
       {initial ? <View style={{ minHeight: 350, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={c.blue} size="large" /><Body style={{ marginTop: 15 }}>Loading your host dashboard…</Body></View> : <Screen key={tab} user={user} updateUser={updateUser} navigate={navigate} onSignOut={onSignOut} />}
