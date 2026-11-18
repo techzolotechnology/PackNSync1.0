@@ -50,6 +50,24 @@ const escapeHtml = (value) => String(value)
   .replace(/>/g, '&gt;');
 
 function staticBody(route) {
+  if (!route) {
+    return `<main class="container guide-article home-seo-content">
+      <h1>PickAndSync brings group trips, cost splitting and rentals together</h1>
+      <p class="dst-lead">Plan a trip with friends, coordinate the details, split shared expenses, and find self-drive cars, bikes or scooters from local hosts across India.</p>
+      <p><a href="/trips/">Browse or plan a group trip</a> · <a href="/tools/trip-cost-splitter/">Split trip costs for free</a> · <a href="/rentals/">Explore vehicle rentals</a></p>
+      <section><h2>Plan a group trip with friends</h2>
+        <p>Create a shared plan, invite your group, coordinate the itinerary and keep trip details together. Start with the <a href="/guides/group-trip-planning-checklist-india/">group trip planning checklist</a>.</p>
+      </section>
+      <section><h2>Split travel expenses clearly</h2>
+        <p>Add shared costs and see who owes whom with the <a href="/tools/trip-cost-splitter/">free trip cost splitter</a>. No account is needed to try the calculator.</p>
+      </section>
+      <section><h2>Find cars, bikes and scooters for your trip</h2>
+        <p>Browse local vehicle listings and check dates before requesting a booking. See <a href="/rentals/bangalore/">Bangalore rentals</a>, <a href="/rentals/haryana/">Haryana rentals</a>, or <a href="/rentals/">all rental locations</a>.</p>
+      </section>
+      <p>PickAndSync is operated by TECHZOLO TECHNOLOGIES LLP. Travelers can explore the <a href="https://play.google.com/store/apps/details?id=com.packandsync.app">PickAndSync Android app</a>; vehicle owners can learn about <a href="/become-a-host/">hosting a vehicle</a>.</p>
+    </main>`;
+  }
+
   const guide = GUIDES.find((item) => `guides/${item.slug}` === route);
   if (guide) {
     const sections = guide.sections.map((section) => `<section class="guide-section">
@@ -134,7 +152,7 @@ function withSeo(html, route) {
   }
   const body = staticBody(route);
   if (body) out = replaceTag(out, /<div id="root"><\/div>/, `<div id="root">${body}</div>`, route);
-  const routeDepth = route.split('/').length;
+  const routeDepth = route ? route.split('/').length : 0;
   out = out.replace(/((?:src|href)=")\.\/(assets\/|favicon\.svg)/g, `$1${'../'.repeat(routeDepth)}$2`);
   return out;
 }
@@ -184,6 +202,11 @@ for (const route of routes) {
   fs.writeFileSync(path.join(dir, 'index.html'), withSeo(html, route));
   console.log(`wrote ${path.relative(root, path.join(dir, 'index.html'))}`);
 }
+
+// The homepage is the main branded entry point. Include its text in the first
+// response so crawlers and link previews can understand it without JS rendering.
+fs.writeFileSync(indexPath, withSeo(html, ''));
+console.log('wrote crawlable homepage content');
 
 fs.writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapXml());
 console.log(`wrote sitemap.xml (${SITEMAP_PATHS.length} urls)`);
