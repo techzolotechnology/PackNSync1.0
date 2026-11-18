@@ -12,9 +12,9 @@ export const SITE_URL = 'https://pickandsync.com';
 export const SITE_NAME = 'PickAndSync';
 export const DEFAULT_IMAGE = `${SITE_URL}/images/stock/trip-road.jpg`;
 export const TRIP_SPLITTER_HEADER = {
-    title: 'Trip Cost Splitter',
+    title: 'Split Trip Expenses with Friends',
     kicker: 'Free tool · no sign-up',
-    intro: 'Add your group and every shared expense. See who owes whom and how to settle up, then share the result on WhatsApp.',
+    intro: 'Use this trip expense splitter to add people and shared costs, see who owes whom, and share the result on WhatsApp—no account needed.',
 };
 
 export const DEFAULT_SEO = {
@@ -44,8 +44,8 @@ export const ROUTE_SEO = {
     destinations: DESTINATIONS_INDEX_SEO,
     guides: GUIDES_INDEX_SEO,
     'tools/trip-cost-splitter': {
-        title: 'Split Expenses with Friends – Free Bill Splitter & Trip Cost Splitter | PickAndSync',
-        description: 'Free bill-splitting app for trips and groups: split expenses with friends, track who paid, see who owes whom and settle up over UPI — not just track it. No sign-up, share on WhatsApp. A simple Splitwise & Tricount alternative.',
+        title: 'Trip Expense Splitter for Groups | PickAndSync',
+        description: 'Split travel expenses with friends using a trip split calculator. Add people and shared costs, see who owes whom, and share the settlement on WhatsApp—no account needed.',
     },
     'split-expenses-app': {
         title: 'Free Split Expenses App – Splitwise & Tricount Alternative (UPI) | PickAndSync',
