@@ -172,11 +172,11 @@ export default function TripsPage() {
                 </div>
                 <div className="container tt-hero-inner">
                     <div className="tt-hero-copy ps-reveal ps-left">
-                        <h1>{tab === 'mine' ? 'My trips' : 'Travel Together'}</h1>
+                        <h1>{tab === 'mine' ? 'My trips' : 'Plan a Group Trip with Friends'}</h1>
                         <p>
                             {tab === 'mine'
                                 ? 'Trips you organize or have joined — open one to chat, split costs, and plan.'
-                                : 'Browse trips others posted — join them and split the money with the group.'}
+                                : 'Browse open group trips to find travel companions, or post your own. Share the itinerary, chat with your group and split trip costs.'}
                         </p>
                     </div>
                     <Link to="/trips/create" className="tt-post-btn ps-reveal ps-right">

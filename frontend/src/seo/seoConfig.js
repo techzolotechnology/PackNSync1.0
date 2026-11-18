@@ -32,9 +32,9 @@ export const ROUTE_SEO = {
             'Rent self-drive cars, CNG cars, bikes and scooters by the day from verified local hosts. No driver, transparent per-day pricing, book in minutes.',
     },
     trips: {
-        title: 'Group Trips in India – Travel Together, Plan & Split Costs | PickAndSync',
+        title: 'Group Trip Planner for Friends in India | PickAndSync',
         description:
-            'Join group trips and weekend getaways across India, or post your own. Meet verified travel buddies, plan the itinerary together, split trip expenses and settle up over UPI — see who owes whom, settle with the fewest payments.',
+            'Plan a group trip with friends in India. Browse open trips, find travel companions, share an itinerary, chat with your group and split trip costs.',
     },
     explore: {
         title: 'AI Trip Planner for Groups, Couples & Families | PickAndSync',
