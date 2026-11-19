@@ -406,16 +406,37 @@ export default function HomePage() {
 
             {premiumBannerPrice !== null && (
                 <section className="home-premium-banner" aria-label="Premium banner placement pricing">
-                    <div className="container home-premium-banner-inner">
-                        <div>
-                            <p className="home-premium-kicker">PREMIUM PLACEMENT</p>
-                            <h2>Put your travel or rental offer in the spotlight.</h2>
-                            <p>Try it for ₹5 for 30 days, then ₹{Number(premiumBannerPrice).toLocaleString('en-IN')}/month per banner. Auto-renews until cancelled.</p>
-                        </div>
-                        <div className="home-premium-price">
-                            <strong>₹{Number(premiumBannerPrice).toLocaleString('en-IN')}</strong>
-                            <span>per banner / month after trial</span>
-                            <Link to="/premium">View Premium offer</Link>
+                    <div className="container">
+                        <div className="home-premium-banner-inner">
+                            <div className="home-premium-copy">
+                                <p className="home-premium-kicker">
+                                    <span className="home-premium-spark" aria-hidden="true">✦</span>
+                                    Premium placement
+                                </p>
+                                <h2>Make your travel offer the one everyone notices.</h2>
+                                <p className="home-premium-description">
+                                    Put your trip, rental, or travel service in front of people planning their next journey.
+                                </p>
+                                <div className="home-premium-benefits" aria-label="Premium benefits">
+                                    <span>More visibility</span>
+                                    <span>Cancel anytime</span>
+                                </div>
+                            </div>
+                            <div className="home-premium-price">
+                                <span className="home-premium-price-label">30-DAY INTRO OFFER</span>
+                                <div className="home-premium-trial">
+                                    <strong>₹5</strong>
+                                    <span>for your<br />first 30 days</span>
+                                </div>
+                                <p className="home-premium-standard">
+                                    Then <strong>₹{Number(premiumBannerPrice).toLocaleString('en-IN')}</strong>
+                                    <span> / banner / month</span>
+                                </p>
+                                <Link className="home-premium-cta" to="/premium">
+                                    Explore Premium <span aria-hidden="true">→</span>
+                                </Link>
+                                <small className="home-premium-renewal">Auto-renews monthly after trial. Cancel anytime.</small>
+                            </div>
                         </div>
                     </div>
                 </section>
