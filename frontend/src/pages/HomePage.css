@@ -128,6 +128,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+    min-height: 44px;
     padding: 0.55rem 0.95rem;
     border-radius: 999px;
     border: none;
@@ -139,9 +140,20 @@
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.home-search-tab-icon {
+    flex: none;
+    width: 1.875rem;
+    height: 1.875rem;
+}
+
 .home-search-tab:hover {
     color: var(--clr-text-primary);
     background: var(--clr-bg-900);
+}
+
+.home-search-tab:focus-visible {
+    outline: 2px solid #005bbb;
+    outline-offset: 2px;
 }
 
 .home-search-tab.active {
@@ -323,6 +335,32 @@
     grid-template-columns: 1fr 1fr;
     gap: 1.15rem;
 }
+
+.home-premium-banner {
+    padding: 2.25rem 0;
+    background: linear-gradient(115deg, #0b2542, #123d66 62%, #14558a);
+    color: #fff;
+}
+
+.home-premium-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.home-premium-banner-inner h2 {
+    margin: 0.35rem 0;
+    max-width: 650px;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.home-premium-banner-inner p { margin: 0; color: #d5e7f8; }
+.home-premium-banner-inner .home-premium-kicker { color: #ffd477; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; }
+.home-premium-price { display: grid; justify-items: end; gap: 0.25rem; min-width: 170px; }
+.home-premium-price strong { font-size: 1.85rem; }
+.home-premium-price span { color: #d5e7f8; font-size: 0.85rem; }
+.home-premium-price a { margin-top: 0.45rem; color: #0b2542; background: #ffd477; border-radius: 999px; padding: 0.65rem 1rem; font-weight: 800; text-decoration: none; }
 
 .home-mod-card {
     position: relative;
@@ -662,6 +700,9 @@
 }
 
 @media (max-width: 900px) {
+    .home-premium-banner-inner { align-items: flex-start; flex-direction: column; }
+    .home-premium-price { justify-items: start; }
+
     .home-search-fields {
         grid-template-columns: 1fr;
     }
@@ -745,6 +786,11 @@
         justify-content: center;
         font-size: 0.82rem;
         padding: 0.5rem 0.65rem;
+    }
+
+    .home-search-tab-icon {
+        width: 1.625rem;
+        height: 1.625rem;
     }
 
     .home-mode-switch {

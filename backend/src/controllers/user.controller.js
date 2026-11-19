@@ -6,6 +6,7 @@ import { getUserVerificationState } from '../utils/verificationHelpers.js';
 import { deleteUserAccount } from '../utils/deleteUser.js';
 import { clearCookies } from '../utils/jwt.js';
 import { ensureReferralCode, frontendBase, referralRewardAmount } from '../utils/referrals.js';
+import { premiumAccess } from '../utils/premiumAccess.js';
 
 const PROFILE_SELECT = {
     id: true,
@@ -50,6 +51,7 @@ export const getUserById = async (req, res) => {
         where: { id: req.params.id },
         select: {
             ...PROFILE_SELECT,
+            premiumSubscription: { select: { status: true, currentPeriodEndsAt: true } },
             _count: {
                 select: {
                     vehicles: true,
@@ -80,6 +82,7 @@ export const getUserById = async (req, res) => {
             drivingYears: user.drivingYears,
             role: user.role,
             createdAt: user.createdAt,
+            ...premiumAccess(user.premiumSubscription),
             email: isOwn ? user.email : undefined,
             phoneNumber: isOwn ? user.phoneNumber : undefined,
             emergencyContact: isOwn ? user.emergencyContact : undefined,

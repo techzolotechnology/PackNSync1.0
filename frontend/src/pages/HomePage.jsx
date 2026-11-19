@@ -1,17 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { STOCK } from '../constants/stockImages.js';
 import { HERO_MEDIA } from '../utils/heroMedia.js';
 import AnimatedLogo from '../components/AnimatedLogo';
+import { pricingApi } from '../api/index.js';
 import './HomePage.css';
 
 const SEARCH_TABS = [
-    { id: 'trips', label: 'Trips', iconTone: 'gold' },
-    { id: 'cars', label: 'Cars', iconTone: 'brown' },
-    { id: 'bikes', label: 'Bikes', iconTone: 'blue' },
-    { id: 'explore', label: 'Explore', iconTone: 'green' },
+    { id: 'trips', label: 'Trips', colors: ['#fff08c', '#f69a22', '#c75315'] },
+    { id: 'cars', label: 'Cars', colors: ['#ffada5', '#fa5d58', '#bb223f'] },
+    { id: 'bikes', label: 'Bikes', colors: ['#86e9ff', '#2e98fa', '#2246c0'] },
+    { id: 'explore', label: 'Explore', colors: ['#a4f4d4', '#24bf9d', '#08756b'] },
 ];
 
 const CATEGORIES = {
@@ -90,37 +91,65 @@ const MODULES = {
     },
 };
 
-function TabIcon({ tone }) {
-    if (tone === 'gold') {
-        return (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M7 8h10l1.2 12H5.8L7 8z" stroke="#f5b800" strokeWidth="1.7" strokeLinejoin="round" />
-                <path d="M9 8V6.5A3 3 0 0112 3.5a3 3 0 013 3V8" stroke="#f5b800" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
-        );
-    }
-    if (tone === 'brown') {
-        return (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 11h16l-1.2 7.5a2 2 0 01-2 1.7H7.2a2 2 0 01-2-1.7L4 11z" stroke="#a16207" strokeWidth="1.7" />
-                <path d="M7 11V8.5A2.5 2.5 0 019.5 6h5A2.5 2.5 0 0117 8.5V11" stroke="#a16207" strokeWidth="1.7" />
-            </svg>
-        );
-    }
-    if (tone === 'blue') {
-        return (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 14l2-5h10l2 5" stroke="#007bff" strokeWidth="1.7" strokeLinejoin="round" />
-                <circle cx="8" cy="16.5" r="1.8" stroke="#007bff" strokeWidth="1.7" />
-                <circle cx="16" cy="16.5" r="1.8" stroke="#007bff" strokeWidth="1.7" />
-                <path d="M4 14h16" stroke="#007bff" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
-        );
-    }
+function TabIcon({ tab, colors: [light, mid, dark] }) {
+    const gradientId = useId();
+    const face = `url(#${gradientId})`;
+
     return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="8" stroke="#16a34a" strokeWidth="1.7" />
-            <path d="M8.5 12.2l2.2 2.2 4.8-5" stroke="#16a34a" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        <svg className="home-search-tab-icon" viewBox="0 0 32 32" width="30" height="30" fill="none" aria-hidden="true">
+            <defs>
+                <linearGradient id={gradientId} x1="15%" y1="0%" x2="88%" y2="100%">
+                    <stop stopColor={light} />
+                    <stop offset=".62" stopColor={mid} />
+                    <stop offset="1" stopColor={dark} />
+                </linearGradient>
+            </defs>
+            <ellipse cx="16" cy="28.5" rx="12" ry="1.8" fill={dark} opacity=".18" />
+            {tab === 'trips' && (
+                <>
+                    <path d="M12 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3" stroke={dark} strokeWidth="2.3" />
+                    <path d="M18 8h4a5 5 0 0 1 5 5v10a4 4 0 0 1-4 4h-5Z" fill={dark} />
+                    <rect x="5" y="8" width="18" height="19" rx="4.5" fill={face} />
+                    <path d="M10 11v13m8-13v13" stroke="#fff7c4" strokeWidth="1.4" strokeLinecap="round" opacity=".72" />
+                    <path d="m13 15 4-1.2 1.2 4-4 1.2z" fill="#fff6df" />
+                    <path d="M9 27h3m8 0h3" stroke="#663312" strokeWidth="2" strokeLinecap="round" />
+                </>
+            )}
+            {tab === 'cars' && (
+                <>
+                    <rect x="4" y="19" width="5" height="8" rx="2" fill="#24334f" />
+                    <rect x="23" y="19" width="5" height="8" rx="2" fill="#24334f" />
+                    <path d="m6 14 2.4-6a3.5 3.5 0 0 1 3.2-2.2h8.8A3.5 3.5 0 0 1 23.6 8l2.4 6Z" fill={face} />
+                    <path d="m9.1 13 1.6-4a1.5 1.5 0 0 1 1.4-.9h7.8a1.5 1.5 0 0 1 1.4.9l1.6 4Z" fill="#24476b" />
+                    <path d="m11 10-.95 2.1h6.45l2.05-3h-6.25A1.45 1.45 0 0 0 11 10Z" fill="#8adffc" opacity=".74" />
+                    <rect x="3" y="13" width="26" height="11.5" rx="4" fill={face} />
+                    <path d="M7.5 17.5h3.2m10.6 0h3.2" stroke="#fff5d8" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M13 21.5h6" stroke="#7a2039" strokeWidth="1.6" strokeLinecap="round" />
+                </>
+            )}
+            {tab === 'bikes' && (
+                <>
+                    <circle cx="7.4" cy="22.6" r="5" fill="#223651" />
+                    <circle cx="24.9" cy="22.6" r="5" fill="#223651" />
+                    <circle cx="7.4" cy="22.6" r="2" fill="#b9def4" />
+                    <circle cx="24.9" cy="22.6" r="2" fill="#b9def4" />
+                    <path d="m25 22.6-5-15h-4" stroke="#28446a" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 19a5 5 0 0 1 5-5h5l3.1 5h3l-1.5-7.2h3.2l3 7.3-3.7 4.9H10.4L7 19Z" fill={face} />
+                    <path d="M7 13.4h7.6" stroke="#273557" strokeWidth="2.7" strokeLinecap="round" />
+                    <path d="M20.5 11.6h2" stroke="#fff1b2" strokeWidth="2.1" strokeLinecap="round" />
+                </>
+            )}
+            {tab === 'explore' && (
+                <>
+                    <circle cx="17" cy="17" r="11.2" fill={dark} />
+                    <circle cx="15.6" cy="15.3" r="11.2" fill={face} />
+                    <circle cx="15.6" cy="15.3" r="8" fill="#e6fff4" />
+                    <path d="M15.6 8.6v1.3m0 10.8V22M8.9 15.3h1.3m10.8 0h1.3" stroke={dark} strokeWidth="1.1" strokeLinecap="round" />
+                    <path d="m20.9 10-3.5 7-3.5-3.5Z" fill="#fc7456" />
+                    <path d="m10.3 20.6 3.6-7.1 3.5 3.5Z" fill="#16618e" />
+                    <circle cx="15.6" cy="15.3" r="1" fill="#fff" />
+                </>
+            )}
         </svg>
     );
 }
@@ -136,9 +165,18 @@ export default function HomePage() {
     const [category, setCategory] = useState('');
     const [reduceMotion, setReduceMotion] = useState(false);
     const [loadHeroVideo, setLoadHeroVideo] = useState(false);
+    const [premiumBannerPrice, setPremiumBannerPrice] = useState(null);
     const motionRef = useRef(null);
     const videoRef = useRef(null);
     useGoFlyMotion(motionRef, [mode, searchTab]);
+
+    useEffect(() => {
+        let active = true;
+        pricingApi.getPremiumBanner().then((res) => {
+            if (active) setPremiumBannerPrice(res.data.data.price);
+        }).catch(() => {});
+        return () => { active = false; };
+    }, []);
 
     useEffect(() => {
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -250,7 +288,7 @@ export default function HomePage() {
                                     className={`home-search-tab ${searchTab === tab.id ? 'active' : ''}`}
                                     onClick={() => setSearchTab(tab.id)}
                                 >
-                                    <TabIcon tone={tab.iconTone} />
+                                    <TabIcon tab={tab.id} colors={tab.colors} />
                                     <span>{tab.label}</span>
                                 </button>
                             ))}
@@ -365,6 +403,23 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            {premiumBannerPrice !== null && (
+                <section className="home-premium-banner" aria-label="Premium banner placement pricing">
+                    <div className="container home-premium-banner-inner">
+                        <div>
+                            <p className="home-premium-kicker">PREMIUM PLACEMENT</p>
+                            <h2>Put your travel or rental offer in the spotlight.</h2>
+                            <p>Try it for ₹5 for 30 days, then ₹{Number(premiumBannerPrice).toLocaleString('en-IN')}/month per banner. Auto-renews until cancelled.</p>
+                        </div>
+                        <div className="home-premium-price">
+                            <strong>₹{Number(premiumBannerPrice).toLocaleString('en-IN')}</strong>
+                            <span>per banner / month after trial</span>
+                            <Link to="/premium">View Premium offer</Link>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <section className="home-steps">
                 <div className="container">

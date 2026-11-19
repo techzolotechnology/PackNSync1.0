@@ -1,0 +1,25 @@
+.premium-page { width: min(100% - 2rem, 760px); margin: 0 auto; padding: clamp(1.5rem, 5vw, 3.5rem) 0 4rem; }
+.premium-back { display: inline-block; margin-bottom: 1rem; color: var(--clr-primary-600); font-weight: 700; text-decoration: none; }
+.premium-card { padding: clamp(1.25rem, 4vw, 2.5rem); border: 1px solid var(--clr-border); border-radius: 1.5rem; background: #fff; box-shadow: 0 18px 55px rgba(15, 35, 60, .09); }
+.premium-kicker { margin: 0 0 .6rem; color: #9a6900; font-size: .76rem; font-weight: 900; letter-spacing: .12em; }
+.premium-card h1 { max-width: 620px; margin: 0; color: #102b45; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.12; }
+.premium-intro { max-width: 620px; margin: 1rem 0 1.5rem; color: #56687a; line-height: 1.6; }
+.premium-benefits { display: grid; gap: .55rem; margin: 0 0 1.5rem; padding-left: 1.25rem; color: #263d52; line-height: 1.45; }
+.premium-offer { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.premium-offer > div { display: flex; flex-direction: column; gap: .25rem; min-width: 0; padding: 1rem; border-radius: 1rem; background: #f2f7fc; }
+.premium-offer span { color: #66798b; font-size: .85rem; }
+.premium-offer strong { color: #102b45; font-size: clamp(1.5rem, 5vw, 2rem); }
+.premium-offer small { margin-left: .25rem; color: #66798b; font-size: .85rem; font-weight: 600; }
+.premium-terms, .premium-help { color: #66798b; font-size: .88rem; line-height: 1.55; }
+.premium-current { margin: 1rem 0; padding: 1rem; border: 1px solid #c8e5d7; border-radius: .9rem; background: #f0fbf5; color: #174c34; }
+.premium-current p { margin: .45rem 0 0; line-height: 1.5; }
+.premium-state { color: #66798b; }
+.premium-action, .premium-cancel { width: 100%; min-height: 3.25rem; margin-top: .75rem; border: 0; border-radius: .8rem; font: inherit; font-weight: 800; cursor: pointer; }
+.premium-action { background: #087cf0; color: #fff; }
+.premium-continue { display: block; box-sizing: border-box; text-align: center; text-decoration: none; }
+.premium-cancel { border: 1px solid #d7e0e8; background: #fff; color: #32485c; }
+.premium-action:disabled, .premium-cancel:disabled { cursor: wait; opacity: .65; }
+.premium-unavailable { padding: .9rem; border-radius: .8rem; background: #fff8e8; color: #725110; }
+.premium-help { margin: 1.25rem 0 0; text-align: center; }
+.premium-help a { color: var(--clr-primary-600); }
+@media (max-width: 480px) { .premium-offer { grid-template-columns: 1fr; } }

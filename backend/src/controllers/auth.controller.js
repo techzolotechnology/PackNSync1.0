@@ -5,6 +5,7 @@ import { signAccessToken, signRefreshToken, setCookies, clearCookies } from '../
 import { AppError } from '../utils/AppError.js';
 import { normalizeContact, deliverOtp } from '../utils/otpDelivery.js';
 import { findReferrerId } from '../utils/referrals.js';
+import { premiumAccess } from '../utils/premiumAccess.js';
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
@@ -134,7 +135,11 @@ export const verifyOtp = async (req, res) => {
     setCookies(res, accessToken, refreshToken);
 
     const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = user;
-    res.json({ success: true, user: safeUser, accessToken, refreshToken });
+    const subscription = await prisma.premiumSubscription?.findUnique?.({
+        where: { userId: user.id },
+        select: { status: true, currentPeriodEndsAt: true },
+    });
+    res.json({ success: true, user: { ...safeUser, ...premiumAccess(subscription) }, accessToken, refreshToken });
 };
 
 // POST /api/auth/logout
@@ -185,5 +190,9 @@ export const refreshAccessToken = async (req, res) => {
 // GET /api/auth/me
 export const getMe = async (req, res) => {
     const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = req.user;
-    res.json({ success: true, user: safeUser });
+    const subscription = await prisma.premiumSubscription?.findUnique?.({
+        where: { userId: req.user.id },
+        select: { status: true, currentPeriodEndsAt: true },
+    });
+    res.json({ success: true, user: { ...safeUser, ...premiumAccess(subscription) } });
 };

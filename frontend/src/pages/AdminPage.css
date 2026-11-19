@@ -282,6 +282,29 @@
     padding: 1.15rem 1.25rem 1.35rem;
 }
 
+.admin-premium-pricing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    align-items: start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--clr-border);
+    border-radius: 1rem;
+    background: #f8fbff;
+}
+
+.admin-premium-pricing h3 { margin: 0; color: var(--clr-text-primary); }
+.admin-premium-pricing p { margin: 0.45rem 0 0; color: var(--clr-text-secondary); }
+.admin-premium-pricing form { display: grid; gap: 0.55rem; }
+.admin-premium-pricing form label { font-weight: 700; color: var(--clr-text-primary); }
+.admin-premium-pricing form small { color: var(--clr-text-secondary); }
+.admin-premium-pricing form button { justify-self: start; margin-top: 0.2rem; }
+
+@media (max-width: 640px) {
+    .admin-premium-pricing { grid-template-columns: 1fr; }
+}
+
 .admin-section-intro {
     display: none;
 }
