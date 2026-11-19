@@ -21,6 +21,7 @@ const STATUS_LABELS = {
 export default function PremiumPage() {
     const [params, setParams] = useSearchParams();
     const setUser = useAuthStore((state) => state.setUser);
+    const user = useAuthStore((state) => state.user);
     const [state, setState] = useState(null);
     const [busy, setBusy] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -98,14 +99,17 @@ export default function PremiumPage() {
     const subscription = state?.subscription;
     const offer = state?.offer;
     const periodStillActive = subscription?.currentPeriodEndsAt && new Date(subscription.currentPeriodEndsAt) > new Date();
-    const canStart = offer?.enabled && (!subscription || subscription.status === 'EXPIRED' || (subscription.status === 'CANCELLED' && (!subscription.trialStartedAt || !periodStillActive)));
+    const canStart = Boolean(state && !state.isPremium && (!subscription || subscription.status === 'EXPIRED' || (subscription.status === 'CANCELLED' && (!subscription.trialStartedAt || !periodStillActive))));
     const canCancel = subscription && ['PENDING', 'TRIALING', 'ACTIVE', 'PAST_DUE'].includes(subscription.status) && !subscription.cancelAtPeriodEnd;
 
     return (
         <section className="premium-page">
             <Link className="premium-back" to="/">← Back to PickAndSync</Link>
             <div className="premium-card">
-                <p className="premium-kicker">PICKANDSYNC PREMIUM PLACEMENT</p>
+                <div className="premium-card-heading">
+                    <p className="premium-kicker"><span aria-hidden="true">✦</span> PickAndSync Premium</p>
+                    <span className="premium-placement-tag">ONE BANNER · CANCEL ANYTIME</span>
+                </div>
                 <h1>Put your trip or rental offer in front of more travelers.</h1>
                 <p className="premium-intro">Feature one banner on PickAndSync. Review the recurring price and authorise the mandate before the trial starts.</p>
                 <ul className="premium-benefits">
@@ -114,8 +118,8 @@ export default function PremiumPage() {
                     <li>Premium placement for one travel or rental banner</li>
                 </ul>
                 <div className="premium-offer" aria-label="Premium subscription offer">
-                    <div><span>First 30 days</span><strong>₹{offer?.trialPrice ?? 5}</strong></div>
-                    <div><span>Then, per banner</span><strong>₹{Number(offer?.monthlyPrice ?? 499).toLocaleString('en-IN')}<small>/month</small></strong></div>
+                    <div className="premium-offer-trial"><span>30-DAY INTRO OFFER</span><strong>₹{offer?.trialPrice ?? 5}</strong><small>for your first 30 days</small></div>
+                    <div className="premium-offer-monthly"><span>THEN, PER BANNER</span><strong>₹{Number(offer?.monthlyPrice ?? 499).toLocaleString('en-IN')}<small>/month</small></strong><small>Auto-renews until cancelled</small></div>
                 </div>
                 <p className="premium-terms">Recurring monthly billing starts after the 30-day trial at the monthly price shown above. It renews until you cancel. You can cancel from this page. Cashfree will display and collect mandate authorisation details at checkout.</p>
 
@@ -129,11 +133,12 @@ export default function PremiumPage() {
                         {subscription.cancelAtPeriodEnd && <p>Renewal is off. Premium access remains through the current period.</p>}
                     </div>
                 )}
+                {!loading && !user && <Link className="premium-action premium-continue" to="/login">Sign in to buy Premium</Link>}
                 {!loading && state?.isPremium && <Link className="premium-action premium-continue" to="/trips">Continue to PickAndSync</Link>}
-                {!loading && canStart && <button className="premium-action" type="button" onClick={beginCheckout} disabled={busy}>{busy ? 'Opening secure checkout…' : 'Start 30-day trial for ₹5'}</button>}
-                {!loading && subscription?.status === 'PENDING' && !canStart && <button className="premium-action" type="button" onClick={beginCheckout} disabled={busy}>{busy ? 'Opening secure checkout…' : 'Continue authorisation'}</button>}
+                {!loading && canStart && <button className="premium-action" type="button" onClick={beginCheckout} disabled={busy}>{busy ? 'Opening secure checkout…' : 'Buy Premium · Start for ₹5'}</button>}
+                {!loading && subscription?.status === 'PENDING' && !canStart && <button className="premium-action" type="button" onClick={beginCheckout} disabled={busy}>{busy ? 'Opening secure checkout…' : 'Continue secure checkout'}</button>}
                 {!loading && canCancel && <button className="premium-cancel" type="button" onClick={cancel} disabled={busy}>Cancel renewal</button>}
-                {!loading && !offer?.enabled && !subscription && <p className="premium-unavailable">Premium subscriptions are not available yet. Please check back later.</p>}
+                {!loading && !offer?.enabled && !subscription && <p className="premium-unavailable" role="status">Secure checkout is being prepared. No payment will be taken until you authorize it in Cashfree.</p>}
                 <p className="premium-help">Questions? <a href="mailto:support@pickandsync.com">Contact PickAndSync support</a>.</p>
             </div>
         </section>
