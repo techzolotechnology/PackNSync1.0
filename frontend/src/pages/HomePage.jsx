@@ -5,6 +5,7 @@ import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { STOCK } from '../constants/stockImages.js';
 import { HERO_MEDIA } from '../utils/heroMedia.js';
 import AnimatedLogo from '../components/AnimatedLogo';
+import { pricingApi } from '../api/index.js';
 import './HomePage.css';
 
 const SEARCH_TABS = [
@@ -164,9 +165,18 @@ export default function HomePage() {
     const [category, setCategory] = useState('');
     const [reduceMotion, setReduceMotion] = useState(false);
     const [loadHeroVideo, setLoadHeroVideo] = useState(false);
+    const [premiumBannerPrice, setPremiumBannerPrice] = useState(null);
     const motionRef = useRef(null);
     const videoRef = useRef(null);
     useGoFlyMotion(motionRef, [mode, searchTab]);
+
+    useEffect(() => {
+        let active = true;
+        pricingApi.getPremiumBanner().then((res) => {
+            if (active) setPremiumBannerPrice(res.data.data.price);
+        }).catch(() => {});
+        return () => { active = false; };
+    }, []);
 
     useEffect(() => {
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -393,6 +403,23 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            {premiumBannerPrice !== null && (
+                <section className="home-premium-banner" aria-label="Premium banner placement pricing">
+                    <div className="container home-premium-banner-inner">
+                        <div>
+                            <p className="home-premium-kicker">PREMIUM PLACEMENT</p>
+                            <h2>Put your travel or rental offer in the spotlight.</h2>
+                            <p>Try it for ₹5 for 30 days, then ₹{Number(premiumBannerPrice).toLocaleString('en-IN')}/month per banner. Auto-renews until cancelled.</p>
+                        </div>
+                        <div className="home-premium-price">
+                            <strong>₹{Number(premiumBannerPrice).toLocaleString('en-IN')}</strong>
+                            <span>per banner / month after trial</span>
+                            <Link to="/premium">View Premium offer</Link>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <section className="home-steps">
                 <div className="container">

@@ -193,6 +193,7 @@ export default function ProfilePage() {
                                     <span>{initial}</span>
                                 )}
                             </div>
+                            {profile.isPremium && <span className="pf-premium-badge" title="PickAndSync Premium" aria-label="PickAndSync Premium">★ Premium</span>}
                             {isOwn && (
                                 <button
                                     type="button"

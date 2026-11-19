@@ -54,7 +54,22 @@ enum NotificationType {
   EXPENSE_ADDED
   CHAT_MESSAGE
   PAYMENT_RECEIVED
+  PREMIUM_SUBSCRIPTION
   SYSTEM
+}
+
+enum PremiumSubscriptionStatus {
+  PENDING
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum PremiumBillingProvider {
+  CASHFREE
+  GOOGLE_PLAY
 }
 
 // ─────────────────────────────────────────
@@ -133,6 +148,7 @@ model User {
   offerTargets          OfferRecipient[]
   offerRedemptions      OfferRedemption[]
   charterInquiries      CharterInquiry[]
+  premiumSubscription   PremiumSubscription?
 
   @@map("users")
 }
@@ -966,4 +982,50 @@ model RentalBusinessProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([status])
   @@map("rental_business_profiles")
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+model PremiumSubscription {
+  id                       String                    @id @default(uuid())
+  userId                   String                    @unique
+  provider                 PremiumBillingProvider
+  providerSubscriptionId   String?                   @unique
+  providerPlanId           String?
+  status                   PremiumSubscriptionStatus @default(PENDING)
+  trialPriceInr            Int                       @default(5)
+  monthlyPriceInr          Int                       @default(499)
+  trialStartedAt           DateTime?
+  trialEndsAt              DateTime?
+  currentPeriodStartedAt   DateTime?
+  currentPeriodEndsAt      DateTime?
+  cancelAtPeriodEnd        Boolean                   @default(false)
+  cancelledAt              DateTime?
+  reminderSentForPeriodEnd DateTime?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, trialEndsAt])
+  @@index([status, currentPeriodEndsAt])
+  @@map("premium_subscriptions")
+}
+
+model PremiumSubscriptionEvent {
+  id             String   @id @default(uuid())
+  provider       PremiumBillingProvider
+  providerEventId String  @unique
+  subscriptionId String?
+  eventType      String
+  receivedAt     DateTime @default(now())
+
+  @@index([subscriptionId])
+  @@map("premium_subscription_events")
 }

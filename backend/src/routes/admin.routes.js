@@ -11,6 +11,7 @@ import { returnPromo } from '../utils/promoGrants.js';
 import { cancelEarningForBooking } from '../utils/hostEarnings.js';
 import { deleteUserAccount } from '../utils/deleteUser.js';
 import { logAdminAction } from '../utils/audit.js';
+import { getPremiumBannerPricing, setPremiumBannerPrice } from '../utils/premiumBannerPricing.js';
 import { adminOpsRouter } from './adminOps.routes.js';
 import { adminSecurityRouter } from './adminSecurity.routes.js';
 import { adminMoneyRouter } from './adminMoney.routes.js';
@@ -53,6 +54,24 @@ adminRouter.use(adminOffersRouter);
 adminRouter.use(aviationAdminRouter);
 adminRouter.use(adminInspectionsRouter);
 adminRouter.use(adminBusinessRouter);
+
+adminRouter.put('/pricing/premium-banner', async (req, res) => {
+    const price = Number(req.body?.price);
+    if (!Number.isInteger(price) || price < 1 || price > 1_000_000) {
+        throw new AppError('Enter a whole-number price between ₹1 and ₹10,00,000.', 400);
+    }
+
+    const previous = await getPremiumBannerPricing();
+    const data = await setPremiumBannerPrice(price);
+    await logAdminAction(req, {
+        action: 'PREMIUM_BANNER_PRICE_UPDATE',
+        targetType: 'PRICING',
+        targetId: 'premium_banner_price_inr',
+        summary: `Premium banner price changed from ₹${previous.price} to ₹${price}.`,
+        metadata: { previousPrice: previous.price, price },
+    });
+    res.json({ success: true, data });
+});
 
 // GET /api/admin/stats
 adminRouter.get('/stats', async (_req, res) => {

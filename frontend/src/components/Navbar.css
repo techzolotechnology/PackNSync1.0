@@ -54,6 +54,23 @@
     text-decoration: none;
 }
 
+.nav-avatar-wrap { position: relative; display: inline-flex; flex: 0 0 auto; }
+.nav-premium-badge {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    display: grid;
+    width: 17px;
+    height: 17px;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #f4b942;
+    color: #362400;
+    font-size: 10px;
+    line-height: 1;
+}
+
 .navbar-logo-animation {
     display: block;
     flex: 0 0 auto;

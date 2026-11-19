@@ -173,7 +173,8 @@ export default function Navbar() {
         if (!n.isRead) await markOneRead(n.id);
         setNotifOpen(false);
         const data = n.data || {};
-        if (data.reportId) navigate(`/reports/${data.reportId}`);
+        if (data.premium) navigate('/premium');
+        else if (data.reportId) navigate(`/reports/${data.reportId}`);
         else if (data.charterInquiryId) navigate('/helicopter-charters');
         else if (data.earningId) navigate('/host');
         else if (data.promo || data.referral) navigate('/wallet');
@@ -339,10 +340,13 @@ export default function Navbar() {
                                             setNotifOpen(false);
                                         }}
                                     >
-                                        {user.avatarUrl
-                                            ? <img src={mediaUrl(user.avatarUrl)} alt={user.name} className="avatar avatar-sm" />
-                                            : <div className="avatar-placeholder avatar-sm" style={{ fontSize: '0.8rem' }}>{user.name[0].toUpperCase()}</div>
-                                        }
+                                        <span className="nav-avatar-wrap">
+                                            {user.avatarUrl
+                                                ? <img src={mediaUrl(user.avatarUrl)} alt={user.name} className="avatar avatar-sm" />
+                                                : <span className="avatar-placeholder avatar-sm" style={{ fontSize: '0.8rem' }}>{user.name[0].toUpperCase()}</span>
+                                            }
+                                            {user.isPremium && <span className="nav-premium-badge" title="PickAndSync Premium" aria-label="PickAndSync Premium">★</span>}
+                                        </span>
                                         <span>{user.name}</span>
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                             <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

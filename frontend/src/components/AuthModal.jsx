@@ -120,6 +120,10 @@ export default function AuthModal() {
         if (result.success) {
             toast.success(isRegister ? 'Account created!' : 'Welcome back!');
             closeAuth();
+            if (isRegister) {
+                navigate('/premium', { replace: true });
+                return;
+            }
             // Stay on the page the modal was opened from (e.g. an invited trip);
             // only the home page moves on to /trips.
             const next = safeNextPath(params.get('next'));

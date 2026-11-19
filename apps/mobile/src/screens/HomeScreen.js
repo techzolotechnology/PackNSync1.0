@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
 import { colors } from '../theme';
-import { Icon, IconCircle, ResponsiveGrid, Surface } from '../components/ui';
+import { AppButton, Icon, IconCircle, ResponsiveGrid, Surface } from '../components/ui';
 
 const quickActions = [
   { tab: 'Rentals', icon: 'car-sport', tone: 'blue', title: 'Find a ride', caption: 'Cars & bikes near you' },
@@ -33,6 +33,7 @@ function greeting() {
 
 export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
   const [wallet, setWallet] = useState(null);
+  const [premiumBannerPrice, setPremiumBannerPrice] = useState(null);
 
   const loadWallet = useCallback(async () => {
     if (!user) return setWallet(null);
@@ -42,6 +43,13 @@ export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
 
   useEffect(() => { loadWallet(); }, [loadWallet]);
   useEffect(() => registerRefresh?.(loadWallet), [registerRefresh, loadWallet]);
+  useEffect(() => {
+    let active = true;
+    api.get('/pricing/premium-banner').then((res) => {
+      if (active) setPremiumBannerPrice(res.data?.data?.price ?? null);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const firstName = String(user?.name || '').trim().split(/\s+/)[0];
 
@@ -93,6 +101,23 @@ export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
         ))}
       </View>
 
+      {premiumBannerPrice !== null && (
+        <Surface style={[styles.premiumBanner, layout.compact && styles.premiumBannerCompact]}>
+          <View style={styles.premiumCopy}>
+            <Text style={styles.premiumEyebrow}>PREMIUM PLACEMENT</Text>
+            <Text style={styles.premiumTitle}>Feature your travel or rental offer</Text>
+            <Text style={styles.premiumSubtitle}>₹5 for the first 30 days, then {rupees(premiumBannerPrice)}/month per banner. Auto-renews until cancelled.</Text>
+          </View>
+          <View style={[styles.premiumPriceBlock, layout.compact && styles.premiumPriceBlockCompact]}>
+            <Text style={styles.premiumPrice}>{rupees(premiumBannerPrice)}</Text>
+            <Text style={styles.premiumUnit}>per banner / month</Text>
+            <AppButton compact icon="mail-outline" onPress={() => Linking.openURL('mailto:kartikgauttam@techzolo.in?subject=Premium%20banner%20trial').catch(() => {})} style={[styles.premiumButton, layout.compact && styles.premiumButtonCompact]}>
+              Ask about trial
+            </AppButton>
+          </View>
+        </Surface>
+      )}
+
       <View>
         <Text style={styles.sectionEyebrow}>ONE PLATFORM</Text>
         <Text style={[styles.sectionTitle, { fontSize: layout.headingSize }]}>Everything stays in sync.</Text>
@@ -132,6 +157,18 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', gap: 8 },
   stat: { flex: 1, minWidth: 0, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 17, paddingVertical: 13, paddingHorizontal: 6, alignItems: 'center', gap: 5 },
   statLabel: { color: colors.navySoft, fontSize: 12, fontWeight: '800', textAlign: 'center' },
+  premiumBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: colors.navy, borderColor: colors.navy },
+  premiumBannerCompact: { flexDirection: 'column', alignItems: 'stretch' },
+  premiumCopy: { flex: 1, minWidth: 0, gap: 5 },
+  premiumEyebrow: { color: '#ffd477', fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
+  premiumTitle: { color: colors.white, fontSize: 17, fontWeight: '900' },
+  premiumSubtitle: { color: '#d5e7f8', fontSize: 13, lineHeight: 18 },
+  premiumPriceBlock: { alignItems: 'flex-end', gap: 3 },
+  premiumPriceBlockCompact: { alignItems: 'flex-start' },
+  premiumPrice: { color: colors.white, fontSize: 20, fontWeight: '900' },
+  premiumUnit: { color: '#d5e7f8', fontSize: 11 },
+  premiumButton: { marginTop: 6, paddingHorizontal: 10 },
+  premiumButtonCompact: { alignSelf: 'stretch' },
   sectionEyebrow: { color: colors.blue, fontSize: 12, letterSpacing: 1.3, fontWeight: '900', marginTop: 6 },
   sectionTitle: { color: colors.navy, fontWeight: '900', letterSpacing: -0.8, marginTop: 5, marginBottom: 16 },
   featureGrid: { marginBottom: 6 },

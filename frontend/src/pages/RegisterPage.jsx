@@ -78,7 +78,7 @@ export default function RegisterPage() {
         const result = await verifyOtp({ contact: form.contact, otpCode: form.otpCode });
         if (result.success) {
             toast.success('Account created!');
-            navigate('/trips');
+            navigate('/premium', { replace: true });
         } else {
             setError(result.message);
         }

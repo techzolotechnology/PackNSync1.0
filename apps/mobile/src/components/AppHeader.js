@@ -26,6 +26,7 @@ function AccountButton({ user, setTab, activeTab, compactStyle }) {
       style={[styles.avatar, activeTab === 'Account' && styles.avatarActive]}
     >
       <Text style={styles.avatarText}>{String(user.name || 'P').slice(0, 1).toUpperCase()}</Text>
+      {user.isPremium && <View style={styles.premiumBadge}><Text style={styles.premiumBadgeText}>★</Text></View>}
     </PressableScale>
   );
 }
@@ -91,5 +92,7 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blueSoft, borderWidth: 2, borderColor: 'transparent' },
   avatarActive: { borderColor: colors.blue },
   avatarText: { color: colors.blue, fontSize: 18, fontWeight: '900' },
+  premiumBadge: { position: 'absolute', right: -3, bottom: -3, width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: colors.white, backgroundColor: '#f4b942', alignItems: 'center', justifyContent: 'center' },
+  premiumBadgeText: { color: '#362400', fontSize: 11, fontWeight: '900', lineHeight: 13 },
 });
 
