@@ -7,6 +7,7 @@ let ended = () => {};
 export const setSessionEndHandler = (handler) => { ended = handler; };
 export const api = createClient({
   baseUrl: API_URL,
+  clientId: 'host',
   // Web preview is memory-only. Native refresh credentials use encrypted device storage.
   storage: {
     load: () => Platform.OS === 'web' ? null : SecureStore.getItemAsync(KEY),

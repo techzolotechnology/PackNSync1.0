@@ -25,7 +25,7 @@ export default function AuthScreen({ onSignedIn }) {
     if (!/^\d{6}$/.test(code)) return setError('Enter the six-digit code from your email.');
     setBusy(true); setError('');
     try {
-      const result = await api.post('/auth/verify-otp', { contact: email.trim().toLowerCase(), otpCode: code });
+      const result = await api.post('/auth/verify-otp', { contact: email.trim().toLowerCase(), otpCode: code, client: 'host' });
       await api.signIn(result);
       onSignedIn(result.user);
     } catch (err) { setError(err.message); } finally { setBusy(false); }

@@ -3,7 +3,7 @@ export class ApiError extends Error {
 }
 
 /** Tokens belong to this app instance. A signed-out request cannot resurrect a session. */
-export function createClient({ baseUrl, storage, fetcher = (...args) => fetch(...args), onSessionEnd = () => {} }) {
+export function createClient({ baseUrl, storage, clientId, fetcher = (...args) => fetch(...args), onSessionEnd = () => {} }) {
   let access = null;
   let refresh = null;
   let epoch = 0;
@@ -37,7 +37,7 @@ export function createClient({ baseUrl, storage, fetcher = (...args) => fetch(..
     const task = (async () => {
       try {
         if (!saved) throw new ApiError('Please sign in again.', 401);
-        const result = await raw('/auth/refresh', { method: 'POST', body: { refreshToken: saved } }, null);
+        const result = await raw('/auth/refresh', { method: 'POST', body: { refreshToken: saved, ...(clientId ? { client: clientId } : {}) } }, null);
         if (generation !== epoch) throw new ApiError('Your session changed. Please try again.', 401);
         if (!result.accessToken || !result.refreshToken) throw new ApiError('Please sign in again.', 401);
         access = result.accessToken;
@@ -97,7 +97,7 @@ export function createClient({ baseUrl, storage, fetcher = (...args) => fetch(..
       await persist(null);
       onSessionEnd();
       // Local sign-out finishes even when the network is unavailable.
-      if (previousAccess) raw('/auth/logout', { method: 'POST', body: {} }, previousAccess).catch(() => {});
+      if (previousAccess) raw('/auth/logout', { method: 'POST', body: clientId ? { client: clientId } : {} }, previousAccess).catch(() => {});
     },
   };
 }

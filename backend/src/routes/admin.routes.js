@@ -218,6 +218,7 @@ adminRouter.put('/users/:id/ban', async (req, res) => {
             isBanned,
             banReason: isBanned ? (banReason?.trim() || 'Policy violation') : null,
             refreshToken: isBanned ? null : target.refreshToken,
+            hostRefreshToken: isBanned ? null : target.hostRefreshToken,
         },
         select: { id: true, name: true, role: true, isBanned: true, banReason: true },
     });

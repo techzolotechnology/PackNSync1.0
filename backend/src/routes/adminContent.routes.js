@@ -282,7 +282,7 @@ adminContentRouter.post('/users/:id/2fa/reset', async (req, res) => {
     await prisma.user.update({
         where: { id: target.id },
         // Clearing the refresh token also signs them out everywhere
-        data: { totpEnabled: false, totpSecret: null, totpBackupCodes: [], totpLastStep: null, refreshToken: null },
+        data: { totpEnabled: false, totpSecret: null, totpBackupCodes: [], totpLastStep: null, refreshToken: null, hostRefreshToken: null },
     });
     await logAdminAction(req, {
         action: 'MFA_RESET', targetType: 'USER', targetId: target.id,

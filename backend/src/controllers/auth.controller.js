@@ -33,7 +33,7 @@ export const requestOtp = async (req, res) => {
 
     // A registration that was started but never verified (code still pending,
     // never signed in) is a resend, not a duplicate account.
-    const pendingRegistration = Boolean(user && user.otpCode && !user.refreshToken);
+    const pendingRegistration = Boolean(user && user.otpCode && !user.refreshToken && !user.hostRefreshToken);
     if (isRegister && user && !pendingRegistration) {
         throw new AppError('Account already exists. Please log in.', 409);
     }
@@ -130,11 +130,15 @@ export const verifyOtp = async (req, res) => {
 
     const accessToken = signAccessToken(user.id);
     const refreshToken = signRefreshToken(user.id);
+    const isHostApp = req.body?.client === 'host';
 
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
-    setCookies(res, accessToken, refreshToken);
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { [isHostApp ? 'hostRefreshToken' : 'refreshToken']: refreshToken },
+    });
+    if (!isHostApp) setCookies(res, accessToken, refreshToken);
 
-    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = user;
+    const { refreshToken: _, hostRefreshToken: _____, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = user;
     const subscription = await prisma.premiumSubscription?.findUnique?.({
         where: { userId: user.id },
         select: { status: true, currentPeriodEndsAt: true },
@@ -145,10 +149,14 @@ export const verifyOtp = async (req, res) => {
 // POST /api/auth/logout
 export const logout = async (req, res) => {
     const userId = req.user?.id;
+    const isHostApp = req.body?.client === 'host';
     if (userId) {
-        await prisma.user.update({ where: { id: userId }, data: { refreshToken: null } });
+        await prisma.user.update({
+            where: { id: userId },
+            data: { [isHostApp ? 'hostRefreshToken' : 'refreshToken']: null },
+        });
     }
-    clearCookies(res);
+    if (!isHostApp) clearCookies(res);
     res.json({ success: true, message: 'Logged out successfully.' });
 };
 
@@ -167,9 +175,12 @@ export const refreshAccessToken = async (req, res) => {
     }
 
     const user = await prisma.user.findUnique({ where: { id: decoded.sub } });
-    if (!user || user.refreshToken !== token) throw new AppError('Invalid refresh token.', 401);
+    const isHostApp = req.body?.client === 'host';
+    const refreshField = isHostApp ? 'hostRefreshToken' : 'refreshToken';
+    const legacyHostToken = isHostApp && !user?.hostRefreshToken && user?.refreshToken === token;
+    if (!user || (user[refreshField] !== token && !legacyHostToken)) throw new AppError('Invalid refresh token.', 401);
     if (user.isBanned) {
-        clearCookies(res);
+        if (!isHostApp) clearCookies(res);
         throw new AppError(
             user.banReason ? `Account suspended: ${user.banReason}` : 'Your account has been suspended.',
             403
@@ -181,15 +192,15 @@ export const refreshAccessToken = async (req, res) => {
     const accessToken = signAccessToken(user.id, claims);
     const newRefreshToken = signRefreshToken(user.id, claims);
 
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: newRefreshToken } });
-    setCookies(res, accessToken, newRefreshToken);
+    await prisma.user.update({ where: { id: user.id }, data: { [refreshField]: newRefreshToken } });
+    if (!isHostApp) setCookies(res, accessToken, newRefreshToken);
 
     res.json({ success: true, accessToken, refreshToken: newRefreshToken });
 };
 
 // GET /api/auth/me
 export const getMe = async (req, res) => {
-    const { refreshToken: _, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = req.user;
+    const { refreshToken: _, hostRefreshToken: _____, otpCode: __, otpExpiresAt: ___, otpAttempts: ____, ...safeUser } = req.user;
     const subscription = await prisma.premiumSubscription?.findUnique?.({
         where: { userId: req.user.id },
         select: { status: true, currentPeriodEndsAt: true },
