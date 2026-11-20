@@ -1,1 +1,1 @@
-ALTER TABLE "User" ADD COLUMN "hostRefreshToken" TEXT;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "hostRefreshToken" TEXT;
