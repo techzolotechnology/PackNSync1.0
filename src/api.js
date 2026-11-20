@@ -3,6 +3,7 @@ import { API_BASE_URL } from './backendConfig';
 let token = null;
 let refreshToken = null;
 const baseUrl = API_BASE_URL;
+const REQUEST_TIMEOUT_MS = 90000;
 
 // The server rotates the refresh token on every refresh; whoever stores it is told here.
 let onRefreshTokenChange = () => {};
@@ -16,15 +17,38 @@ const setRefreshToken = (next) => {
 
 const request = async (path, options = {}) => {
   const url = `${baseUrl}${path}`;
-  const res = await fetch(url, {
-    method: options.method || 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
+  const method = options.method || 'GET';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      signal: controller.signal,
+      // Auth is carried in the bearer token and SecureStore refresh-token body.
+      // Do not attach browser cookies to native requests; this also keeps native
+      // API calls outside cookie-based CSRF handling.
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+  } catch (cause) {
+    const timedOut = cause?.name === 'AbortError';
+    const message = timedOut
+      ? (method === 'GET' || path.startsWith('/auth/')
+        ? 'The server is taking longer than expected. Check your connection and try again.'
+        : 'We could not confirm whether this request completed. Refresh its status before repeating it.')
+      : 'Cannot connect to PickAndSync. Check your connection and try again.';
+    const error = new Error(message);
+    error.status = 0;
+    error.code = timedOut ? 'ETIMEDOUT' : 'NETWORK_ERROR';
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok || json.success === false) {
     const error = new Error(json.message || `Request failed: ${res.status}`);
@@ -85,6 +109,21 @@ const withQuery = (path, params) => {
 };
 
 export const api = {
+  // Begin waking a possibly idle API while the app is starting. This is
+  // best-effort and never delays navigation or retries a state-changing call.
+  wake: async () => {
+    const origin = baseUrl.replace(/\/api\/?$/, '');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(`${origin}/health`, {
+        method: 'GET', signal: controller.signal, credentials: 'omit',
+        headers: { Accept: 'application/json' },
+      });
+      return response.ok;
+    } catch { return false; }
+    finally { clearTimeout(timer); }
+  },
   authorizationHeaders: () => (token ? { Authorization: `Bearer ${token}` } : {}),
   setToken: (nextToken, nextRefreshToken = null) => {
     token = nextToken;

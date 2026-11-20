@@ -62,7 +62,7 @@ export default function AccountScreen({ user, setUser, setTab, layout, registerR
         isRegister,
         referralCode: isRegister && referralCode.trim() ? referralCode.trim().toUpperCase() : undefined,
       });
-      say(response.message || 'Code sent. Check your email.');
+      say(response.message || 'If this email is eligible, you’ll receive a one-time code shortly. Check your spam folder if it does not arrive.');
       setStep(2);
       setOtpCode('');
       lastTried.current = '';
@@ -193,7 +193,7 @@ export default function AccountScreen({ user, setUser, setTab, layout, registerR
             <View style={styles.codeHead}>
               <IconCircle name="mail-open" size={52} />
               <Text style={styles.cardTitle}>Check your email</Text>
-              <Text style={styles.codeHint}>Enter the 6-digit code we sent to <Text style={styles.bold}>{contact.trim()}</Text></Text>
+              <Text style={styles.codeHint}>If this email is eligible, enter the six-digit code you receive at <Text style={styles.bold}>{contact.trim()}</Text></Text>
             </View>
             <OtpInput value={otpCode} onChange={setOtpCode} autoFocus />
             <AppButton icon="log-in-outline" onPress={() => verifyOtp(otpCode)} loading={loading}>{loading ? 'Checking…' : isRegister ? 'Create account' : 'Sign in'}</AppButton>

@@ -7,8 +7,9 @@
     "preview": {
       "android": {
         "buildType": "apk",
-        "image": "latest"
+        "image": "sdk-58"
       },
+      "channel": "preview",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.pickandsync.com/api"
       }
@@ -16,8 +17,9 @@
     "production": {
       "android": {
         "buildType": "app-bundle",
-        "image": "latest"
+        "image": "sdk-58"
       },
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.pickandsync.com/api"
       }

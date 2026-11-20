@@ -1,49 +1,55 @@
 {
   "expo": {
+    "ios": {},
+    "web": {
+      "output": "single",
+      "bundler": "metro"
+    },
+    "icon": "./assets/icon.png",
     "name": "PickAndSync",
     "slug": "packandsync",
-    "owner": "kartikgauttam",
-    "version": "1.0.5",
-    "sdkVersion": "51.0.0",
-    "orientation": "default",
-    "scheme": "packandsync",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0052ad"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "android": {
-      "package": "com.packandsync.app",
-      "versionCode": 6,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#007bff"
-      },
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
-      "buildToolsVersion": "34.0.0"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "single"
-    },
     "extra": {
       "eas": {
         "projectId": "1c33f722-bd62-4a95-8e81-a23d3c1d5b67"
+      },
+      "mapsConfigured": false
+    },
+    "owner": "kartikgauttam",
+    "scheme": "packandsync",
+    "android": {
+      "package": "com.packandsync.app",
+      "versionCode": 10,
+      "adaptiveIcon": {
+        "backgroundColor": "#007bff",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "plugins": [
-      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0052ad"
+        }
+      ],
+      [
+        "expo-secure-store"
+      ],
+      [
+        "expo-asset"
+      ],
+      [
+        "expo-font"
+      ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Choose vehicle photos for your booking inspection.",
           "cameraPermission": "Take vehicle photos for your booking inspection.",
+          "photosPermission": "Choose vehicle photos for your booking inspection.",
           "microphonePermission": false
         }
       ],
@@ -52,7 +58,23 @@
         {
           "color": "#007bff"
         }
-      ]
+      ],
+      "expo-status-bar"
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/1c33f722-bd62-4a95-8e81-a23d3c1d5b67"
+    },
+    "version": "1.0.8",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "sdkVersion": "58.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
     ]
   }
 }

@@ -34,7 +34,7 @@ function Meta({ icon, children }) {
   );
 }
 
-export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
+export default function TripsScreen({ user, setTab, layout, registerRefresh, tripComposerRequested, clearTripComposerRequest }) {
   const [mode, setMode] = useState('discover');
   const [form, setForm] = useState(defaultForm);
   const [trips, setTrips] = useState([]);
@@ -60,6 +60,11 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
 
   useEffect(() => { loadTrips(); }, [loadTrips]);
   useEffect(() => registerRefresh?.(loadTrips), [registerRefresh, loadTrips]);
+  useEffect(() => {
+    if (!tripComposerRequested) return;
+    setMode('create');
+    clearTripComposerRequest?.();
+  }, [tripComposerRequested, clearTripComposerRequest]);
 
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const changeStart = (next) => setForm((current) => ({
@@ -125,6 +130,12 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
       say('Trip title and destination are required.', 'error');
       return;
     }
+    const participantLimit = Number(form.maxParticipants);
+    if (!Number.isInteger(participantLimit) || participantLimit < 2 || participantLimit > 50) {
+      errorFeedback();
+      say('Choose a group size between 2 and 50 people.', 'error');
+      return;
+    }
     if (!isValidDateRange(form.startDate, form.endDate)) {
       errorFeedback();
       say('Choose a valid start and end date.', 'error');
@@ -142,7 +153,7 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
         description: descriptionParts.filter(Boolean).join('\n\n') || null,
         startDate: form.startDate,
         endDate: form.endDate,
-        maxParticipants: Number(form.maxParticipants) || 6,
+        maxParticipants: participantLimit,
         budgetEstimate: form.budgetEstimate ? Number(form.budgetEstimate) : null,
         isPublic: form.isPublic,
         coverImageUrl: null,

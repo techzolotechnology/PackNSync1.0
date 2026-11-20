@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
@@ -7,6 +7,7 @@ import { colors } from '../theme';
 import { AppButton, Chip, DateStepper, EmptyState, Field, Icon, Notice, PageIntro, Pill, ResponsiveGrid, SegmentedControl, Skeleton, Surface } from '../components/ui';
 import { addDays, rentalDays, today, tomorrow } from '../utils/dates';
 import { errorFeedback, successFeedback } from '../utils/haptics';
+import RentalMapScreen from './RentalMapScreen';
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const imageUrl = (src) => {
@@ -41,6 +42,9 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(tomorrow);
   const [listings, setListings] = useState([]);
+  const [listingPage, setListingPage] = useState(1);
+  const [listingTotal, setListingTotal] = useState(null);
+  const [hasMoreListings, setHasMoreListings] = useState(false);
   const [searched, setSearched] = useState(false);
   const [feePercent, setFeePercent] = useState(2);
   const [message, setMessage] = useState('');
@@ -51,6 +55,10 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
   const [termsFor, setTermsFor] = useState(null);
   const [bookedId, setBookedId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [mapView, setMapView] = useState(false);
+  const loadingMoreRef = useRef(false);
+  const requestVersionRef = useRef(0);
   const days = useMemo(() => rentalDays(startDate, endDate), [startDate, endDate]);
 
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
@@ -62,9 +70,20 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
     if (endDate <= next) setEndDate(addDays(next, 1));
   };
 
-  const load = useCallback(async (overrides = {}) => {
+  const load = useCallback(async (overrides = {}, append = false) => {
+    if (append && loadingMoreRef.current) return;
+    const requestVersion = append ? requestVersionRef.current : ++requestVersionRef.current;
+    if (!append) {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
     const query = { location, kind, startDate, endDate, ...overrides };
-    setLoading(true);
+    const requestedPage = append ? listingPage + 1 : 1;
+    if (append) {
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    }
+    else setLoading(true);
     say('');
     setFeedback(null);
     setTermsFor(null);
@@ -74,19 +93,38 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
         kind: query.kind === 'all' ? undefined : query.kind,
         startDate: query.startDate,
         endDate: query.endDate,
+        page: requestedPage,
+        limit: query.includeCoordinates ? 20 : 50,
+        includeCoordinates: query.includeCoordinates,
       });
-      setListings(response.data || []);
+      if (requestVersion !== requestVersionRef.current) return;
+      const fresh = response.data || [];
+      const nextPage = Number(response.pagination?.page) || requestedPage;
+      const hasMore = response.pagination
+        ? nextPage < Number(response.pagination.pages || 0)
+        : fresh.length === 50;
+      setListingTotal(Number.isFinite(Number(response.pagination?.total)) ? Number(response.pagination.total) : null);
+      setListings((current) => append
+        ? [...current, ...fresh.filter((item) => !current.some((existing) => existing.id === item.id))]
+        : fresh);
+      setListingPage(nextPage);
+      setHasMoreListings(hasMore);
       setSearched(true);
       if (Number.isFinite(response.meta?.platformFeePercent)) setFeePercent(response.meta.platformFeePercent);
     } catch (error) {
+      if (requestVersion !== requestVersionRef.current) return;
       say(error.message, 'error');
-      setListings([]);
+      if (!append) setListings([]);
     } finally {
-      setLoading(false);
+      if (append && requestVersion === requestVersionRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
+      else if (!append && requestVersion === requestVersionRef.current) setLoading(false);
     }
-  }, [location, kind, startDate, endDate]);
+  }, [location, kind, startDate, endDate, listingPage]);
 
-  useEffect(() => (searched ? registerRefresh?.(load) : undefined), [searched, registerRefresh, load]);
+  useEffect(() => (searched ? registerRefresh?.(mapView ? () => load({ includeCoordinates: true }) : load) : undefined), [searched, mapView, registerRefresh, load]);
 
   const pickCity = (city) => {
     setLocation(city);
@@ -96,6 +134,17 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
   const pickKind = (next) => {
     setKind(next);
     if (searched) load({ kind: next });
+  };
+
+  const openMap = async () => {
+    await load({ includeCoordinates: true });
+    setMapView(true);
+  };
+
+  const searchMap = ({ location: nextLocation, kind: nextKind }) => {
+    setLocation(nextLocation);
+    setKind(nextKind);
+    load({ location: nextLocation, kind: nextKind, includeCoordinates: true });
   };
 
   const sendRequest = async (listing) => {
@@ -140,6 +189,24 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
     }
   };
 
+  if (mapView) {
+    return (
+      <RentalMapScreen
+        listings={listings}
+        location={location}
+        kind={kind}
+        loading={loading}
+        loadingMore={loadingMore}
+        total={listingTotal}
+        hasMore={hasMoreListings}
+        onSearch={searchMap}
+        onReturn={() => setMapView(false)}
+        onLoadMore={() => load({ includeCoordinates: true }, true)}
+        onBook={(listing) => { setMapView(false); book(listing); }}
+      />
+    );
+  }
+
   return (
     <View>
       <PageIntro eyebrow="CARS & BIKES" icon="car-sport" title="Pick your next ride." description={`Self-drive cars and bikes from verified local hosts. Prices include a ${feePercent}% service fee.`} layout={layout} />
@@ -154,13 +221,18 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
           <DateStepper label="RETURN" value={endDate} min={addDays(startDate, 1)} onChange={setEndDate} />
         </ResponsiveGrid>
         <AppButton icon="search" onPress={() => load()} loading={loading}>{loading ? 'Searching…' : `Search · ${days} ${days === 1 ? 'day' : 'days'}`}</AppButton>
+        <AppButton variant="soft" icon="map-outline" onPress={openMap} loading={loading}>Explore on map</AppButton>
         <Notice tone={tone}>{message}</Notice>
       </Surface>
 
       {!loading && listings.length > 0 && (
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsEyebrow}>AVAILABLE NEARBY</Text>
-          <Text style={styles.resultsTitle}>{listings.length} {listings.length === 1 ? 'vehicle' : 'vehicles'} found</Text>
+          <Text style={styles.resultsTitle}>
+            {listingTotal != null && listingTotal > listings.length
+              ? `Showing ${listings.length} of ${listingTotal} vehicles`
+              : `${listings.length} ${listings.length === 1 ? 'vehicle' : 'vehicles'} found`}
+          </Text>
         </View>
       )}
 
@@ -170,6 +242,7 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
           <ListingSkeleton />
         </ResponsiveGrid>
       ) : listings.length ? (
+        <>
         <ResponsiveGrid columns={layout.cardColumns} gap={14}>
           {listings.map((listing) => {
             const vehicle = listing.vehicle || {};
@@ -228,6 +301,8 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
             );
           })}
         </ResponsiveGrid>
+        {hasMoreListings && <AppButton icon="chevron-down-outline" onPress={() => load({}, true)} loading={loadingMore}>Load more vehicles</AppButton>}
+        </>
       ) : (
         <Surface>
           <EmptyState

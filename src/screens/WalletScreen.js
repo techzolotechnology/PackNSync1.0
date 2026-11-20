@@ -108,6 +108,12 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
         await refresh();
         return;
       }
+      if (res.pending) {
+        pendingOrder.current = null;
+        say(res.data?.message || 'Payment order is being checked. Check your wallet before trying again.');
+        await refresh();
+        return;
+      }
       const { orderId, paymentSessionId, cashfreeMode } = res.data;
       pendingOrder.current = orderId;
       setPayment({ orderId, paymentSessionId, mode: cashfreeMode === 'sandbox' ? 'sandbox' : 'production', amount: value });
@@ -150,7 +156,7 @@ export default function WalletScreen({ user, setTab, layout, deepLinkOrderId, cl
           <Text style={styles.balanceLabel}>AVAILABLE BALANCE</Text>
           <Icon name="shield-checkmark" size={18} color="#cfe6ff" />
         </View>
-        {wallet ? <Text style={styles.balance}>{rupees(wallet.balance)}</Text> : <Skeleton width={150} height={40} radius={10} style={styles.balanceSkeleton} />}
+        {wallet ? <Text style={[styles.balance, layout?.stacked && styles.balanceCompact]}>{rupees(wallet.balance)}</Text> : <Skeleton width={150} height={40} radius={10} style={styles.balanceSkeleton} />}
         {wallet?.promoBalance > 0 && (
           <View style={styles.promoBadge}>
             <Icon name="gift" size={14} color={colors.goldText} />
@@ -249,6 +255,7 @@ const styles = StyleSheet.create({
   balanceTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   balanceLabel: { color: '#cfe6ff', fontWeight: '800', fontSize: 12, letterSpacing: 1.2 },
   balance: { color: colors.white, fontSize: 40, fontWeight: '900', marginTop: 6, letterSpacing: -0.5 },
+  balanceCompact: { fontSize: 32, letterSpacing: -0.3 },
   balanceSkeleton: { marginTop: 10, opacity: 0.4 },
   promoBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.goldPale, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6, marginTop: 10 },
   promoBadgeText: { color: colors.goldText, fontWeight: '800', fontSize: 13 },

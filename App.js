@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, AppState, BackHandler, KeyboardAvoidingView, Linking, Platform, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Animated, AppState, BackHandler, ImageBackground, KeyboardAvoidingView, Linking, Platform, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import AnimatedSplash from './components/AnimatedSplash';
@@ -31,13 +31,14 @@ function readAppLink(url) {
 }
 
 export default function App() {
-  const { width, height } = useWindowDimensions();
-  const layout = useMemo(() => createLayout(width, height), [width, height]);
+  const { width, height, fontScale } = useWindowDimensions();
+  const layout = useMemo(() => createLayout(width, height, fontScale), [width, height, fontScale]);
   const [tab, setTabState] = useState('Home');
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
   const [booted, setBooted] = useState(false);
   const [deepLinkOrderId, setDeepLinkOrderId] = useState(null);
+  const [tripComposerRequested, setTripComposerRequested] = useState(false);
   const tabRef = useRef('Home');
   const history = useRef([]);
   const scrollRef = useRef(null);
@@ -57,8 +58,15 @@ export default function App() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, []);
 
+  const launchTripComposer = useCallback(() => {
+    setTripComposerRequested(true);
+    setTab('Trips');
+  }, [setTab]);
+  const clearTripComposerRequest = useCallback(() => setTripComposerRequested(false), []);
+
   // Android back goes to the previous tab, then leaves the app.
   useEffect(() => {
+    if (Platform.OS === 'web') return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       const previous = history.current.pop();
       if (!previous) return false;
@@ -91,6 +99,8 @@ export default function App() {
   useEffect(() => {
     api.onRefreshTokenChange(saveRefreshToken);
     api.onSessionEnd(() => setUser(null));
+    // Wake Render's API while the app is starting; this stays in the background.
+    api.wake();
     restoreSession().finally(() => setRestoring(false));
     // Opened offline? Try again whenever the app comes back to the front.
     const sub = AppState.addEventListener('change', (state) => {
@@ -145,16 +155,19 @@ export default function App() {
 
   // Register this device for push once signed in; tapping a notification opens the right tab.
   useEffect(() => {
-    if (user) registerForPush();
+    if (user && Platform.OS !== 'web') registerForPush();
   }, [user]);
-  useEffect(() => addNotificationResponseListener((nextTab) => setTab(nextTab)), [setTab]);
+  useEffect(() => {
+    if (Platform.OS === 'web') return undefined;
+    return addNotificationResponseListener((nextTab) => setTab(nextTab));
+  }, [setTab]);
 
   const clearDeepLink = useCallback(() => setDeepLinkOrderId(null), []);
   const Screen = screens[tab];
   const waitingForSession = restoring && !user && signedInScreens.includes(tab);
 
   return (
-    <View style={styles.root}>
+    <ImageBackground source={require('./assets/host-auth-background.jpg')} resizeMode="cover" imageStyle={styles.backgroundImage} style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style={booted ? 'dark' : 'light'} />
         <AppHeader activeTab={tab} setTab={setTab} layout={layout} user={user} />
@@ -187,6 +200,9 @@ export default function App() {
                   deepLinkOrderId={deepLinkOrderId}
                   clearDeepLink={clearDeepLink}
                   registerRefresh={registerRefresh}
+                  launchTripComposer={launchTripComposer}
+                  tripComposerRequested={tripComposerRequested && tab === 'Trips'}
+                  clearTripComposerRequest={clearTripComposerRequest}
                 />
               )}
             </Animated.View>
@@ -195,13 +211,14 @@ export default function App() {
         <BottomNav activeTab={tab} setTab={setTab} layout={layout} />
       </SafeAreaView>
       {!booted && <AnimatedSplash onDone={() => setBooted(true)} />}
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bluePale },
-  safeArea: { flex: 1, backgroundColor: colors.bluePale },
+  backgroundImage: { opacity: 0.2 },
+  safeArea: { flex: 1, backgroundColor: 'transparent' },
   flex: { flex: 1 },
   scrollContent: { flexGrow: 1 },
   content: { width: '100%', alignSelf: 'center' },

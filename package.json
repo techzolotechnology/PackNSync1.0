@@ -1,6 +1,6 @@
 {
   "name": "packandsync-mobile",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "private": true,
   "license": "UNLICENSED",
   "author": "Techzolo",
@@ -10,29 +10,46 @@
     "android": "expo run:android",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
+    "build:android:bundle": "expo export --platform android --max-workers 2 --output-dir dist/android",
     "build:android:apk": "eas build --platform android --profile preview",
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@expo/config-plugins": "~8.0.11",
-    "@expo/metro-runtime": "~3.2.3",
-    "@expo/vector-icons": "^14.0.3",
-    "expo": "~51.0.39",
-    "expo-constants": "~16.0.2",
-    "expo-device": "~6.0.2",
-    "expo-haptics": "~13.0.1",
-    "expo-image-manipulator": "~12.0.2",
-    "expo-image-picker": "~15.0.7",
-    "expo-notifications": "~0.28.19",
-    "expo-secure-store": "~13.0.2",
-    "expo-status-bar": "~1.12.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-native": "0.74.5",
-    "react-native-web": "~0.19.12",
-    "react-native-webview": "13.8.6"
+    "@expo/metro-runtime": "58.0.15",
+    "@expo/vector-icons": "15.1.1",
+    "expo": "58.0.19",
+    "expo-asset": "58.0.18",
+    "expo-constants": "58.0.13",
+    "expo-device": "58.0.5",
+    "expo-font": "58.0.10",
+    "expo-haptics": "58.0.7",
+    "expo-image-manipulator": "58.0.15",
+    "expo-image-picker": "58.0.10",
+    "expo-notifications": "58.1.6",
+    "expo-secure-store": "58.0.2",
+    "expo-splash-screen": "58.0.11",
+    "expo-status-bar": "58.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-maps": "1.29.11",
+    "react-native-web": "0.21.4",
+    "react-native-webview": "14.0.1",
+    "expo-updates": "58.0.20"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0"
+    "@babel/core": "7.29.7",
+    "babel-preset-expo": "58.0.20"
+  },
+  "overrides": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "scheduler": "0.28.0",
+    "expo": {
+      "@expo/cli": {
+        "zod": "4.6.7"
+      }
+    }
   }
 }

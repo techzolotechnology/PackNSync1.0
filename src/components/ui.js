@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Switch, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, shadows } from '../theme';
@@ -245,11 +245,15 @@ export function ToggleRow({ icon, title, subtitle, value, onValueChange }) {
 }
 
 export function Surface({ children, style, onPress }) {
-  if (onPress) return <PressableScale onPress={onPress} scaleTo={0.985} style={[styles.surface, style]}>{children}</PressableScale>;
-  return <View style={[styles.surface, style]}>{children}</View>;
+  const { width, fontScale } = useWindowDimensions();
+  const compact = width < 360 || (fontScale >= 1.25 && width < 460);
+  if (onPress) return <PressableScale onPress={onPress} scaleTo={0.985} style={[styles.surface, compact && styles.surfaceCompact, style]}>{children}</PressableScale>;
+  return <View style={[styles.surface, compact && styles.surfaceCompact, style]}>{children}</View>;
 }
 
 export function ListRow({ icon, tone = 'blue', title, subtitle, caption, right, onPress, chevron = !!onPress, last }) {
+  const { width, fontScale } = useWindowDimensions();
+  const compact = width < 360 || (fontScale >= 1.25 && width < 460);
   const content = (
     <>
       {!!icon && <IconCircle name={icon} tone={tone} size={40} />}
@@ -262,7 +266,7 @@ export function ListRow({ icon, tone = 'blue', title, subtitle, caption, right, 
       {chevron && <Icon name="chevron-forward" size={18} color="#94a3b8" />}
     </>
   );
-  const rowStyle = [styles.listRow, last && styles.listRowLast];
+  const rowStyle = [styles.listRow, compact && styles.listRowCompact, last && styles.listRowLast];
   if (onPress) return <PressableScale onPress={onPress} scaleTo={0.98} style={rowStyle}>{content}</PressableScale>;
   return <View style={rowStyle}>{content}</View>;
 }
@@ -474,11 +478,13 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   listRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  surfaceCompact: { padding: 14, borderRadius: 18 },
+  listRowCompact: { flexWrap: 'wrap', gap: 8 },
   listRowLast: { borderBottomWidth: 0 },
   rowTitle: { color: colors.navy, fontWeight: '800', fontSize: 15 },
   rowSubtitle: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 2 },
   rowCaption: { color: colors.subtle, fontSize: 12, marginTop: 3 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
   sectionTitle: { color: colors.navy, fontSize: 19, fontWeight: '900' },
   sectionSubtitle: { color: colors.muted, lineHeight: 19, marginTop: 2, fontSize: 13 },
   sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 4 },

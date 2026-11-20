@@ -39,24 +39,29 @@ export const shadows = {
   },
 };
 
-export function createLayout(width, height) {
-  const compact = width < 360;
+export function createLayout(width, height, fontScale = 1) {
+  // Large accessibility text needs more room even on a physically wide phone.
+  const compact = width < 360 || (fontScale >= 1.25 && width < 460);
   const tablet = width >= 700;
   const landscape = width > height;
   const wide = width >= 560 || (landscape && width >= 640);
+  const denseText = fontScale >= 1.2;
 
   return {
     width,
     height,
+    fontScale,
     compact,
+    stacked: compact || (denseText && width < 800),
     tablet,
     landscape,
     wide,
-    gutter: compact ? 12 : tablet ? 28 : 16,
-    sectionGap: tablet ? 24 : 16,
+    denseText,
+    gutter: width < 340 ? 10 : compact ? 12 : tablet ? 28 : 16,
+    sectionGap: tablet ? 24 : compact ? 13 : 16,
     contentMaxWidth: 1120,
-    formColumns: tablet || (landscape && width >= 680) ? 2 : 1,
-    cardColumns: tablet ? 2 : 1,
+    formColumns: (tablet || (landscape && width >= 680)) && !denseText ? 2 : 1,
+    cardColumns: tablet && !denseText ? 2 : 1,
     heroTitleSize: compact ? 32 : tablet ? 54 : 40,
     headingSize: compact ? 25 : tablet ? 36 : 30,
   };

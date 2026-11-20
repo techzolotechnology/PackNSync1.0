@@ -1,141 +1,166 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 
 import { api, rupees } from '../api';
-import { colors } from '../theme';
-import { Icon, IconCircle, ResponsiveGrid, Surface } from '../components/ui';
+import { colors, shadows } from '../theme';
+import { AppButton, Icon, Pill, PressableScale, Surface } from '../components/ui';
+import { shortDate } from '../utils/dates';
 
-const quickActions = [
-  { tab: 'Rentals', icon: 'car-sport', tone: 'blue', title: 'Find a ride', caption: 'Cars & bikes near you' },
-  { tab: 'Trips', icon: 'people', tone: 'green', title: 'Group trips', caption: 'Join or start one' },
-  { tab: 'Wallet', icon: 'wallet', tone: 'gold', title: 'Wallet', caption: 'Pay & add money' },
-  { tab: 'Host', icon: 'key', tone: 'blue', title: 'Host & earn', caption: 'List your vehicle' },
+const ROUTE_STOPS = [
+  { key: 'start', label: 'Start', left: '17%', top: '43%' },
+  { key: 'middle', label: 'Along the way', left: '49%', top: '50%' },
+  { key: 'finish', label: 'Destination', left: '76%', top: '40%' },
 ];
 
-const featureCards = [
-  ['people-circle', 'Travel Together', 'Join group trips and keep every shared expense clear from the first plan to the final split.'],
-  ['car-sport', 'Cars & Bikes', 'Find community-hosted wheels with simple dates, transparent pricing, and one familiar flow.'],
-  ['shield-checkmark', 'Verified people', 'Hosts and renters verify their ID before booking, so you know who you are travelling with.'],
-];
-
-const highlights = [
-  ['people-outline', 'Shared trips'],
-  ['git-compare-outline', 'Split fairly'],
-  ['location-outline', 'Local wheels'],
-];
-
-function greeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+function RouteStop({ stop, index, active, onPress }) {
+  return (
+    <PressableScale
+      onPress={onPress}
+      accessibilityLabel={`Select route ${stop.label}`}
+      accessibilityState={{ selected: active }}
+      style={[styles.stop, { left: stop.left, top: stop.top }, active && styles.stopActive]}
+    >
+      <Text style={[styles.stopNumber, active && styles.stopNumberActive]}>{index + 1}</Text>
+    </PressableScale>
+  );
 }
 
-export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
-  const [wallet, setWallet] = useState(null);
+export default function HomeScreen({ layout, setTab, launchTripComposer, registerRefresh }) {
+  const [featuredTrip, setFeaturedTrip] = useState(null);
+  const [selectedStop, setSelectedStop] = useState(0);
+  const mapHeight = Math.max(210, Math.min((layout.width - 2 * layout.gutter) * 0.62, 380));
 
-  const loadWallet = useCallback(async () => {
-    if (!user) return setWallet(null);
-    const res = await api.get('/wallet').catch(() => null);
-    setWallet(res?.data || null);
-  }, [user]);
+  const loadFeaturedTrip = useCallback(async () => {
+    const response = await api.get('/trips', { status: 'OPEN', limit: 1 }).catch(() => null);
+    setFeaturedTrip(response?.data?.[0] || null);
+  }, []);
 
-  useEffect(() => { loadWallet(); }, [loadWallet]);
-  useEffect(() => registerRefresh?.(loadWallet), [registerRefresh, loadWallet]);
+  useEffect(() => { loadFeaturedTrip(); }, [loadFeaturedTrip]);
+  useEffect(() => registerRefresh?.(loadFeaturedTrip), [registerRefresh, loadFeaturedTrip]);
 
-  const firstName = String(user?.name || '').trim().split(/\s+/)[0];
+  const startDate = featuredTrip?.startDate ? shortDate(featuredTrip.startDate) : null;
 
   return (
-    <View style={{ gap: layout.sectionGap }}>
-      <View style={[styles.hero, { paddingHorizontal: layout.tablet ? 42 : layout.compact ? 16 : 22, paddingVertical: layout.tablet ? 42 : 26 }]}>
-        <View style={styles.bubbleLarge} />
-        <View style={styles.bubbleSmall} />
-        <View style={styles.pinHalo}>
-          <Image source={require('../../assets/pin.png')} resizeMode="contain" style={styles.pin} />
+    <View style={[styles.screen, { gap: layout.sectionGap }]}>
+      <View style={[styles.hero, { padding: layout.compact ? 13 : 16 }]}>
+        <View style={styles.intro}>
+          <View style={styles.brandLine}>
+            <Pill tone="gold" icon="people-outline">TRAVEL TOGETHER</Pill>
+          </View>
+          <Text style={[styles.title, { fontSize: layout.headingSize, lineHeight: layout.headingSize * 1.08 }]}>Make the next trip a group plan.</Text>
+          <Text style={styles.subtitle}>Plan together, find a ride, and keep the journey in sync.</Text>
         </View>
-        <Text style={styles.eyebrow}>{firstName ? `${greeting().toUpperCase()}, ${firstName.toUpperCase()}` : 'PICKANDSYNC'}</Text>
-        <Text style={[styles.title, { fontSize: layout.heroTitleSize, lineHeight: layout.heroTitleSize * 1.08 }]}>
-          {firstName ? 'Where to next?' : 'Travel together. Book wheels. Split fairly.'}
-        </Text>
-        <Text style={[styles.subtitle, layout.tablet && styles.subtitleTablet]}>
-          Join group trips, rent community cars or bikes, and keep every cost clear — built for crews on the move.
-        </Text>
+
+        <View style={[styles.mapCard, { height: mapHeight }]}>
+          <ImageBackground
+            source={require('../../assets/home-trip-diorama.jpg')}
+            resizeMode="cover"
+            style={StyleSheet.absoluteFill}
+            imageStyle={styles.mapImage}
+            accessibilityLabel="Three-dimensional miniature travel route map"
+          >
+            <View style={styles.mapTag}>
+              <Icon name="cube-outline" size={14} color={colors.blueDark} />
+              <Text style={styles.mapTagText}>YOUR TRIP, IN 3D</Text>
+            </View>
+            {ROUTE_STOPS.map((stop, index) => (
+              <RouteStop key={stop.key} stop={stop} index={index} active={selectedStop === index} onPress={() => setSelectedStop(index)} />
+            ))}
+            <View style={styles.routeCaption}>
+              <Icon name="location" size={15} color={colors.blue} />
+              <Text style={styles.routeCaptionText}>{ROUTE_STOPS[selectedStop].label}</Text>
+            </View>
+          </ImageBackground>
+        </View>
       </View>
 
-      <ResponsiveGrid columns={layout.tablet ? 4 : 2} gap={12}>
-        {quickActions.map((action) => (
-          <Surface key={action.tab} onPress={() => setTab(action.tab)} style={styles.tile}>
-            <IconCircle name={action.icon} tone={action.tone} size={46} />
-            <Text style={styles.tileTitle}>{action.title}</Text>
-            <Text style={styles.tileCaption}>{action.caption}</Text>
-          </Surface>
-        ))}
-      </ResponsiveGrid>
+      <Surface style={styles.tripCard}>
+        <View style={styles.tripHeader}>
+          <Pill tone="blue" icon="people-outline">GROUP TRIP</Pill>
+          <Icon name="sparkles-outline" size={19} color={colors.goldText} />
+        </View>
+        {featuredTrip ? (
+          <>
+            <Text style={styles.tripTitle} numberOfLines={2}>{featuredTrip.title}</Text>
+            <View style={styles.tripMeta}>
+              <Icon name="location-outline" size={16} color={colors.blue} />
+              <Text style={styles.tripMetaText} numberOfLines={1}>{featuredTrip.destination}</Text>
+              {startDate ? <Text style={styles.tripDate}>{startDate}</Text> : null}
+            </View>
+            {!!featuredTrip.budgetEstimate && (
+              <PressableScale onPress={() => setTab('Trips')} accessibilityLabel="Open group trips and shared budget" style={styles.budgetRow}>
+                <View style={styles.budgetIcon}><Icon name="pie-chart-outline" size={20} color={colors.blue} /></View>
+                <View style={styles.budgetCopy}>
+                  <Text style={styles.budgetTitle}>Shared trip budget</Text>
+                  <Text style={styles.budgetSubtitle}>{rupees(featuredTrip.budgetEstimate)} per person</Text>
+                </View>
+                <Icon name="chevron-forward" size={19} color={colors.subtle} />
+              </PressableScale>
+            )}
+          </>
+        ) : (
+          <>
+            <Text style={styles.tripTitle}>Your next trip starts here.</Text>
+            <Text style={styles.tripEmptyText}>Choose a destination and invite your crew to plan it together.</Text>
+          </>
+        )}
+        <AppButton variant="ghost" compact icon="map-outline" iconRight="arrow-forward" onPress={() => setTab('Trips')}>
+          {featuredTrip ? 'Explore group trips' : 'See open trips'}
+        </AppButton>
+      </Surface>
 
-      {user && wallet && (
-        <Surface onPress={() => setTab('Wallet')} style={styles.walletStrip}>
-          <View style={styles.walletIcon}><Icon name="wallet" size={22} color={colors.white} /></View>
-          <View style={styles.flex}>
-            <Text style={styles.walletLabel}>Wallet balance</Text>
-            <Text style={styles.walletAmount}>{rupees(wallet.balance)}</Text>
-            {wallet.promoBalance > 0 && <Text style={styles.walletPromo}>+ {rupees(wallet.promoBalance)} promo credit to spend on rentals</Text>}
+      {!featuredTrip?.budgetEstimate && (
+        <Surface onPress={() => setTab('Trips')} style={styles.sharedRow}>
+          <View style={styles.sharedIcon}><Icon name="pie-chart" size={22} color={colors.blue} /></View>
+          <View style={styles.sharedCopy}>
+            <Text style={styles.sharedTitle}>Plan the budget together</Text>
+            <Text style={styles.sharedSubtitle}>Set a clear per-person trip budget.</Text>
           </View>
-          <Icon name="chevron-forward" size={20} color="#cfe6ff" />
+          <Icon name="chevron-forward" size={19} color={colors.subtle} />
         </Surface>
       )}
 
-      <View style={styles.stats}>
-        {highlights.map(([icon, label]) => (
-          <View key={label} style={styles.stat}>
-            <Icon name={icon} size={20} color={colors.blue} />
-            <Text style={styles.statLabel}>{label}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View>
-        <Text style={styles.sectionEyebrow}>ONE PLATFORM</Text>
-        <Text style={[styles.sectionTitle, { fontSize: layout.headingSize }]}>Everything stays in sync.</Text>
-        <ResponsiveGrid columns={layout.cardColumns} gap={14} style={styles.featureGrid}>
-          {featureCards.map(([icon, title, description]) => (
-            <Surface key={title} style={styles.featureCard}>
-              <IconCircle name={icon} size={44} />
-              <Text style={styles.featureTitle}>{title}</Text>
-              <Text style={styles.featureText}>{description}</Text>
-            </Surface>
-          ))}
-        </ResponsiveGrid>
+      <View style={styles.actions}>
+        <AppButton icon="add-circle-outline" onPress={launchTripComposer || (() => setTab('Trips'))}>Start a trip</AppButton>
+        <AppButton variant="soft" icon="car-sport-outline" iconRight="arrow-forward" onPress={() => setTab('Rentals')}>Find a ride</AppButton>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  hero: { alignItems: 'center', backgroundColor: colors.blueSoft, borderColor: colors.blueBorder, borderRadius: 28, borderWidth: 1, overflow: 'hidden' },
-  bubbleLarge: { position: 'absolute', width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,255,255,0.45)', top: -90, right: -70 },
-  bubbleSmall: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(0,123,255,0.08)', bottom: -40, left: -30 },
-  pinHalo: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.78)', marginBottom: 12 },
-  pin: { width: 54, height: 54 },
-  eyebrow: { color: colors.blueDark, fontSize: 13, fontWeight: '900', letterSpacing: 1.3, marginBottom: 10, textAlign: 'center' },
-  title: { color: colors.navy, fontWeight: '900', letterSpacing: -1.4, maxWidth: 850, textAlign: 'center' },
-  subtitle: { color: colors.navySoft, fontSize: 16, lineHeight: 23, maxWidth: 700, marginTop: 12, textAlign: 'center' },
-  subtitleTablet: { fontSize: 18, lineHeight: 27 },
-  tile: { minHeight: 148, padding: 16 },
-  tileTitle: { color: colors.navy, fontSize: 16, fontWeight: '900', marginTop: 12 },
-  tileCaption: { color: colors.muted, fontSize: 13, marginTop: 3, lineHeight: 18 },
-  walletStrip: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.blueDark, borderColor: colors.blueDark },
-  walletIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
-  walletLabel: { color: '#cfe6ff', fontWeight: '800', fontSize: 12, letterSpacing: 0.6 },
-  walletAmount: { color: colors.white, fontSize: 24, fontWeight: '900', marginTop: 2 },
-  walletPromo: { color: '#e5f1ff', fontSize: 12, marginTop: 2, fontWeight: '600' },
-  stats: { flexDirection: 'row', gap: 8 },
-  stat: { flex: 1, minWidth: 0, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 17, paddingVertical: 13, paddingHorizontal: 6, alignItems: 'center', gap: 5 },
-  statLabel: { color: colors.navySoft, fontSize: 12, fontWeight: '800', textAlign: 'center' },
-  sectionEyebrow: { color: colors.blue, fontSize: 12, letterSpacing: 1.3, fontWeight: '900', marginTop: 6 },
-  sectionTitle: { color: colors.navy, fontWeight: '900', letterSpacing: -0.8, marginTop: 5, marginBottom: 16 },
-  featureGrid: { marginBottom: 6 },
-  featureCard: { minHeight: 170 },
-  featureTitle: { color: colors.navy, fontSize: 18, fontWeight: '900', marginTop: 13, marginBottom: 6 },
-  featureText: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  screen: { width: '100%' },
+  hero: { width: '100%', maxWidth: 760, alignSelf: 'center', gap: 13, backgroundColor: colors.blue, borderRadius: 28, overflow: 'hidden' },
+  intro: { gap: 9 },
+  brandLine: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  title: { color: colors.white, fontWeight: '900', letterSpacing: -0.7 },
+  subtitle: { color: '#e5f1ff', fontSize: 15, lineHeight: 22 },
+  mapCard: { width: '100%', overflow: 'hidden', borderRadius: 21, backgroundColor: colors.blueSoft, ...shadows.card },
+  mapImage: { borderRadius: 21 },
+  mapTag: { position: 'absolute', top: 10, left: 10, flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 99, backgroundColor: 'rgba(255,255,255,0.94)', paddingVertical: 6, paddingHorizontal: 9 },
+  mapTagText: { color: colors.blueDark, fontSize: 10, fontWeight: '900', letterSpacing: 0.7 },
+  stop: { position: 'absolute', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: colors.white, backgroundColor: colors.gold, elevation: 5, ...shadows.button },
+  stopActive: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.blue, borderColor: colors.gold },
+  stopNumber: { color: colors.navy, fontSize: 15, fontWeight: '900' },
+  stopNumberActive: { color: colors.white },
+  routeCaption: { position: 'absolute', left: 10, bottom: 10, flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: 99, paddingVertical: 6, paddingHorizontal: 10 },
+  routeCaptionText: { color: colors.navy, fontSize: 12, fontWeight: '800' },
+  tripCard: { padding: 15, gap: 10 },
+  tripHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  tripTitle: { color: colors.navy, fontSize: 21, lineHeight: 27, fontWeight: '900' },
+  tripMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  tripMetaText: { flexShrink: 1, color: colors.muted, fontSize: 14, fontWeight: '700' },
+  tripDate: { color: colors.subtle, fontSize: 12 },
+  tripEmptyText: { color: colors.muted, fontSize: 14, lineHeight: 20 },
+  budgetRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 16, backgroundColor: colors.bluePale },
+  budgetIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white },
+  budgetCopy: { flex: 1, minWidth: 0 },
+  budgetTitle: { color: colors.navy, fontSize: 14, fontWeight: '900' },
+  budgetSubtitle: { color: colors.muted, fontSize: 13, marginTop: 2 },
+  sharedRow: { flexDirection: 'row', alignItems: 'center', gap: 11, padding: 13 },
+  sharedIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bluePale },
+  sharedCopy: { flex: 1, minWidth: 0 },
+  sharedTitle: { color: colors.navy, fontWeight: '900', fontSize: 15 },
+  sharedSubtitle: { color: colors.muted, fontSize: 13, marginTop: 3 },
+  actions: { gap: 9 },
 });
