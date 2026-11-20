@@ -7,6 +7,7 @@ import { colors } from '../theme';
 import { AppButton, Chip, DateStepper, EmptyState, Field, Icon, Notice, PageIntro, Pill, ResponsiveGrid, SegmentedControl, Skeleton, Surface } from '../components/ui';
 import { addDays, rentalDays, today, tomorrow } from '../utils/dates';
 import { errorFeedback, successFeedback } from '../utils/haptics';
+import { openHostApp } from '../utils/hostApp';
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const imageUrl = (src) => {
@@ -234,9 +235,9 @@ export default function RentalsScreen({ user, setTab, layout, registerRefresh })
             icon={searched ? 'search-outline' : 'compass-outline'}
             title={searched ? 'No vehicles match yet' : 'Where are you picking up?'}
             text={searched ? 'Try another city, shift your dates, or switch between cars and bikes.' : 'Pick a city above to see cars and bikes you can book for your dates.'}
-            actionLabel="Host your own vehicle"
-            actionIcon="key-outline"
-            onAction={() => setTab('Host')}
+            actionLabel="Host a vehicle"
+            actionIcon="open-outline"
+            onAction={openHostApp}
           />
         </Surface>
       )}

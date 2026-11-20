@@ -4,12 +4,13 @@ import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 import { api, rupees } from '../api';
 import { colors } from '../theme';
 import { AppButton, Icon, IconCircle, ResponsiveGrid, Surface } from '../components/ui';
+import { openHostApp } from '../utils/hostApp';
 
 const quickActions = [
   { tab: 'Rentals', icon: 'car-sport', tone: 'blue', title: 'Find a ride', caption: 'Cars & bikes near you' },
   { tab: 'Trips', icon: 'people', tone: 'green', title: 'Group trips', caption: 'Join or start one' },
   { tab: 'Wallet', icon: 'wallet', tone: 'gold', title: 'Wallet', caption: 'Pay & add money' },
-  { tab: 'Host', icon: 'key', tone: 'blue', title: 'Host & earn', caption: 'List your vehicle' },
+  { onPress: openHostApp, icon: 'key', tone: 'blue', title: 'Host a vehicle', caption: 'Open Host app' },
 ];
 
 const featureCards = [
@@ -72,7 +73,7 @@ export default function HomeScreen({ layout, setTab, user, registerRefresh }) {
 
       <ResponsiveGrid columns={layout.tablet ? 4 : 2} gap={12}>
         {quickActions.map((action) => (
-          <Surface key={action.tab} onPress={() => setTab(action.tab)} style={styles.tile}>
+          <Surface key={action.title} onPress={action.onPress ?? (() => setTab(action.tab))} style={styles.tile}>
             <IconCircle name={action.icon} tone={action.tone} size={46} />
             <Text style={styles.tileTitle}>{action.title}</Text>
             <Text style={styles.tileCaption}>{action.caption}</Text>
