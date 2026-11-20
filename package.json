@@ -1,0 +1,38 @@
+{
+  "name": "packandsync-mobile",
+  "version": "1.0.5",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "Techzolo",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "web": "expo start --web",
+    "build:web": "expo export --platform web",
+    "build:android:apk": "eas build --platform android --profile preview",
+    "ios": "expo run:ios"
+  },
+  "dependencies": {
+    "@expo/config-plugins": "~8.0.11",
+    "@expo/metro-runtime": "~3.2.3",
+    "@expo/vector-icons": "^14.0.3",
+    "expo": "~51.0.39",
+    "expo-constants": "~16.0.2",
+    "expo-device": "~6.0.2",
+    "expo-haptics": "~13.0.1",
+    "expo-image-manipulator": "~12.0.2",
+    "expo-image-picker": "~15.0.7",
+    "expo-notifications": "~0.28.19",
+    "expo-secure-store": "~13.0.2",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-web": "~0.19.12",
+    "react-native-webview": "13.8.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0"
+  }
+}
