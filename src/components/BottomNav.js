@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { tapFeedback } from '../utils/haptics';
 
-// Account opens from the header; hosting from Home, Rentals and Account.
+// Account opens from the header.
 const tabs = [
   { key: 'Home', label: 'Home', icon: 'home' },
   { key: 'Trips', label: 'Trips', icon: 'people' },

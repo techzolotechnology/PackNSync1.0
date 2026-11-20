@@ -5,6 +5,7 @@ import { api, rupees } from '../api';
 import { colors, shadows } from '../theme';
 import { AppButton, Icon, Pill, PressableScale, Surface } from '../components/ui';
 import { shortDate } from '../utils/dates';
+import { openHostApp } from '../utils/hostApp';
 
 const ROUTE_STOPS = [
   { key: 'start', label: 'Start', left: '17%', top: '43%' },
@@ -123,6 +124,7 @@ export default function HomeScreen({ layout, setTab, launchTripComposer, registe
       <View style={styles.actions}>
         <AppButton icon="add-circle-outline" onPress={launchTripComposer || (() => setTab('Trips'))}>Start a trip</AppButton>
         <AppButton variant="soft" icon="car-sport-outline" iconRight="arrow-forward" onPress={() => setTab('Rentals')}>Find a ride</AppButton>
+        <AppButton variant="ghost" icon="key-outline" iconRight="open-outline" onPress={openHostApp}>Host a vehicle</AppButton>
       </View>
     </View>
   );

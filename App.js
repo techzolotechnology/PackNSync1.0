@@ -8,7 +8,7 @@ import BottomNav from './src/components/BottomNav';
 import { api } from './src/api';
 import { loadRefreshToken, saveRefreshToken } from './src/session';
 import { addNotificationResponseListener, registerForPush } from './src/push';
-import { AccountScreen, BookingsScreen, HomeScreen, HostScreen, RentalsScreen, TripsScreen, WalletScreen } from './src/screens';
+import { AccountScreen, BookingsScreen, HomeScreen, RentalsScreen, TripsScreen, WalletScreen } from './src/screens';
 import { colors, createLayout } from './src/theme';
 
 const screens = {
@@ -18,7 +18,6 @@ const screens = {
   Bookings: BookingsScreen,
   Wallet: WalletScreen,
   Account: AccountScreen,
-  Host: HostScreen,
 };
 const signedInScreens = ['Bookings', 'Wallet', 'Account'];
 
@@ -37,6 +36,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
   const [booted, setBooted] = useState(false);
+  const finishBoot = useCallback(() => setBooted(true), []);
   const [deepLinkOrderId, setDeepLinkOrderId] = useState(null);
   const [tripComposerRequested, setTripComposerRequested] = useState(false);
   const tabRef = useRef('Home');
@@ -166,10 +166,12 @@ export default function App() {
   const Screen = screens[tab];
   const waitingForSession = restoring && !user && signedInScreens.includes(tab);
 
+  if (!booted) return <AnimatedSplash onDone={finishBoot} />;
+
   return (
     <ImageBackground source={require('./assets/host-auth-background.jpg')} resizeMode="cover" imageStyle={styles.backgroundImage} style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar style={booted ? 'dark' : 'light'} />
+        <StatusBar style="dark" />
         <AppHeader activeTab={tab} setTab={setTab} layout={layout} user={user} />
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
@@ -210,7 +212,6 @@ export default function App() {
         </KeyboardAvoidingView>
         <BottomNav activeTab={tab} setTab={setTab} layout={layout} />
       </SafeAreaView>
-      {!booted && <AnimatedSplash onDone={() => setBooted(true)} />}
     </ImageBackground>
   );
 }

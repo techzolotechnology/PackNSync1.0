@@ -7,6 +7,7 @@ import { WEBSITE_URL } from '../backendConfig';
 import { colors } from '../theme';
 import { AppButton, Field, Icon, IconCircle, ListRow, Notice, OtpInput, PageIntro, Pill, SegmentedControl, Surface } from '../components/ui';
 import { errorFeedback, successFeedback } from '../utils/haptics';
+import { openHostApp } from '../utils/hostApp';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 const RESEND_SECONDS = 30;
@@ -139,7 +140,7 @@ export default function AccountScreen({ user, setUser, setTab, layout, registerR
         <Surface style={styles.menu}>
           <ListRow icon="calendar" title="My bookings" subtitle="Requests, payments and hosting" onPress={() => setTab('Bookings')} />
           <ListRow icon="wallet" tone="gold" title="Wallet" subtitle="Balance, promo credit and offers" onPress={() => setTab('Wallet')} />
-          <ListRow icon="key" tone="green" title="Host a vehicle" subtitle="Earn from your car or bike" onPress={() => setTab('Host')} />
+          <ListRow icon="key" tone="green" title="Host a vehicle" subtitle="Open PickAndSync Host on Google Play" onPress={openHostApp} />
           <ListRow icon="shield-checkmark" title="Verify your ID" subtitle="Needed to book, host or join trips" onPress={() => Linking.openURL(`${WEBSITE_URL}/verify`)} />
           <ListRow icon="document-text" tone="gray" title="Terms & privacy" onPress={() => Linking.openURL(`${WEBSITE_URL}/terms`)} last />
         </Surface>
