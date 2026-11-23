@@ -10,6 +10,7 @@
 export const GUIDES = [
     {
         slug: 'how-to-split-trip-expenses-with-friends',
+        updated: '2026-11-23',
         title: 'How to Split Trip Expenses with Friends (Without the Awkwardness)',
         description: 'A simple, fair way to split group trip costs: equal vs. by-use splits, who pays what, and settling up with the fewest payments.',
         published: '2026-10-05',
@@ -37,8 +38,9 @@ export const GUIDES = [
                 heading: 'Record expenses as they happen',
                 paragraphs: [
                     'Whoever pays adds the expense straight away — what it was, how much, who paid, and who it is split between. Waiting until the end means forgotten bills and arguments about receipts.',
-                    'A shared trip on PickAndSync keeps every expense in one place, visible to the whole group, so there is a single source of truth.',
+                    'A shared trip on PickAndSync keeps every expense in one place, visible to the whole group.',
                 ],
+                link: { label: 'Split an expense with the free calculator', to: '/tools/trip-cost-splitter/' },
             },
             {
                 heading: 'Settle up with the fewest payments',
@@ -61,7 +63,8 @@ export const GUIDES = [
     },
     {
         slug: 'coorg-trip-from-bangalore-with-friends',
-        title: 'Coorg Trip from Bangalore with Friends: 2-Day Self-Drive Plan',
+        title: '2-Day Coorg Weekend Trip from Bangalore with Friends',
+        updated: '2026-11-23',
         description: 'A 2-day Coorg itinerary from Bangalore by self-drive car: route, stops, what to see, and how to split costs per head with your group.',
         published: '2026-10-05',
         readMinutes: 6,
@@ -100,8 +103,9 @@ export const GUIDES = [
                 heading: 'Working out cost per head',
                 paragraphs: [
                     'The big shared costs are the car rental, fuel, tolls and the stay; split them equally across the group. Meals and entry tickets can be split by who joined.',
-                    'Add each cost to the trip as you go and divide at the end — the free trip cost splitter does the maths and tells everyone exactly who to pay.',
+                    'Add each cost to the trip as you go and divide at the end. The free trip cost splitter shows who owes whom and lets the group share the result.',
                 ],
+                link: { label: 'Estimate the cost per person for Coorg', to: '/tools/trip-cost-splitter/' },
             },
             {
                 heading: 'Tips for a smoother group road trip',
@@ -113,7 +117,7 @@ export const GUIDES = [
                 ],
             },
         ],
-        cta: { label: 'Find a self-drive car in Bangalore', to: '/rentals/bangalore/' },
+        cta: { label: 'Split your Coorg trip budget', to: '/tools/trip-cost-splitter/' },
     },
     {
         slug: 'thailand-group-trip-from-india-checklist',

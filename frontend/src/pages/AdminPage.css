@@ -381,6 +381,17 @@
 }
 
 /* Tables — light travel-admin card surface */
+.adm-website-growth {
+    padding: 1rem;
+}
+
+.adm-website-growth select {
+    display: block;
+    max-width: 100%;
+    min-height: 44px;
+    margin: 0.35rem 0 0.75rem;
+}
+
 .admin-table-wrap {
     overflow-x: auto;
     border-radius: 0.9rem;

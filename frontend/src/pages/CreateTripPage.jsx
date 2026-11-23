@@ -1,5 +1,6 @@
 import { Component, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
@@ -298,6 +299,7 @@ function CreateTripForm() {
             if (!tripId) {
                 throw new Error('The trip was created, but its details could not be opened.');
             }
+            trackWebsiteEvent('trip_created');
             navigate(`/trips/${tripId}`);
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || 'Failed to create trip.');

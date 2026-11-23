@@ -3,9 +3,12 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
+import { initializeWebsiteGrowth } from './utils/websiteGrowth.js';
 import './index.css';
 import './motion.css';
 const Router = window.location.protocol === 'file:' ? HashRouter : BrowserRouter;
+
+initializeWebsiteGrowth();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

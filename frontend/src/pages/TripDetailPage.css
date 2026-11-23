@@ -131,6 +131,16 @@
 }
 
 /* Body layout */
+.trip-invite-panel {
+    margin-top: 1rem;
+}
+
+.trip-invite-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 .trip-detail-body {
     display: grid;
     grid-template-columns: 1fr 320px;

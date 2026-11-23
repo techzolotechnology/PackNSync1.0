@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
                     <span className="privacy-eyebrow">Your data, explained</span>
                     <h1>Privacy Policy</h1>
                     <p className="privacy-summary">A clear overview of what PickAndSync collects, why we use it, and the choices available to you.</p>
-                    <p className="last-updated">Last updated August 05, 2026</p>
+                    <p className="last-updated">Last updated November 23, 2026</p>
                     <nav className="privacy-nav" aria-label="Legal documents">
                         <Link to="/terms">General Terms</Link>
                         <Link to="/terms/ride">Ride</Link>
@@ -38,6 +38,7 @@ const PrivacyPolicy = () => {
                         <p>We collect personal information that you voluntarily provide to us when you register on the App, express an interest in obtaining information about us or our products and Services, or otherwise when you contact us.</p>
                         <ul>
                             <li><strong>Personal Data:</strong> Name, email address, phone number, and profile picture.</li>
+                            <li><strong>Website usage:</strong> We count actions such as trip creation and rental searches by broad traffic source and page category to improve the website. These counts exclude account identifiers, full links, and the names and amounts entered in the expense splitter. We honor Global Privacy Control and Do Not Track for these counts.</li>
                             <li><strong>Travel Data:</strong> Trip details, itineraries, and preferences you share in travel groups.</li>
                             <li><strong>Payment Data:</strong> Payments and wallet top-ups are processed by <strong>Cashfree</strong>. PickAndSync does not store your full card number or card security code.</li>
                             <li><strong>Social Media Login:</strong> We may provide you with the option to register with us using your existing social media account details, like your Google account.</li>

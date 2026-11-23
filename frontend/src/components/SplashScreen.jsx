@@ -9,19 +9,17 @@ import './SplashScreen.css';
 
 export default function SplashScreen({ ready = true, minMs = 2000, onDone }) {
     const [minPassed, setMinPassed] = useState(false);
-    const [fading, setFading] = useState(false);
     const [gone, setGone] = useState(false);
+    const fading = ready && minPassed;
     useEffect(() => {
         const t = setTimeout(() => setMinPassed(true), minMs);
         return () => clearTimeout(t);
     }, [minMs]);
     useEffect(() => {
-        if (ready && minPassed && !fading) {
-            setFading(true);
-            const t = setTimeout(() => { setGone(true); onDone && onDone(); }, 400);
-            return () => clearTimeout(t);
-        }
-    }, [ready, minPassed, fading, onDone]);
+        if (!fading) return;
+        const t = setTimeout(() => { setGone(true); onDone?.(); }, 400);
+        return () => clearTimeout(t);
+    }, [fading, onDone]);
     if (gone) return null;
     return (
         <div className={'pns-splash' + (fading ? ' pns-splash-fade' : '')}>

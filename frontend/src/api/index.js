@@ -298,6 +298,7 @@ export const adminApi = {
     getPayments: (params) => api.get('/admin/payments', { params }),
     refundPayment: (id) => api.post(`/admin/payments/${id}/refund`),
     getOverview: () => api.get('/admin/overview'),
+    getWebsiteGrowth: () => api.get('/admin/website-growth'),
     getUserDetail: (id) => api.get(`/admin/users/${id}/detail`),
     grantPromo: (id, amount, reason, expiresAt) => api.post(`/admin/users/${id}/promo`, { amount, reason, expiresAt }),
     getWithdrawals: (status = 'PENDING') => api.get('/admin/wallet/withdrawals', { params: { status } }),

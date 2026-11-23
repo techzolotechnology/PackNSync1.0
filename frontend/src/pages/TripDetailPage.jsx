@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { tripsApi, expensesApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -14,7 +14,8 @@ import useSeo from '../hooks/useSeo.js';
 import { mediaUrl } from '../utils/mediaUrl.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import { BACKEND_ORIGIN } from '../config/backend.js';
-import { copyLink, shareLink } from '../utils/share.js';
+import { copyLink, whatsappUrl } from '../utils/share.js';
+import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
 
 const PENDING_JOIN_KEY = 'pns.pendingJoin';
 
@@ -66,6 +67,8 @@ export default function TripDetailPage() {
     const { user } = useAuthStore();
     const openAuth = useAuthUiStore((s) => s.openAuth);
     const [sharing, setSharing] = useState(false);
+    const [preparedShare, setPreparedShare] = useState(null);
+    const countedInvite = useRef(null);
     const chatUnreadForTrip = useChatUnreadStore((s) => s.byTrip[id] || 0);
     const navigate = useNavigate();
     const [trip, setTrip] = useState(null);
@@ -96,6 +99,13 @@ export default function TripDetailPage() {
         setTrip(res.data.data);
         return res.data.data;
     };
+
+    useEffect(() => {
+        if (trip?.id === id && trip.viaInvite && inviteCode && countedInvite.current !== id) {
+            countedInvite.current = id;
+            trackWebsiteEvent('invite_opened');
+        }
+    }, [id, inviteCode, trip]);
 
     const refreshExpenses = async () => {
         if (!user) return;
@@ -164,25 +174,22 @@ export default function TripDetailPage() {
         if (computeCanJoin(trip, myMembership, user.id)) handleJoin();
     }, [user, trip]);
 
-    const handleShare = async () => {
-        if (!trip) return;
+    const handleShareInvite = async () => {
+        // Open during the click so the browser can allow the new tab while the invite is prepared.
+        const tab = window.open('about:blank', '_blank');
+        if (tab) tab.opener = null;
         setSharing(true);
         try {
-            if (user?.id === trip.organizerId) {
-                const res = await tripsApi.createInvite(id);
-                await shareLink({
-                    title: trip.title,
-                    text: `Join my trip "${trip.title}" to ${trip.destination} on PickAndSync — tap to join:`,
-                    url: res.data.data.shareUrl,
-                });
+            const res = await tripsApi.createInvite(id);
+            const link = whatsappUrl(`Join my trip "${trip.title}" to ${trip.destination} on PickAndSync:\n${res.data.data.shareUrl}`);
+            if (tab && !tab.closed) {
+                tab.location.replace(link);
+                trackWebsiteEvent('trip_share_opened');
             } else {
-                await shareLink({
-                    title: trip.title,
-                    text: `Check out this trip to ${trip.destination} on PickAndSync:`,
-                    url: trip.shareUrl || `${BACKEND_ORIGIN}/share/trips/${id}`,
-                });
+                setPreparedShare({ tripId: id, link });
             }
         } catch (err) {
+            tab?.close();
             toast.error(err.response?.data?.message || 'Could not create the share link.');
         } finally {
             setSharing(false);
@@ -193,6 +200,7 @@ export default function TripDetailPage() {
         if (regenerate && !window.confirm('Reset the invite link? The old link will stop working.')) return;
         try {
             const res = await tripsApi.createInvite(id, regenerate ? { regenerate: true } : {});
+            if (regenerate) setPreparedShare(null);
             await copyLink(res.data.data.url, regenerate ? 'New invite link copied' : 'Invite link copied');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not create the invite link.');
@@ -222,6 +230,7 @@ export default function TripDetailPage() {
         setIsJoining(true);
         try {
             const res = await tripsApi.join(id, trip?.viaInvite && inviteCode ? { inviteCode } : {});
+            if (trip?.viaInvite && res.data?.approved) trackWebsiteEvent('invite_accepted');
             const fresh = await refreshTrip();
             if (res.data?.approved) {
                 toast.success("You're in! Say hi in the trip chat.");
@@ -481,6 +490,38 @@ export default function TripDetailPage() {
         </button>
     );
 
+    const shareHref = isOrganizer
+        ? (preparedShare?.tripId === id ? preparedShare.link : null)
+        : whatsappUrl(`Check out this trip to ${trip.destination} on PickAndSync:\n${trip.shareUrl || `${BACKEND_ORIGIN}/share/trips/${id}`}`);
+    const shareCard = canShare && (
+        <section className="card sidebar-card" aria-labelledby="trip-share-title">
+            <h3 id="trip-share-title">{isOrganizer ? 'Invite friends' : 'Share this trip'}</h3>
+            <p className="text-muted">
+                {isOrganizer ? 'Friends with your invite link can join without waiting for approval.' : 'Send this trip to someone who would enjoy it.'}
+            </p>
+            {shareHref ? (
+                <a className="btn btn-primary" href={shareHref} target="_blank" rel="noopener noreferrer"
+                    onClick={() => trackWebsiteEvent('trip_share_opened')}>
+                    {isOrganizer && preparedShare ? 'Open WhatsApp invite' : 'Share on WhatsApp'}
+                </a>
+            ) : (
+                <button type="button" className="btn btn-primary" onClick={handleShareInvite} disabled={sharing}>
+                    {sharing ? 'Preparing invite…' : 'Invite friends on WhatsApp'}
+                </button>
+            )}
+            {isOrganizer && (
+                <div className="trip-invite-links">
+                    <button type="button" className="btn btn-ghost" onClick={() => handleCopyInvite()}>
+                        Copy invite link
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={() => handleCopyInvite(true)}>
+                        Reset invite link
+                    </button>
+                </div>
+            )}
+        </section>
+    );
+
     return (
         <div className="trip-detail page-enter">
             <div className="trip-detail-hero">
@@ -500,6 +541,8 @@ export default function TripDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {isOrganizer && <div className="container trip-invite-panel">{shareCard}</div>}
 
             <div className="container trip-detail-body">
                 <aside className="trip-detail-sidebar">
@@ -586,34 +629,7 @@ export default function TripDetailPage() {
                         </div>
                     )}
 
-                    {canShare && (
-                        <div className="card sidebar-card">
-                            <h3>{isOrganizer ? 'Invite friends' : 'Share this trip'}</h3>
-                            <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-                                {isOrganizer
-                                    ? 'Friends with your invite link join instantly — no approval needed.'
-                                    : 'Know someone who would love this trip? Send it on WhatsApp.'}
-                            </p>
-                            <button type="button" className="btn btn-primary w-full" onClick={handleShare} disabled={sharing}>
-                                {sharing ? 'Opening…' : 'Share on WhatsApp'}
-                            </button>
-                            {isOrganizer && (
-                                <>
-                                    <button type="button" className="btn btn-ghost w-full" onClick={() => handleCopyInvite(false)}>
-                                        Copy invite link
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-ghost w-full"
-                                        style={{ fontSize: '0.8rem' }}
-                                        onClick={() => handleCopyInvite(true)}
-                                    >
-                                        Reset invite link
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    )}
+                    {!isOrganizer && shareCard}
 
                     {isOrganizer && pendingMembers.length > 0 && (
                         <div className="card sidebar-card">

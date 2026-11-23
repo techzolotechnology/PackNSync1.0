@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { useAuthUiStore } from './store/authUiStore.js';
 import Navbar from './components/Navbar.jsx';
@@ -192,6 +192,7 @@ export default function App() {
     const fetchMe = useAuthStore((s) => s.fetchMe);
     const hydrated = useAuthHydrated();
     const [booted, setBooted] = useState(false);
+    const finishSplash = useCallback(() => setBooted(true), []);
     const location = useLocation();
     const { pathname } = location;
     const hasTripsVideoBackground = pathname === '/trips';
@@ -218,7 +219,7 @@ export default function App() {
                 </video>
             )}
             {hasTripsVideoBackground && <div className="app-shell-video-overlay" aria-hidden="true" />}
-            {!booted && <SplashScreen ready={hydrated} onDone={() => setBooted(true)} />}
+            {!booted && <SplashScreen ready={hydrated} onDone={finishSplash} />}
             <RouteSeo />
             <Navbar />
             <AuthModal />

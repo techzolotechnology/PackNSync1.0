@@ -6,6 +6,7 @@ import { STOCK } from '../constants/stockImages.js';
 import { HERO_MEDIA } from '../utils/heroMedia.js';
 import AnimatedLogo from '../components/AnimatedLogo';
 import { pricingApi } from '../api/index.js';
+import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import './HomePage.css';
 
 const SEARCH_TABS = [
@@ -274,6 +275,14 @@ export default function HomePage() {
                     <p className="home-hero-sub">
                         Share an itinerary, coordinate your group, split trip costs, and find self-drive cars, bikes or scooters on PickAndSync.
                     </p>
+                    <div className="home-hero-actions">
+                        <Link to="/trips/create" className="home-btn primary" onClick={() => trackWebsiteEvent('planner_opened')}>
+                            Plan a group trip
+                        </Link>
+                        <Link to="/tools/trip-cost-splitter/" className="home-btn soft" onClick={() => trackWebsiteEvent('splitter_opened')}>
+                            Split trip costs
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="container home-search-wrap ps-reveal ps-scale">

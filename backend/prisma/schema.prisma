@@ -865,6 +865,18 @@ model ExplorePlanStop {
 /// One block of promo credit. wallets.promoBalance is the spendable total;
 /// grants say where it came from and when each part expires. Spends use the
 /// soonest-expiring credit first.
+model WebsiteGrowthDaily {
+  day     DateTime @db.Date
+  event   String
+  source  String
+  landing String
+  market  String
+  vehicle String
+  count   Int      @default(0)
+
+  @@id([day, event, source, landing, market, vehicle])
+}
+
 model PromoGrant {
   id             String    @id @default(uuid())
   userId         String
