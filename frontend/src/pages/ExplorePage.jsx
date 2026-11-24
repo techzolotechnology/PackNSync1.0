@@ -5,6 +5,7 @@ import { exploreApi } from '../api/index.js';
 import ExploreMap from '../components/ExploreMap.jsx';
 import ExplorePlanner from '../components/ExplorePlanner.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
+import { searchBrowserPlaces } from '../utils/exploreBrowserPlaces.js';
 import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './ExplorePage.css';
 
@@ -200,12 +201,26 @@ export default function ExplorePage() {
             });
             const data = res.data.data || {};
             const s = data.session;
+            let thread = s?.messages || [];
+            let list = data.places || [];
+            if (!list.length && data.fallbackUrl) {
+                list = await searchBrowserPlaces(data.fallbackUrl, {
+                    location: data.intent?.city ? null : origin,
+                    budget: data.intent?.intents?.includes('budget'),
+                });
+                if (list.length && thread.at(-1)?.role === 'assistant') {
+                    thread = [...thread.slice(0, -1), {
+                        ...thread.at(-1),
+                        content: `Found ${list.length} ${list.length === 1 ? 'place' : 'places'} on Google Maps. Tap a card to see its location.`,
+                        places: list,
+                    }];
+                }
+            }
             if (s?.id) {
                 setSessionId(s.id);
                 localStorage.setItem(SESSION_KEY, s.id);
-                setMessages(s.messages || []);
+                setMessages(thread);
             }
-            const list = data.places || [];
             setPlaces(list);
             setIntent(data.intent || null);
             setSelectedId(list[0]?.id || selectedId);
