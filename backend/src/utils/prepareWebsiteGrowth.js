@@ -1,14 +1,8 @@
-import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
+import { markMigrationApplied } from './prismaMigration.js';
 
 const migration = '20261123120000_website_growth';
 const migrationFile = new URL(`../../prisma/migrations/${migration}/migration.sql`, import.meta.url);
-const schemaFile = fileURLToPath(new URL('../../prisma/schema.prisma', import.meta.url));
-const run = promisify(execFile);
-const require = createRequire(import.meta.url);
 
 export async function applyWebsiteGrowthSchema(prisma) {
     // Also runs on hosts that start Node directly and skip the Prisma deploy command.
@@ -41,7 +35,5 @@ export async function applyWebsiteGrowthSchema(prisma) {
 
 export async function prepareWebsiteGrowth(prisma) {
     if (await applyWebsiteGrowthSchema(prisma)) return;
-    await run(process.execPath, [
-        require.resolve('prisma'), 'migrate', 'resolve', '--applied', migration, '--schema', schemaFile,
-    ], { timeout: 30_000, windowsHide: true });
+    await markMigrationApplied(migration);
 }

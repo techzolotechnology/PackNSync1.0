@@ -35,6 +35,7 @@ import { premiumSubscriptionRouter } from './routes/premiumSubscription.routes.j
 import { websiteGrowthRouter } from './routes/websiteGrowth.routes.js';
 import { prisma } from './utils/prisma.js';
 import { prepareWebsiteGrowth } from './utils/prepareWebsiteGrowth.js';
+import { reconcileHostRefreshMigration } from './utils/reconcileHostRefreshMigration.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
@@ -51,6 +52,7 @@ const app = express();
 app.set('trust proxy', 1);
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
+let hostSessionMigration = process.env.NODE_ENV === 'production' ? 'checking' : undefined;
 
 const DEFAULT_ORIGINS = [
   'http://localhost:5173',
@@ -149,6 +151,7 @@ app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
+    hostSessionMigration,
     email: {
       provider: email.provider,
       region: email.region,
@@ -250,6 +253,12 @@ if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_SWEEPS !== 'true') {
 }
 
 if (process.env.NODE_ENV === 'production') {
+  reconcileHostRefreshMigration()
+    .then(() => { hostSessionMigration = 'clear'; })
+    .catch((error) => {
+      hostSessionMigration = 'error';
+      console.error('[migrate] Host refresh recovery failed:', error.code || error.name);
+    });
   prepareWebsiteGrowth(prisma).catch((error) => {
     console.error('[website growth] Could not prepare storage:', error.code || error.name);
   });
