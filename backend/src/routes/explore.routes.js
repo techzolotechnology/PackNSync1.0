@@ -1,8 +1,11 @@
 import { Router } from 'express';
+import { draftTrip } from '../controllers/tripAiDraft.controller.js';
 import {
     chatExplore,
     clearExploreChat,
     getExploreChat,
+    getCurrentExploreChat,
+    startExploreChat,
     getExploreExamples,
     getExploreStatus,
     searchExplore,
@@ -29,8 +32,11 @@ exploreRouter.get('/status', getExploreStatus);
 exploreRouter.get('/planner/meta', getExplorePlannerMeta);
 exploreRouter.post('/search', optionalAuth, paidApiLimiter, searchExplore);
 exploreRouter.post('/chat', optionalAuth, paidApiLimiter, chatExplore);
-exploreRouter.post('/chat/clear', clearExploreChat);
-exploreRouter.get('/chat/:sessionId', getExploreChat);
+exploreRouter.post('/chat/trip-draft', optionalAuth, paidApiLimiter, draftTrip);
+exploreRouter.post('/chat/start', optionalAuth, paidApiLimiter, startExploreChat);
+exploreRouter.post('/chat/clear', optionalAuth, paidApiLimiter, clearExploreChat);
+exploreRouter.get('/chat/current', optionalAuth, getCurrentExploreChat);
+exploreRouter.get('/chat/:sessionId', optionalAuth, getExploreChat);
 
 exploreRouter.get('/plans', authenticate, listExplorePlans);
 exploreRouter.post('/plans/generate', authenticate, paidApiLimiter, generateExplorePlan);

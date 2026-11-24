@@ -1,0 +1,15 @@
+.ai-contact-fields {
+    display: grid;
+    border: 0;
+    gap: .75rem;
+    padding: 0;
+    min-width: 0;
+    margin: 0 0 .85rem;
+}
+
+.ai-contact-fields legend { font-weight: 750; margin-bottom: .75rem; }
+.ai-contact-fields label { display: grid; gap: .25rem; font-size: .9rem; }
+.ai-contact-fields .ai-contact-consent { grid-template-columns: auto 1fr; align-items: start; gap: .5rem; }
+.ai-contact-consent input { margin-top: .3rem; }
+.ai-contact-consent a { text-decoration: underline; }
+.ai-remaining { font-size: .85rem; margin: .5rem 0; }

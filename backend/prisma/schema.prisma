@@ -131,6 +131,7 @@ model User {
   linkedAccounts   LinkedAccount[]
   tripChatReads    TripChatRead[]
   explorePlans     ExplorePlan[]
+  exploreAiChats   ExploreAiChat[]
   driverReviewsGiven    DriverReview[] @relation("DriverReviewer")
   driverReviewsReceived DriverReview[] @relation("DriverReviewee")
   wallet                Wallet?
@@ -865,6 +866,34 @@ model ExplorePlanStop {
 /// One block of promo credit. wallets.promoBalance is the spendable total;
 /// grants say where it came from and when each part expires. Spends use the
 /// soonest-expiring credit first.
+model ExploreAiChat {
+  id           String   @id @default(uuid())
+  userId       String?
+  ownerKey     String
+  kind         String
+  displayName  String
+  phoneNumber  String
+  messages     Json     @default("[]")
+  searchQuery  String?
+  searchIntent Json?
+  lease        String?
+  leaseUntil   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ownerKey, kind, createdAt])
+  @@index([updatedAt])
+}
+
+model ExploreAiUsage {
+  ownerKey String
+  day      DateTime @db.Date
+  used     Int      @default(0)
+
+  @@id([ownerKey, day])
+}
+
 model WebsiteGrowthDaily {
   day     DateTime @db.Date
   event   String

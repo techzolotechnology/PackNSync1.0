@@ -1,3 +1,4 @@
+import TripAiDraft from '../components/TripAiDraft.jsx';
 import { Component, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
@@ -29,12 +30,13 @@ const DEFAULT_FORM = {
     budgetEstimate: '',
     joinMode: 'everyone',
     meetingPoint: '',
+    stopovers: '',
     isPublic: true,
 };
 
 function normalizeDraftForm(draft) {
     const source = draft && typeof draft === 'object' ? draft : {};
-    const textFields = ['title', 'description', 'destination', 'coverImageUrl', 'startDate', 'endDate', 'meetingPoint'];
+    const textFields = ['title', 'description', 'destination', 'coverImageUrl', 'startDate', 'endDate', 'meetingPoint', 'stopovers'];
     const form = { ...DEFAULT_FORM, ...source };
 
     for (const field of textFields) {
@@ -198,6 +200,7 @@ function formatRange(start, end) {
 function CreateTripForm() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
+    const [showAiDraft, setShowAiDraft] = useState(false);
     const openAuth = useAuthUiStore((state) => state.openAuth);
     const [searchParams] = useSearchParams();
     const initial = useMemo(() => loadDraft(), []);
@@ -299,6 +302,8 @@ function CreateTripForm() {
                 title: form.title.trim(),
                 destination: form.destination.trim(),
                 description: descriptionParts.filter(Boolean).join('\n\n') || null,
+                pickup: form.meetingPoint.trim(),
+                stopovers: form.stopovers.split('\n'),
                 startDate: form.startDate,
                 endDate: form.endDate,
                 maxParticipants: Number(form.maxParticipants) || 6,
@@ -332,7 +337,7 @@ function CreateTripForm() {
                     <p>
                         Choose a destination, set a budget, and invite friends after you publish.
                     </p>
-                    {!user && <p>Your draft stays on this device. Sign in when you’re ready to publish.</p>}
+                    {!user && <p>Your trip form is saved on this device. Sign in when you’re ready to publish.</p>}
                 </header>
 
                 <nav className="create-stepper" aria-label="Create trip steps">
@@ -404,6 +409,31 @@ function CreateTripForm() {
                                         />
                                     )}
                                 </div>
+                                {showAiDraft ? (
+                                    <TripAiDraft
+                                        form={form}
+                                        user={user}
+                                        onClose={() => setShowAiDraft(false)}
+                                        onApply={(draft) => {
+                                            updateForm((current) => ({
+                                                ...current,
+                                                title: current.title.trim() ? current.title : draft.title,
+                                                destination: draft.destination,
+                                                coverImageUrl: current.destination === draft.destination ? current.coverImageUrl : '',
+                                                description: draft.description,
+                                                meetingPoint: draft.pickup,
+                                                stopovers: draft.stopovers.join('\n'),
+                                                budgetEstimate: draft.budget ?? '',
+                                            }));
+                                            setShowAiDraft(false);
+                                            toast.success('Draft added. Review the details before publishing.');
+                                        }}
+                                    />
+                                ) : (
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowAiDraft(true)}>
+                                        <span aria-hidden="true">✦ </span>Generate description with AI
+                                    </button>
+                                )}
                                 <label className="create-field">
                                     Description
                                     <textarea
@@ -561,6 +591,13 @@ function CreateTripForm() {
                                     </div>
                                 </div>
 
+                                <label className="create-field">
+                                    Stopovers
+                                    <textarea name="stopovers" rows={3} maxLength={970}
+                                        placeholder="One stop per line, up to eight"
+                                        value={form.stopovers} onChange={handleChange} />
+                                </label>
+
                                 <p className="create-note">
                                     Budget is a guide for joiners. Exact shared costs are split later on the trip Expenses tab.
                                 </p>
@@ -612,6 +649,12 @@ function CreateTripForm() {
                                         <dt>Who can join</dt>
                                         <dd>{joinLabel}</dd>
                                     </div>
+                                    {form.stopovers.trim() && (
+                                        <div>
+                                            <dt>Stopovers</dt>
+                                            <dd>{form.stopovers.split('\n').map((value) => value.trim()).filter(Boolean).slice(0, 8).join(' · ')}</dd>
+                                        </div>
+                                    )}
                                     {form.meetingPoint.trim() && (
                                         <div className="span-2">
                                             <dt>Meeting point</dt>
@@ -641,7 +684,7 @@ function CreateTripForm() {
                         )}
 
                         {step < STEPS.length - 1 ? (
-                            <button type="button" className="create-btn primary" onClick={goNext} disabled={!canNext}>
+                            <button type="button" className="create-btn primary" onClick={goNext} disabled={!canNext || showAiDraft}>
                                 Continue
                             </button>
                         ) : (

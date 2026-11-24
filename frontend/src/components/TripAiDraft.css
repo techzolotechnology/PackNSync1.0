@@ -1,0 +1,19 @@
+.trip-ai-draft {
+    padding: 1rem;
+    border: 1px solid #a4cbf3;
+    border-radius: 1rem;
+    color: #102b48;
+    background: linear-gradient(130deg, #ecf6ff, #fff);
+}
+
+.trip-ai-draft-head, .trip-ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+}
+
+.trip-ai-draft-head { justify-content: space-between; }
+.trip-ai-actions { margin-top: .85rem; justify-content: flex-end; }
+.trip-ai-preview p { white-space: pre-wrap; overflow-wrap: anywhere; margin: .55rem 0; }
+.trip-ai-draft [role="alert"] { color: #9a1c0b; margin: .5rem 0; }

@@ -1,3 +1,4 @@
+import { stopoversFromText } from '../utils/tripAiDraft.js';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
@@ -198,8 +199,13 @@ export const getTripCarSuggestions = async (req, res) => {
 export const createTrip = async (req, res) => {
     const {
         title, description, destination, startDate, endDate,
-        maxParticipants, budgetEstimate, isPublic, coverImageUrl,
+        maxParticipants, budgetEstimate, isPublic, coverImageUrl, pickup, stopovers,
     } = req.body;
+
+    const route = stopoversFromText(stopovers).map((location) => ({ title: location, location }));
+    if (typeof pickup === 'string' && pickup.trim()) {
+        route.unshift({ title: 'Pickup', location: pickup.trim().slice(0, 120) });
+    }
 
     const trip = await prisma.trip.create({
         data: {
@@ -211,13 +217,12 @@ export const createTrip = async (req, res) => {
             coverImageUrl: coverImageUrl || null,
             status: 'OPEN',
             organizerId: req.user.id,
+            members: { create: { userId: req.user.id, status: 'APPROVED' } },
+            ...(route.length && { itineraryItems: { create: route.map((item, order) => ({
+                ...item, order, dayNumber: 1, type: 'TRANSPORT',
+            })) } }),
         },
         include: { organizer: { select: { id: true, name: true, avatarUrl: true } } },
-    });
-
-    // Auto-add organizer as approved member
-    await prisma.tripMember.create({
-        data: { tripId: trip.id, userId: req.user.id, status: 'APPROVED' },
     });
 
     res.status(201).json({ success: true, data: trip });

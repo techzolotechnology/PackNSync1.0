@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { chatExplore, searchExplore } from '../controllers/explore.controller.js';
+import { buildExploreChatReply, searchExplore } from '../controllers/explore.controller.js';
 import { buildExploreFollowUp, parseExploreQuery } from './exploreSearch.js';
 
 async function request(handler, body) {
@@ -51,10 +51,10 @@ describe('Explore Place Chat', () => {
             });
         });
         vi.stubGlobal('fetch', fetch);
-        const reply = await request(chatExplore, { message: 'quite romantic drink in haryana', lat: 12.9, lng: 77.6 });
-        expect(reply).toMatchObject({ success: true, data: { source: 'google_places', places: [{ name: 'Example cafe', priceLevel: 1 }] } });
-        expect(reply.data.reply).toMatch(/Found 1 place.*haryana/i);
-        expect(reply.data.fallbackUrl).toBeUndefined();
+        const reply = await buildExploreChatReply({ messages: [] }, { message: 'quite romantic drink in haryana', lat: 12.9, lng: 77.6 });
+        expect(reply).toMatchObject({ source: 'google_places', places: [{ name: 'Example cafe', priceLevel: 1 }] });
+        expect(reply.reply).toMatch(/Found 1 place.*haryana/i);
+        expect(reply.fallbackUrl).toBeUndefined();
         expect(fetch).toHaveBeenCalledTimes(2);
     });
 
@@ -62,15 +62,14 @@ describe('Explore Place Chat', () => {
         vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
 
-        const first = await request(chatExplore, { message: 'quiet romantic drinks in Bangalore' });
-        expect(first.data).toMatchObject({ places: [], source: 'maps_link' });
-        expect(first.data.reply).toMatch(/temporarily unavailable/);
+        const first = await buildExploreChatReply({ messages: [] }, { message: 'quiet romantic drinks in Bangalore' });
+        expect(first).toMatchObject({ places: [], source: 'maps_link' });
+        expect(first.reply).toMatch(/temporarily unavailable/);
 
-        const second = await request(chatExplore, { message: 'make it cheaper and closer to Indiranagar', sessionId: first.data.session.id });
-        const url = new URL(second.data.session.messages.at(-1).fallbackUrl);
+        const second = await buildExploreChatReply({ messages: [{ role: 'assistant', content: first.reply }], searchQuery: first.searchQuery }, { message: 'make it cheaper and closer to Indiranagar' });
+        const url = new URL(second.fallbackUrl);
         expect(url.hostname).toBe('www.google.com');
         expect(url.searchParams.get('query')).toBe('budget quiet romantic drinks in Indiranagar, Bengaluru, India');
-        expect(second.data.session.messages).toHaveLength(4);
 
         const oneShot = await request(searchExplore, { query: 'coffee near Koramangala Bangalore' });
         expect(oneShot.data.fallbackUrl).toContain('maps/search');

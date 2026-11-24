@@ -102,6 +102,8 @@
     padding-right: 0.2rem;
 }
 
+.explore-chat-contact { overflow-y: auto; }
+
 .explore-empty p {
     margin: 0 0 0.65rem;
     color: var(--clr-text-secondary);

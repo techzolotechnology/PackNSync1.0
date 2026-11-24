@@ -1,82 +1,19 @@
-import { randomUUID } from 'crypto';
+// Provider cards are temporary. Persist chat text and the Maps link separately.
+const results = new Map();
+const MAX_SESSIONS = 100;
+const TTL_MS = 30 * 60_000;
 
-/** In-memory Explore chat sessions (per server process). */
-const sessions = new Map();
-const MAX_MESSAGES = 40;
-const TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
+export function getExploreResults(id) {
+    const cached = results.get(id);
+    if (!cached) return undefined;
+    if (cached.expiresAt > Date.now()) return cached.result;
+    results.delete(id);
+    return undefined;
+}
 
-const touch = (session) => {
-    session.updatedAt = Date.now();
-    return session;
-};
-
-export const createExploreSession = () => {
-    const id = randomUUID();
-    const session = touch({
-        id,
-        messages: [],
-        places: [],
-        center: null,
-        intent: null,
-        source: null,
-        lastSearchQuery: null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-    });
-    sessions.set(id, session);
-    return session;
-};
-
-export const getExploreSession = (id) => {
-    if (!id) return null;
-    const session = sessions.get(id);
-    if (!session) return null;
-    if (Date.now() - session.updatedAt > TTL_MS) {
-        sessions.delete(id);
-        return null;
-    }
-    return session;
-};
-
-export const getOrCreateExploreSession = (id) => {
-    const existing = getExploreSession(id);
-    if (existing) return existing;
-    return createExploreSession();
-};
-
-export const appendExploreMessage = (session, message) => {
-    session.messages.push({
-        id: randomUUID(),
-        role: message.role,
-        content: message.content,
-        places: message.places || undefined,
-        fallbackUrl: message.fallbackUrl,
-        createdAt: new Date().toISOString(),
-    });
-    if (session.messages.length > MAX_MESSAGES) {
-        session.messages = session.messages.slice(-MAX_MESSAGES);
-    }
-    return touch(session);
-};
-
-export const updateExploreSessionSearch = (session, { places, center, intent, source }) => {
-    session.places = places || [];
-    session.center = center || null;
-    session.intent = intent || null;
-    session.source = source || null;
-    return touch(session);
-};
-
-export const clearExploreSession = (id) => {
-    if (id && sessions.has(id)) sessions.delete(id);
-    return createExploreSession();
-};
-
-export const publicSession = (session) => ({
-    id: session.id,
-    messages: session.messages,
-    places: session.places,
-    center: session.center,
-    intent: session.intent,
-    source: session.source,
-});
+export function cacheExploreResults(id, result) {
+    results.delete(id);
+    if (!result.places.length) return;
+    if (results.size >= MAX_SESSIONS) results.delete(results.keys().next().value);
+    results.set(id, { result, expiresAt: Date.now() + TTL_MS });
+}
