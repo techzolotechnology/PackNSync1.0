@@ -14,6 +14,7 @@ async function chatJson(system, user, { model } = {}) {
     const key = process.env.OPENAI_API_KEY.trim();
     const res = await fetch(OPENAI_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(5_000),
         headers: {
             Authorization: `Bearer ${key}`,
             'Content-Type': 'application/json',
@@ -30,8 +31,6 @@ async function chatJson(system, user, { model } = {}) {
     });
 
     if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        console.warn('[OpenAI]', res.status, errText.slice(0, 300));
         throw new Error(`OpenAI error ${res.status}`);
     }
 
@@ -57,8 +56,8 @@ searchQuery should be a Google Places text query (include city if known).`,
 
         return {
             ...baseParsed,
-            city: out.city || baseParsed.city,
-            geocodeQuery: out.geocodeQuery || baseParsed.geocodeQuery,
+            city: baseParsed.city || out.city || null,
+            geocodeQuery: baseParsed.geocodeQuery || out.geocodeQuery || null,
             intents: Array.isArray(out.intents) && out.intents.length ? out.intents : baseParsed.intents,
             nearMe: Boolean(out.nearMe) || baseParsed.nearMe,
             searchQuery: out.searchQuery || rawQuery,

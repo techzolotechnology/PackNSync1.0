@@ -47,9 +47,51 @@ const typeForIntents = (intents = []) => {
     return undefined;
 };
 
-/**
- * Text Search — best for "romantic drinks in Bangalore"
- */
+const PLACE_FIELDS = [
+    'id', 'displayName', 'formattedAddress', 'location', 'types', 'priceLevel', 'rating', 'userRatingCount',
+].map((field) => `places.${field}`).join(',');
+
+const PLACE_PRICES = {
+    PRICE_LEVEL_FREE: 0,
+    PRICE_LEVEL_INEXPENSIVE: 1,
+    PRICE_LEVEL_MODERATE: 2,
+    PRICE_LEVEL_EXPENSIVE: 3,
+    PRICE_LEVEL_VERY_EXPENSIVE: 4,
+};
+
+async function newPlacesSearch({ key, query, lat, lng, radiusMeters, limit, signal }) {
+    const body = { textQuery: query, regionCode: getExploreRegion().toUpperCase(), pageSize: limit };
+    if (lat != null && lng != null) {
+        body.locationBias = { circle: { center: { latitude: lat, longitude: lng }, radius: radiusMeters } };
+    }
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': PLACE_FIELDS },
+        body: JSON.stringify(body),
+        signal,
+    });
+    if (!res.ok) throw new Error(`Google Places text search returned ${res.status}`);
+    const { places = [] } = await res.json();
+    return places.filter((p) => p.id && p.displayName?.text && p.location?.latitude != null && p.location?.longitude != null)
+        .map((p) => ({
+            id: `gplace-${p.id}`,
+            placeId: p.id,
+            name: p.displayName.text,
+            address: p.formattedAddress || '',
+            city: '',
+            lat: p.location.latitude,
+            lng: p.location.longitude,
+            categories: p.types || [],
+            priceLevel: PLACE_PRICES[p.priceLevel] ?? null,
+            rating: p.rating ?? null,
+            userRatingsTotal: p.userRatingCount ?? null,
+            vibeTags: (p.types || []).slice(0, 5),
+            summary: p.types?.[0]?.replace(/_/g, ' ') || 'Google Place',
+            source: 'google_places',
+        }));
+}
+
+/** Try Places API (New) if the project's legacy endpoint fails. */
 export async function googlePlacesTextSearch({
     query,
     lat = null,
@@ -76,12 +118,18 @@ export async function googlePlacesTextSearch({
     if (type) params.set('type', type);
 
     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?${params}`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.status && data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-        console.warn('[Google Places]', data.status, data.error_message || '');
-        throw new Error(data.error_message || `Google Places status: ${data.status}`);
+    const signal = AbortSignal.timeout(7_500);
+    let data;
+    try {
+        const res = await fetch(url, { signal });
+        if (!res.ok) throw new Error(`Google Places legacy returned ${res.status}`);
+        data = await res.json();
+        if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+            throw new Error(`Google Places legacy status: ${data.status || 'unknown'}`);
+        }
+    } catch (error) {
+        if (signal.aborted) throw error;
+        return newPlacesSearch({ key, query, lat, lng, radiusMeters, limit, signal });
     }
 
     const results = Array.isArray(data.results) ? data.results : [];

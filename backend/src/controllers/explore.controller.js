@@ -1,5 +1,5 @@
 import { AppError } from '../utils/AppError.js';
-import { searchExplorePlaces } from '../utils/exploreSearch.js';
+import { buildExploreFollowUp, parseExploreQuery, searchExplorePlaces } from '../utils/exploreSearch.js';
 import {
     enrichPlaceReasons,
     isOpenAiConfigured,
@@ -14,23 +14,35 @@ import {
     updateExploreSessionSearch,
 } from '../utils/exploreSessions.js';
 
+function placeSearchReply(found) {
+    const { results, parsed, lookupUnavailable, needsLocation } = found;
+    if (results.length) {
+        return `Found ${results.length} ${results.length === 1 ? 'place' : 'places'}${parsed.city ? ` around ${parsed.city}` : ''}. Tap a card to see its location.`;
+    }
+    if (needsLocation) return 'Which city or neighbourhood should I search? You can also share your location for nearby results.';
+    if (lookupUnavailable) return 'Live place results are temporarily unavailable. Open this search in Google Maps to compare places, prices, and opening hours.';
+    return 'I didn’t find a matching place. Try a nearby city or open the same search in Google Maps.';
+}
+
 // POST /api/explore/search — one-shot (still supported)
 export const searchExplore = async (req, res) => {
     const { query, limit, lat, lng } = req.body || {};
-    if (!query?.trim()) {
+    if (typeof query !== 'string' || !query.trim()) {
         throw new AppError('Enter a place query, e.g. “quiet romantic drinks in Bangalore”.', 400);
     }
 
-    const { parsed, results, center, source, providers } = await searchExplorePlaces(query, {
+    const found = await searchExplorePlaces(query.trim().slice(0, 500), {
         limit: limit || 5,
         lat,
         lng,
     });
 
+    const { parsed, results, center, source, providers, fallbackUrl } = found;
     res.json({
         success: true,
         data: {
             query: parsed.raw,
+            fallbackUrl,
             source: source || 'openstreetmap',
             providers: providers || {},
             center,
@@ -42,9 +54,7 @@ export const searchExplore = async (req, res) => {
             },
             results,
         },
-        message: results.length
-            ? `Found ${results.length} places (${source || 'live'}).`
-            : 'No places found — try another city or vibe.',
+        message: placeSearchReply(found),
     });
 };
 
@@ -54,7 +64,7 @@ export const searchExplore = async (req, res) => {
  */
 export const chatExplore = async (req, res) => {
     const { sessionId, message, lat, lng, limit } = req.body || {};
-    const text = String(message || '').trim();
+    const text = typeof message === 'string' ? message.trim().slice(0, 500) : '';
     if (!text) throw new AppError('Send a chat message.', 400);
 
     const session = getOrCreateExploreSession(sessionId);
@@ -71,17 +81,24 @@ export const chatExplore = async (req, res) => {
     let source = session.source;
     let intent = session.intent;
     let providers = {};
+    let fallbackUrl;
+    let reply;
+    const contextualQuery = buildExploreFollowUp(text, session.lastSearchQuery);
+    const useContext = contextualQuery !== text || Boolean(parseExploreQuery(text).geocodeQuery);
+    const shouldSearch = plan.shouldSearch || useContext || !places.length;
 
-    if (plan.shouldSearch) {
-        const searchQ = plan.searchQuery || text;
+    if (shouldSearch) {
+        const searchQ = useContext ? contextualQuery : plan.searchQuery || contextualQuery;
+        session.lastSearchQuery = searchQ;
         const found = await searchExplorePlaces(searchQ, {
             limit: limit || 5,
             lat,
             lng,
+            history: session.messages,
         });
         places = found.results || [];
-        // enrich again with full chat history for bestFor labels
-        places = await enrichPlaceReasons(text, places, session.messages);
+        fallbackUrl = found.needsLocation ? undefined : found.fallbackUrl;
+        reply = placeSearchReply(found);
         center = found.center;
         source = found.source;
         intent = {
@@ -97,7 +114,7 @@ export const chatExplore = async (req, res) => {
         updateExploreSessionSearch(session, { places, center, intent, source });
     }
 
-    const assistantContent = plan.assistantMessage
+    const assistantContent = reply || plan.assistantMessage
         || (places.length
             ? `Here are ${places.length} places that fit. Check ratings, photos, and “best for” on each card.`
             : 'I could not find places for that — try a city name or a clearer vibe.');
@@ -105,7 +122,8 @@ export const chatExplore = async (req, res) => {
     appendExploreMessage(session, {
         role: 'assistant',
         content: assistantContent,
-        places: plan.shouldSearch ? places : undefined,
+        places: shouldSearch ? places : undefined,
+        fallbackUrl,
     });
 
     res.json({
@@ -118,6 +136,7 @@ export const chatExplore = async (req, res) => {
             source,
             providers,
             reply: assistantContent,
+            fallbackUrl,
         },
         message: assistantContent,
     });

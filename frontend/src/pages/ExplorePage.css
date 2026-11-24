@@ -76,11 +76,6 @@
     line-height: 1.45;
 }
 
-.explore-status-line {
-    color: var(--clr-text-muted);
-    font-size: 0.78rem;
-}
-
 .explore-clear {
     flex-shrink: 0;
     padding: 0.4rem 0.7rem;
@@ -145,6 +140,10 @@
 
 .explore-bubble p {
     margin: 0;
+}
+
+.explore-fallback-link {
+    margin-top: 0.65rem;
 }
 
 .explore-bubble.user {
