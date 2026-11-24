@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { adminApi } from '../../api/index.js';
 import { formatMoney } from '../../config/markets.js';
 import DailyColumnChart from './DailyColumnChart.jsx';
+import AdminWebsiteGrowth from './AdminWebsiteGrowth.jsx';
 
 const compactMoney = (v) => {
     const n = Number(v) || 0;
@@ -122,6 +123,8 @@ export default function AdminOverview({ onNavigate }) {
                     <em>spendable, not withdrawable</em>
                 </div>
             </section>
+
+            <AdminWebsiteGrowth />
 
             {data && (
                 <div className="adm-chart-grid">

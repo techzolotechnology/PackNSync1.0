@@ -32,6 +32,7 @@ import { offerRouter } from './routes/offer.routes.js';
 import { aviationRouter } from './routes/aviation.routes.js';
 import { pricingRouter } from './routes/pricing.routes.js';
 import { premiumSubscriptionRouter } from './routes/premiumSubscription.routes.js';
+import { websiteGrowthRouter } from './routes/websiteGrowth.routes.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
@@ -109,6 +110,7 @@ registerSocketHandlers(io);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+app.use('/api/website-growth', websiteGrowthRouter);
 
 // Rate limiting
 const limiter = rateLimit({

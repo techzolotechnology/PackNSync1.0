@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatMoney } from '../config/markets.js';
+import CustomerAppLink from '../components/CustomerAppLink.jsx';
 import { computeSplit, decodeState, encodeState } from '../utils/splitCalculator.js';
-import { copyLink, shareLink } from '../utils/share.js';
+import { copyLink, whatsappUrl } from '../utils/share.js';
+import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import useSeo from '../hooks/useSeo.js';
 import { ROUTE_SEO, TRIP_SPLITTER_HEADER } from '../seo/seoConfig.js';
 import './Destinations.css';
@@ -31,6 +33,8 @@ export default function CostSplitterPage() {
     const [newName, setNewName] = useState('');
     const [form, setForm] = useState(emptyExpense);
     const [error, setError] = useState('');
+    const countedSplit = useRef(expenses.length > 0 && people.length > 1);
+    const countedOpen = useRef(false);
 
     const result = useMemo(() => computeSplit(people, expenses), [people, expenses]);
 
@@ -40,7 +44,24 @@ export default function CostSplitterPage() {
         } catch { /* storage blocked */ }
     }, [people, expenses]);
 
-    const shareUrl = () => `${window.location.origin}${window.location.pathname}#${encodeState(people, expenses)}`;
+    useEffect(() => {
+        if (!countedOpen.current && decodeState(window.location.hash.slice(1))?.expenses.length) {
+            countedOpen.current = true;
+            trackWebsiteEvent('split_link_opened');
+        }
+    }, []);
+
+    const shareUrl = () => {
+        const url = new URL(window.location.pathname, window.location.origin);
+        url.searchParams.set('utm_source', 'shared-split');
+        url.hash = encodeState(people, expenses);
+        return url.href;
+    };
+    const countCompletedSplit = () => {
+        if (countedSplit.current) return;
+        countedSplit.current = true;
+        trackWebsiteEvent('split_completed');
+    };
 
     const addPerson = (e) => {
         e.preventDefault();
@@ -57,6 +78,7 @@ export default function CostSplitterPage() {
         setError('');
         setState((s) => ({ ...s, people: [...s.people, { id: uid('p'), name }] }));
         setNewName('');
+        if (people.length === 1 && expenses.length > 0) countCompletedSplit();
     };
 
     const removePerson = (id) => {
@@ -90,6 +112,7 @@ export default function CostSplitterPage() {
             }],
         }));
         setForm({ ...emptyExpense, paidBy });
+        if (people.length > 1) countCompletedSplit();
     };
 
     const toggleSplit = (id) => {
@@ -101,6 +124,7 @@ export default function CostSplitterPage() {
 
     const reset = () => {
         if (!window.confirm('Clear all people and expenses?')) return;
+        countedSplit.current = false;
         setState({ people: [], expenses: [] });
         window.history.replaceState(null, '', window.location.pathname);
     };
@@ -257,17 +281,15 @@ export default function CostSplitterPage() {
                                     ))}
                             </ul>
                             <div className="dst-actions">
-                                <button
-                                    type="button"
+                                <a
                                     className="btn btn-primary"
-                                    onClick={() => shareLink({
-                                        title: 'Trip cost split',
-                                        text: `Our trip split (total ${formatMoney(result.total)}):\n${summaryText}\n\nSee the details:`,
-                                        url: shareUrl(),
-                                    })}
+                                    href={whatsappUrl(`Our trip split (total ${formatMoney(result.total)}):\n${summaryText}\n\nSee the details:\n${shareUrl()}`)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => trackWebsiteEvent('split_share_opened')}
                                 >
                                     Share on WhatsApp
-                                </button>
+                                </a>
                                 <button type="button" className="btn btn-ghost" onClick={() => copyLink(shareUrl())}>Copy link</button>
                                 <button type="button" className="btn btn-ghost" onClick={reset}>Start over</button>
                             </div>
@@ -282,7 +304,8 @@ export default function CostSplitterPage() {
                         and track expenses together as you go.
                     </p>
                     <div className="dst-actions">
-                        <Link to="/trips/create" className="btn btn-primary">Create a trip</Link>
+                        <Link to="/trips/create" className="btn btn-primary">Plan a group trip</Link>
+                        <CustomerAppLink placement="splitter" className="btn btn-ghost" />
                         <Link to="/guides/how-to-split-trip-expenses-with-friends/" className="btn btn-ghost">
                             How to split costs fairly
                         </Link>

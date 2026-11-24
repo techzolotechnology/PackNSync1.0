@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { rentalsApi, verificationsApi } from '../api/index.js';
 import { useAuthStore } from '../store/authStore.js';
+import { useAuthUiStore } from '../store/authUiStore.js';
+import { rentalGrowthMarket, trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { CAR_FALLBACKS, BIKE_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
@@ -12,7 +14,12 @@ import { formatMoney } from '../config/markets.js';
 import './RentalsPage.css';
 
 const today = new Date().toISOString().slice(0, 10);
-const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+
+function nextRentalDate(date) {
+    const midnight = Date.parse(`${date}T00:00:00Z`);
+    if (!Number.isFinite(midnight)) return '';
+    return new Date(midnight + 86400000).toISOString().slice(0, 10);
+}
 
 const CAR_CATEGORIES = [
     {
@@ -94,12 +101,6 @@ const BIKE_CATEGORIES = [
     },
 ];
 
-const getDays = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return Math.max(1, Math.ceil((end - start) / 86400000));
-};
-
 function CategoryIcon({ type }) {
     if (type === 'cng') {
         return (
@@ -161,14 +162,18 @@ function kindFromParams(params) {
 /** @param {{ city?: { name: string, location: string, intro: string } }} props — set on /rentals/:city landing pages */
 export default function RentalsPage({ city = null }) {
     const user = useAuthStore((s) => s.user);
+    const openAuth = useAuthUiStore((s) => s.openAuth);
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const kind = kindFromParams(searchParams);
     const isBike = kind === 'bike';
+    const requestedDate = searchParams.get('startDate');
+    const initialStart = requestedDate >= today && nextRentalDate(requestedDate) ? requestedDate : today;
+    const initialEnd = nextRentalDate(initialStart);
 
     // Returning to this search shows the last results straight away (no skeleton, no jump).
     const [initialCache] = useState(() => {
-        const params = { startDate: searchParams.get('startDate') || today, endDate: tomorrow, kind: isBike ? 'bike' : 'car' };
+        const params = { startDate: initialStart, endDate: initialEnd, kind: isBike ? 'bike' : 'car' };
         const initialLocation = (searchParams.get('location') || city?.location || '').trim();
         if (initialLocation) params.location = initialLocation;
         return readViewCache(viewCacheKey('rentals', params));
@@ -176,8 +181,8 @@ export default function RentalsPage({ city = null }) {
     const [listings, setListings] = useState(() => initialCache?.listings ?? []);
     const [feePercent, setFeePercent] = useState(() => initialCache?.feePercent ?? null);
     const [location, setLocation] = useState(() => searchParams.get('location') || city?.location || '');
-    const [startDate, setStartDate] = useState(() => searchParams.get('startDate') || today);
-    const [endDate, setEndDate] = useState(tomorrow);
+    const [startDate, setStartDate] = useState(initialStart);
+    const [endDate, setEndDate] = useState(initialEnd);
     const [priceMin, setPriceMin] = useState(50);
     const [priceMax, setPriceMax] = useState(500);
     const [category, setCategory] = useState(() => searchParams.get('category') || '');
@@ -188,13 +193,13 @@ export default function RentalsPage({ city = null }) {
     const [termsOpen, setTermsOpen] = useState(false);
     const [termsLoading, setTermsLoading] = useState(false);
     const motionRef = useRef(null);
+    const startDateInput = useRef(null);
+    const latestSearch = useRef(0);
 
     const categories = isBike ? BIKE_CATEGORIES : CAR_CATEGORIES;
     const fallbacks = isBike ? BIKE_FALLBACKS : CAR_FALLBACKS;
 
     useGoFlyMotion(motionRef, [listings, loading, category, kind]);
-
-    const rentalDays = useMemo(() => getDays(startDate, endDate), [startDate, endDate]);
 
     const setKind = (next) => {
         const params = new URLSearchParams(searchParams);
@@ -210,6 +215,7 @@ export default function RentalsPage({ city = null }) {
     }, [kind]);
 
     const fetchListings = async () => {
+        const search = ++latestSearch.current;
         setLoadError('');
         wakeApi();
         const params = {
@@ -242,60 +248,58 @@ export default function RentalsPage({ city = null }) {
             }
             const fresh = res.data.data || [];
             const fee = res.data.meta?.platformFeePercent ?? null;
+            if (search !== latestSearch.current) return;
+            const dimensions = { market: rentalGrowthMarket(params.location), vehicle: params.kind };
+            trackWebsiteEvent('rental_search', dimensions);
+            if (fresh.length === 0) trackWebsiteEvent('rental_no_results', dimensions);
             setListings(fresh);
             setFeePercent(fee);
             writeViewCache(cacheKey, { listings: fresh, feePercent: fee });
         } catch (err) {
             // Keep showing the last results if only the refresh failed.
-            if (!cached) {
+            if (!cached && search === latestSearch.current) {
                 setListings([]);
                 setLoadError(err.response?.data?.message || 'Unable to load rental listings. Try Search again in a moment.');
             }
         } finally {
-            setLoading(false);
+            if (search === latestSearch.current) setLoading(false);
         }
     };
 
-    const priceScale = useMemo(() => {
-        // Always INR — empty search used to fall back to "$" because maxBound was 500.
-        // Slider 50–500 maps to rupees: cars ₹2k–₹20k, bikes ₹200–₹2k.
-        const factor = isBike ? 4 : 40;
-        const fmt = (n) => `₹${Math.round(n * factor).toLocaleString('en-IN')}`;
-        return {
-            factor,
-            fmt,
-            displayMin: fmt(priceMin),
-            displayMax: fmt(priceMax),
-            floor: fmt(50),
-            ceil: fmt(500),
-        };
-    }, [isBike, priceMin, priceMax]);
+    const priceFactor = isBike ? 4 : 40;
+    const minPrice = priceMin === 50 ? 0 : priceMin * priceFactor;
+    const maxPrice = priceMax === 500 ? Infinity : priceMax * priceFactor;
+    const minLabel = minPrice ? formatMoney(minPrice, 'INR') : 'No minimum';
+    const maxLabel = Number.isFinite(maxPrice) ? formatMoney(maxPrice, 'INR') : 'No maximum';
+    let priceLabel = 'Any price';
+    if (minPrice && Number.isFinite(maxPrice)) priceLabel = `${minLabel} – ${maxLabel}`;
+    else if (minPrice) priceLabel = `From ${minLabel}`;
+    else if (Number.isFinite(maxPrice)) priceLabel = `Up to ${maxLabel}`;
 
     const filtered = useMemo(() => {
         let rows = [...listings];
         const cat = categories.find((c) => c.id === category);
         if (cat) rows = rows.filter((l) => cat.match(l.vehicle));
 
-        const min = priceMin * priceScale.factor;
-        const max = priceMax * priceScale.factor;
         rows = rows.filter((l) => {
             const p = Number(l.pricePerDay);
-            return p >= min && p <= max;
+            return p >= minPrice && p <= maxPrice;
         });
 
         if (sortBy === 'price') rows.sort((a, b) => a.pricePerDay - b.pricePerDay);
         if (sortBy === 'price-desc') rows.sort((a, b) => b.pricePerDay - a.pricePerDay);
         return rows;
-    }, [listings, category, priceMin, priceMax, sortBy, priceScale.factor, categories]);
+    }, [listings, category, minPrice, maxPrice, sortBy, categories]);
 
     const handleSearch = (e) => {
-        e?.preventDefault?.();
+        e.preventDefault();
         fetchListings();
     };
 
     const completeBooking = async (listing) => {
         try {
             const res = await rentalsApi.book({ listingId: listing.id, startDate, endDate });
+            if (res.data?.data?.id) trackWebsiteEvent('booking_requested');
             const pricing = res.data?.pricing;
             toast.success(pricing
                 ? `Booking request sent. Total ${formatMoney(pricing.totalPrice, listing.currency)} (${formatMoney(pricing.hostAmount, listing.currency)} + ${formatMoney(pricing.platformFee, listing.currency)} service fee)`
@@ -312,8 +316,9 @@ export default function RentalsPage({ city = null }) {
     };
 
     const handleBook = async (listing) => {
+        trackWebsiteEvent('booking_started');
         if (!user) {
-            navigate('/login');
+            openAuth('login');
             return;
         }
         try {
@@ -416,6 +421,7 @@ export default function RentalsPage({ city = null }) {
                             <input
                                 type="text"
                                 placeholder="Location"
+                                aria-label="Pickup location"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                             />
@@ -426,9 +432,15 @@ export default function RentalsPage({ city = null }) {
                                 <rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.7" />
                                 <path d="M8 3.5v3M16 3.5v3M3.5 10h17" stroke="currentColor" strokeWidth="1.7" />
                             </svg>
-                            <input type="date" value={startDate} min={today} onChange={(e) => setStartDate(e.target.value)} />
+                            <input ref={startDateInput} type="date" aria-label="Pickup date" value={startDate} min={today} required
+                                onChange={(e) => {
+                                    const date = e.target.value;
+                                    setStartDate(date);
+                                    if (date && date >= endDate) setEndDate(nextRentalDate(date));
+                                }}
+                            />
                             <span className="cr-date-sep">–</span>
-                            <input type="date" value={endDate} min={startDate || today} onChange={(e) => setEndDate(e.target.value)} />
+                            <input type="date" aria-label="Return date" value={endDate} min={nextRentalDate(startDate) || today} required onChange={(e) => setEndDate(e.target.value)} />
                         </label>
 
                         <div className="cr-field cr-price-field">
@@ -439,8 +451,8 @@ export default function RentalsPage({ city = null }) {
                                 <div className="cr-slider-head">
                                     <span>Price Range</span>
                                     <strong className="cr-slider-value">
-                                        {priceScale.displayMin} – {priceScale.displayMax}
-                                        <em>/day</em>
+                                        {priceLabel}
+                                        {(minPrice > 0 || Number.isFinite(maxPrice)) && <em>/day</em>}
                                     </strong>
                                 </div>
                                 <div className="cr-dual-range">
@@ -459,7 +471,8 @@ export default function RentalsPage({ city = null }) {
                                         max="500"
                                         step="10"
                                         value={priceMin}
-                                        aria-label={`Minimum price ${priceScale.displayMin}`}
+                                        aria-label="Minimum price per day"
+                                        aria-valuetext={minLabel}
                                         style={{ zIndex: priceMin > priceMax - 80 ? 5 : 3 }}
                                         onChange={(e) => setPriceMin(Math.min(Number(e.target.value), priceMax - 10))}
                                     />
@@ -469,14 +482,15 @@ export default function RentalsPage({ city = null }) {
                                         max="500"
                                         step="10"
                                         value={priceMax}
-                                        aria-label={`Maximum price ${priceScale.displayMax}`}
+                                        aria-label="Maximum price per day"
+                                        aria-valuetext={maxLabel}
                                         style={{ zIndex: 4 }}
                                         onChange={(e) => setPriceMax(Math.max(Number(e.target.value), priceMin + 10))}
                                     />
                                 </div>
                                 <div className="cr-slider-ends">
-                                    <span>{priceScale.floor}</span>
-                                    <span>{priceScale.ceil}</span>
+                                    <span>No minimum</span>
+                                    <span>No maximum</span>
                                 </div>
                             </div>
                         </div>
@@ -542,15 +556,14 @@ export default function RentalsPage({ city = null }) {
                             <div key={i} className="cr-card cr-skeleton" />
                         ))}
                     </div>
-                ) : listings.length === 0 ? (
+                ) : listings.length === 0 && !loadError ? (
                     <div className="cr-empty">
-                        <h3>No {nounPlural} listed for these dates</h3>
-                        <p>
-                            {isBike
-                                ? 'Try another city, widen dates, or switch to Cars. You can also host your own bike.'
-                                : 'Try another city, widen dates, or switch to Bikes. You can also host your own car.'}
-                        </p>
+                        <h3>No {nounPlural} available for this search</h3>
+                        <p>Try different dates or search a nearby pickup city.</p>
                         <div className="cr-empty-actions">
+                            <button type="button" className="cr-host-btn" onClick={() => startDateInput.current?.focus()}>
+                                Change dates
+                            </button>
                             <button
                                 type="button"
                                 className="cr-book"
@@ -558,10 +571,10 @@ export default function RentalsPage({ city = null }) {
                             >
                                 Browse {isBike ? 'cars' : 'bikes'}
                             </button>
-                            <Link to="/host" className="cr-host-btn">List your {noun}</Link>
+                            <Link to="/become-a-host/" className="cr-host-btn">List your {noun}</Link>
                         </div>
                     </div>
-                ) : filtered.length === 0 ? (
+                ) : loadError ? null : filtered.length === 0 ? (
                     <div className="cr-empty">
                         <h3>No {nounPlural} match these filters</h3>
                         <p>Clear the category or widen the price range.</p>

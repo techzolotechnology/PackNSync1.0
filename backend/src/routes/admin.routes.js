@@ -22,6 +22,7 @@ import { aviationAdminRouter } from './aviation.routes.js';
 import { adminBusinessRouter } from './rentalBusiness.routes.js';
 import { adminInspectionsRouter } from './adminInspections.routes.js';
 import { requireAdminMfa } from '../middleware/adminMfa.middleware.js';
+import { readWebsiteGrowth } from './websiteGrowth.routes.js';
 import {
     listVerifications,
     approveVerification,
@@ -44,6 +45,7 @@ adminRouter.use(authenticate, authorize('ADMIN'));
 // every other admin route requires one.
 adminRouter.use('/2fa', adminSecurityRouter);
 adminRouter.use(requireAdminMfa);
+adminRouter.get('/website-growth', readWebsiteGrowth);
 
 // Overview, user 360°, wallet ops, audit log, earnings, reports, moderation
 adminRouter.use(adminOpsRouter);

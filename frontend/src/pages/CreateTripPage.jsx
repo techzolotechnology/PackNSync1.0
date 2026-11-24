@@ -1,5 +1,8 @@
-import { Component, useEffect, useMemo, useState } from 'react';
+import { Component, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
+import { useAuthStore } from '../store/authStore.js';
+import { useAuthUiStore } from '../store/authUiStore.js';
 import { tripsApi } from '../api/index.js';
 import toast from 'react-hot-toast';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
@@ -194,6 +197,8 @@ function formatRange(start, end) {
 
 function CreateTripForm() {
     const navigate = useNavigate();
+    const user = useAuthStore((state) => state.user);
+    const openAuth = useAuthUiStore((state) => state.openAuth);
     const [searchParams] = useSearchParams();
     const initial = useMemo(() => loadDraft(), []);
     const [step, setStep] = useState(() => initial?.step ?? 0);
@@ -204,6 +209,7 @@ function CreateTripForm() {
         destination: (searchParams.get('destination') || '').slice(0, 120),
     });
     const [restored] = useState(() => Boolean(initial));
+    const startedDraft = useRef((initial?.step ?? 0) > 0);
 
     useEffect(() => {
         if (!restored) return;
@@ -263,10 +269,18 @@ function CreateTripForm() {
             if (step === 1) toast.error('Choose valid start and end dates.');
             return;
         }
+        if (step === 0 && !startedDraft.current) {
+            startedDraft.current = true;
+            trackWebsiteEvent('trip_draft_started');
+        }
         goToStep(step + 1);
     };
 
     const handleSubmit = async () => {
+        if (!user) {
+            openAuth('login');
+            return;
+        }
         if (!form.startDate || !form.endDate) {
             toast.error('Dates are required.');
             return;
@@ -298,6 +312,7 @@ function CreateTripForm() {
             if (!tripId) {
                 throw new Error('The trip was created, but its details could not be opened.');
             }
+            trackWebsiteEvent('trip_created');
             navigate(`/trips/${tripId}`);
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || 'Failed to create trip.');
@@ -313,10 +328,11 @@ function CreateTripForm() {
             <div className="create-glow" aria-hidden="true" />
             <div className="create-shell">
                 <header className="create-hero">
-                    <h1 className="font-display">Post a trip</h1>
+                    <h1 className="font-display">Plan a group trip</h1>
                     <p>
-                        One person creates the route. Others join, travel with you, and split shared money.
+                        Choose a destination, set a budget, and invite friends after you publish.
                     </p>
+                    {!user && <p>Your draft stays on this device. Sign in when you’re ready to publish.</p>}
                 </header>
 
                 <nav className="create-stepper" aria-label="Create trip steps">
@@ -380,11 +396,13 @@ function CreateTripForm() {
                                     />
                                 </label>
                                 <div className="create-field">
-                                    <CoverImagePicker
-                                        place={form.destination}
-                                        value={form.coverImageUrl}
-                                        onChange={(url) => updateForm({ coverImageUrl: url })}
-                                    />
+                                    {user && (
+                                        <CoverImagePicker
+                                            place={form.destination}
+                                            value={form.coverImageUrl}
+                                            onChange={(url) => updateForm({ coverImageUrl: url })}
+                                        />
+                                    )}
                                 </div>
                                 <label className="create-field">
                                     Description
@@ -633,7 +651,7 @@ function CreateTripForm() {
                                 onClick={handleSubmit}
                                 disabled={isLoading || !canNext}
                             >
-                                {isLoading ? 'Publishing…' : 'Publish trip'}
+                                {isLoading ? 'Publishing…' : (user ? 'Publish trip' : 'Sign in to publish')}
                             </button>
                         )}
                     </div>
