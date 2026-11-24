@@ -10,11 +10,11 @@ export const isOpenAiConfigured = () => {
     return Boolean(key && !key.includes('your_') && key.startsWith('sk-'));
 };
 
-async function chatJson(system, user, { model } = {}) {
+export async function chatJson(system, user, { model, timeoutMs = 5_000 } = {}) {
     const key = process.env.OPENAI_API_KEY.trim();
     const res = await fetch(OPENAI_URL, {
         method: 'POST',
-        signal: AbortSignal.timeout(5_000),
+        signal: AbortSignal.timeout(timeoutMs),
         headers: {
             Authorization: `Bearer ${key}`,
             'Content-Type': 'application/json',

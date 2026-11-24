@@ -35,6 +35,7 @@ import { premiumSubscriptionRouter } from './routes/premiumSubscription.routes.j
 import { websiteGrowthRouter } from './routes/websiteGrowth.routes.js';
 import { prisma } from './utils/prisma.js';
 import { prepareWebsiteGrowth } from './utils/prepareWebsiteGrowth.js';
+import { prepareExploreAiChat } from './utils/prepareExploreAiChat.js';
 import { reconcileHostRefreshMigration } from './utils/reconcileHostRefreshMigration.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
@@ -263,6 +264,9 @@ if (process.env.NODE_ENV === 'production') {
       hostSessionMigrationError = /^(?:P\d{4}|[0-9A-Z]{5})$/.test(safeCode) ? safeCode : 'migration_error';
       console.error('[migrate] Host refresh recovery failed:', hostSessionMigrationError);
     });
+  prepareExploreAiChat(prisma).catch((error) => {
+    console.error('[Explore AI] Could not prepare chat storage:', error.code || error.name);
+  });
   prepareWebsiteGrowth(prisma).catch((error) => {
     console.error('[website growth] Could not prepare storage:', error.code || error.name);
   });

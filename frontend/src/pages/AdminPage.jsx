@@ -7,6 +7,7 @@ import AdminOverview from '../components/admin/AdminOverview.jsx';
 import AdminWithdrawals from '../components/admin/AdminWithdrawals.jsx';
 import AdminLedger from '../components/admin/AdminLedger.jsx';
 import AdminUserDrawer from '../components/admin/AdminUserDrawer.jsx';
+import AdminAiChats from '../components/admin/AdminAiChats.jsx';
 import AdminAudit from '../components/admin/AdminAudit.jsx';
 import AdminSecurity from '../components/admin/AdminSecurity.jsx';
 import AdminReports from '../components/admin/AdminReports.jsx';
@@ -37,6 +38,7 @@ const TABS = [
     { id: 'People', label: 'People' },
     { id: 'Offers', label: 'Offers & credits' },
     { id: 'Broadcast', label: 'Broadcast' },
+    { id: 'AI chats', label: 'AI chats' },
     { id: 'Audit', label: 'Audit & security' },
 ];
 const TAB_IDS = new Set(TABS.map((t) => t.id));
@@ -468,6 +470,8 @@ export default function AdminPage() {
                 </div>
 
                 {tab === 'Overview' && <AdminOverview onNavigate={navigateTo} />}
+
+                {tab === 'AI chats' && <AdminAiChats />}
 
                 {tab === 'Reports' && (
                     <div className="admin-panel">

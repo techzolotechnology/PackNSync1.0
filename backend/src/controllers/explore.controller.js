@@ -6,13 +6,12 @@ import {
     planExploreChatTurn,
 } from '../utils/exploreLlm.js';
 import { isGooglePlacesConfigured } from '../utils/exploreGooglePlaces.js';
+import { prisma } from '../utils/prisma.js';
+import { cacheExploreResults, getExploreResults } from '../utils/exploreSessions.js';
 import {
-    appendExploreMessage,
-    clearExploreSession,
-    getOrCreateExploreSession,
-    publicSession,
-    updateExploreSessionSearch,
-} from '../utils/exploreSessions.js';
+    aiIdentity, aiQuota, chatContact, publicAiChat, aiChatMessage,
+    reserveAiTurn, finishAiTurn, releaseAiTurn,
+} from '../utils/exploreAiChat.js';
 
 function placeSearchReply(found) {
     const { results, parsed, lookupUnavailable, needsLocation } = found;
@@ -58,105 +57,96 @@ export const searchExplore = async (req, res) => {
     });
 };
 
-/**
- * POST /api/explore/chat
- * Multi-turn: { sessionId?, message, lat?, lng?, limit? }
- */
+export async function buildExploreChatReply(session, { message, lat, lng, limit }, previous) {
+    const history = [...session.messages.slice(-11), { role: 'user', content: message }];
+    const plan = await planExploreChatTurn({ history, userMessage: message, lastPlaces: previous?.places });
+    const contextualQuery = buildExploreFollowUp(message, session.searchQuery);
+    const useContext = contextualQuery !== message || Boolean(parseExploreQuery(message).geocodeQuery);
+    if (!plan.shouldSearch && !useContext && previous?.places.length) {
+        const places = await enrichPlaceReasons(message, previous.places, history);
+        return { ...previous, places, reply: plan.assistantMessage, fallbackUrl: undefined };
+    }
+    const searchQuery = useContext ? contextualQuery : plan.searchQuery || contextualQuery;
+    const found = await searchExplorePlaces(searchQuery, { limit: limit || 5, lat, lng, history });
+    const intent = {
+        city: found.parsed?.city || plan.city || null,
+        intents: found.parsed?.intents?.length ? found.parsed.intents : plan.intents || [],
+        nearMe: Boolean(found.parsed?.nearMe || plan.nearMe),
+        llm: Boolean(found.parsed?.llm || plan.llm),
+    };
+    return {
+        searchQuery, intent,
+        places: found.results || [], center: found.center, source: found.source, providers: found.providers || {},
+        reply: placeSearchReply(found), fallbackUrl: found.needsLocation ? undefined : found.fallbackUrl,
+    };
+}
+
+const KIND = 'EXPLORE';
+const respond = (res, data) => res.set('Cache-Control', 'no-store').json({ success: true, data });
+
 export const chatExplore = async (req, res) => {
     const { sessionId, message, lat, lng, limit } = req.body || {};
-    const text = typeof message === 'string' ? message.trim().slice(0, 500) : '';
-    if (!text) throw new AppError('Send a chat message.', 400);
-
-    const session = getOrCreateExploreSession(sessionId);
-    appendExploreMessage(session, { role: 'user', content: text });
-
-    const plan = await planExploreChatTurn({
-        history: session.messages,
-        userMessage: text,
-        lastPlaces: session.places,
-    });
-
-    let places = session.places || [];
-    let center = session.center;
-    let source = session.source;
-    let intent = session.intent;
-    let providers = {};
-    let fallbackUrl;
-    let reply;
-    const contextualQuery = buildExploreFollowUp(text, session.lastSearchQuery);
-    const useContext = contextualQuery !== text || Boolean(parseExploreQuery(text).geocodeQuery);
-    const shouldSearch = plan.shouldSearch || useContext || !places.length;
-
-    if (shouldSearch) {
-        const searchQ = useContext ? contextualQuery : plan.searchQuery || contextualQuery;
-        session.lastSearchQuery = searchQ;
-        const found = await searchExplorePlaces(searchQ, {
-            limit: limit || 5,
-            lat,
-            lng,
-            history: session.messages,
-        });
-        places = found.results || [];
-        fallbackUrl = found.needsLocation ? undefined : found.fallbackUrl;
-        reply = placeSearchReply(found);
-        center = found.center;
-        source = found.source;
-        intent = {
-            city: found.parsed?.city || plan.city,
-            intents: found.parsed?.intents?.length ? found.parsed.intents : plan.intents,
-            nearMe: found.parsed?.nearMe || plan.nearMe,
-            llm: Boolean(found.parsed?.llm || plan.llm),
-        };
-        providers = found.providers || {};
-        updateExploreSessionSearch(session, { places, center, intent, source });
-    } else if (places.length) {
-        places = await enrichPlaceReasons(text, places, session.messages);
-        updateExploreSessionSearch(session, { places, center, intent, source });
+    const text = typeof message === 'string' ? message.trim() : '';
+    if (!text || text.length > 500) throw new AppError('Send a chat message of up to 500 characters.', 400);
+    if (typeof sessionId !== 'string' || !sessionId) throw new AppError('Start your chat first.', 400);
+    const identity = await aiIdentity(req, res);
+    const turn = await reserveAiTurn(identity, sessionId, KIND);
+    let answer;
+    let chat;
+    try {
+        answer = await buildExploreChatReply(turn, { message: text, lat, lng, limit }, getExploreResults(turn.id));
+        chat = await finishAiTurn(turn, [
+            aiChatMessage('user', text),
+            aiChatMessage('assistant', answer.reply, answer.fallbackUrl),
+        ], { searchQuery: answer.searchQuery, searchIntent: answer.intent });
+    } catch (error) {
+        await releaseAiTurn(turn);
+        throw error;
     }
-
-    const assistantContent = reply || plan.assistantMessage
-        || (places.length
-            ? `Here are ${places.length} places that fit. Check ratings, photos, and “best for” on each card.`
-            : 'I could not find places for that — try a city name or a clearer vibe.');
-
-    appendExploreMessage(session, {
-        role: 'assistant',
-        content: assistantContent,
-        places: shouldSearch ? places : undefined,
-        fallbackUrl,
-    });
-
-    res.json({
-        success: true,
-        data: {
-            session: publicSession(session),
-            places,
-            center,
-            intent,
-            source,
-            providers,
-            reply: assistantContent,
-            fallbackUrl,
-        },
-        message: assistantContent,
-    });
+    cacheExploreResults(turn.id, answer);
+    const { places, center, intent, source, providers, reply, fallbackUrl } = answer;
+    return respond(res, { places, center, intent, source, providers, reply, fallbackUrl, session: publicAiChat(chat), quota: await aiQuota(identity) });
 };
 
-// POST /api/explore/chat/clear
-export const clearExploreChat = async (req, res) => {
-    const { sessionId } = req.body || {};
-    const session = clearExploreSession(sessionId);
-    res.json({
-        success: true,
-        data: { session: publicSession(session) },
-        message: 'Chat cleared.',
+export const startExploreChat = async (req, res) => {
+    const contact = chatContact(req.body);
+    const identity = await aiIdentity(req, res);
+    const session = await prisma.exploreAiChat.create({
+        data: { kind: KIND, ownerKey: identity.ownerKey, userId: identity.userId, ...contact },
     });
+    return respond(res, { session: publicAiChat(session), quota: await aiQuota(identity) });
 };
 
-// GET /api/explore/chat/:sessionId
+export const getCurrentExploreChat = async (req, res) => {
+    const identity = await aiIdentity(req, res);
+    const session = identity.userId ? await prisma.exploreAiChat.findFirst({
+        where: { ownerKey: identity.ownerKey, kind: KIND }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    }) : null;
+    return respond(res, { session: publicAiChat(session), quota: await aiQuota(identity) });
+};
+
 export const getExploreChat = async (req, res) => {
-    const session = getOrCreateExploreSession(req.params.sessionId);
-    res.json({ success: true, data: { session: publicSession(session) } });
+    const identity = await aiIdentity(req, res);
+    const session = await prisma.exploreAiChat.findFirst({
+        where: { id: req.params.sessionId, ownerKey: identity.ownerKey, kind: KIND },
+    });
+    if (!session) throw new AppError('Chat not found.', 404);
+    return respond(res, { session: publicAiChat(session), quota: await aiQuota(identity) });
+};
+
+export const clearExploreChat = async (req, res) => {
+    const identity = await aiIdentity(req, res);
+    const sessionId = req.body?.sessionId;
+    if (typeof sessionId !== 'string' || !sessionId) throw new AppError('Chat not found.', 404);
+    const previous = await prisma.exploreAiChat.findFirst({
+        where: { id: sessionId, ownerKey: identity.ownerKey, kind: KIND },
+        select: { displayName: true, phoneNumber: true },
+    });
+    if (!previous) throw new AppError('Chat not found.', 404);
+    const session = await prisma.exploreAiChat.create({
+        data: { kind: KIND, ownerKey: identity.ownerKey, userId: identity.userId, ...previous },
+    });
+    return respond(res, { session: publicAiChat(session), quota: await aiQuota(identity) });
 };
 
 // GET /api/explore/examples

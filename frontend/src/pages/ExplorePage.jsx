@@ -3,13 +3,22 @@ import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { exploreApi } from '../api/index.js';
 import ExploreMap from '../components/ExploreMap.jsx';
+import AiContactFields, { initialAiContact } from '../components/AiContactFields.jsx';
+import { useAuthStore } from '../store/authStore.js';
 import ExplorePlanner from '../components/ExplorePlanner.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { searchBrowserPlaces } from '../utils/exploreBrowserPlaces.js';
 import { STOCK, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import './ExplorePage.css';
 
-const SESSION_KEY = 'packandsync-explore-session';
+const SESSION_KEY = 'packandsync.explore.chat';
+
+function cacheChat(key, chat) {
+    try {
+        if (chat) sessionStorage.setItem(key, JSON.stringify(chat));
+        else sessionStorage.removeItem(key);
+    } catch { /* The database still keeps the chat if browser storage is unavailable. */ }
+}
 const FALLBACK_IMG = STOCK.explorePlace;
 
 function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
@@ -83,11 +92,22 @@ function PlaceCard({ place, index, selected, saved, onSelect, onToggleSave }) {
 }
 
 export default function ExplorePage() {
+    const user = useAuthStore((state) => state.user);
+    return <ExploreChatPage key={user?.id || 'guest'} user={user} />;
+}
+
+function ExploreChatPage({ user }) {
     const [searchParams] = useSearchParams();
     // Deep links from destination pages: /explore?mode=planner&destination=Bali
     const initialDestination = searchParams.get('destination') || '';
     const [mode, setMode] = useState(() => (searchParams.get('mode') === 'planner' || initialDestination ? 'planner' : 'chat')); // chat | planner
-    const [sessionId, setSessionId] = useState(() => localStorage.getItem(SESSION_KEY) || '');
+    const cacheKey = `${SESSION_KEY}.${user?.id || 'guest'}`;
+    const [sessionId, setSessionId] = useState('');
+    const [contact, setContact] = useState(() => initialAiContact(user));
+    const [quota, setQuota] = useState(null);
+    const [opening, setOpening] = useState(true);
+    const [openError, setOpenError] = useState('');
+    const [retryCount, setRetryCount] = useState(0);
     const [messages, setMessages] = useState([]);
     const [places, setPlaces] = useState([]);
     const [planPlaces, setPlanPlaces] = useState([]);
@@ -147,23 +167,59 @@ export default function ExplorePage() {
     };
 
     useEffect(() => {
-        if (!sessionId) return;
-        exploreApi.getChat(sessionId)
+        let active = true;
+        if (!user?.id) cacheChat(cacheKey, null);
+        exploreApi.getCurrentChat()
             .then((res) => {
-                const s = res.data.data?.session;
-                if (!s) return;
-                setSessionId(s.id);
-                localStorage.setItem(SESSION_KEY, s.id);
-                setMessages(s.messages || []);
-                setPlaces(s.places || []);
-                setIntent(s.intent || null);
-                setSelectedId(s.places?.[0]?.id || null);
+                if (!active) return;
+                const { session, quota: remaining } = res.data.data;
+                setQuota(remaining);
+                if (session) {
+                    setSessionId(session.id);
+                    setMessages(session.messages);
+                    setIntent(session.intent);
+                    cacheChat(cacheKey, session);
+                } else {
+                    cacheChat(cacheKey, null);
+                }
             })
-            .catch(() => {
-                localStorage.removeItem(SESSION_KEY);
-                setSessionId('');
-            });
-    }, []);
+            .catch((error) => {
+                if (active) setOpenError(error.response?.data?.message || 'Could not open Explore chat.');
+            })
+            .finally(() => { if (active) setOpening(false); });
+        return () => { active = false; };
+    }, [cacheKey, retryCount, user?.id]);
+
+    useEffect(() => {
+        if (!quota || quota.remaining > 0) return;
+        const refresh = () => {
+            if (Date.now() < Date.parse(quota.resetsAt)) return;
+            exploreApi.getCurrentChat().then(({ data }) => setQuota(data.data.quota)).catch(() => {});
+        };
+        const interval = setInterval(refresh, 60_000);
+        window.addEventListener('focus', refresh);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', refresh);
+        };
+    }, [quota]);
+
+    const startChat = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        setOpenError('');
+        try {
+            const { session, quota: remaining } = (await exploreApi.startChat(contact)).data.data;
+            setSessionId(session.id);
+            setQuota(remaining);
+            cacheChat(cacheKey, session);
+            setContact(initialAiContact(user));
+        } catch (error) {
+            setOpenError(error.response?.data?.message || 'Could not start this chat. Try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (threadRef.current) {
@@ -179,6 +235,7 @@ export default function ExplorePage() {
     const send = async (text = input) => {
         const q = String(text || '').trim();
         if (!q) return toast.error('Type a message.');
+        if (!sessionId || loading || quota?.remaining === 0) return;
         setInput('');
         setLoading(true);
 
@@ -203,6 +260,8 @@ export default function ExplorePage() {
             const s = data.session;
             let thread = s?.messages || [];
             let list = data.places || [];
+            setQuota(data.quota);
+            if (s) cacheChat(cacheKey, s);
             if (!list.length && data.fallbackUrl) {
                 list = await searchBrowserPlaces(data.fallbackUrl, {
                     location: data.intent?.city ? null : origin,
@@ -218,16 +277,23 @@ export default function ExplorePage() {
             }
             if (s?.id) {
                 setSessionId(s.id);
-                localStorage.setItem(SESSION_KEY, s.id);
-                setMessages(thread);
+                setMessages((previous) => {
+                    const previousCards = new Map(previous.filter((entry) => entry.places?.length).map((entry) => [entry.id, entry]));
+                    return thread.map((entry, index) => {
+                        if (index === thread.length - 1 && list.length) return { ...entry, places: list };
+                        return previousCards.get(entry.id) || entry;
+                    });
+                });
             }
             setPlaces(list);
             setIntent(data.intent || null);
-            setSelectedId(list[0]?.id || selectedId);
+            setSelectedId(list[0]?.id || null);
         } catch (err) {
             const message = err.response?.data?.message || 'Could not reach Explore. Try sending your message again.';
+            setInput(q);
+            if (err.response?.data?.code === 'AI_LIMIT_REACHED') setQuota((current) => current && { ...current, remaining: 0 });
             setMessages((prev) => [
-                ...prev,
+                ...prev.filter((entry) => !entry.id.startsWith('local-')),
                 {
                     id: `err-${Date.now()}`,
                     role: 'assistant',
@@ -243,16 +309,15 @@ export default function ExplorePage() {
     const clearChat = async () => {
         setLoading(true);
         try {
-            const res = await exploreApi.clearChat(sessionId || undefined);
-            const s = res.data.data?.session;
-            setSessionId(s?.id || '');
-            if (s?.id) localStorage.setItem(SESSION_KEY, s.id);
-            else localStorage.removeItem(SESSION_KEY);
+            const { session, quota: remaining } = (await exploreApi.clearChat(sessionId)).data.data;
+            setSessionId(session.id);
+            setQuota(remaining);
+            cacheChat(cacheKey, session);
             setMessages([]);
             setPlaces([]);
             setIntent(null);
             setSelectedId(null);
-            toast.success('Chat cleared.');
+            toast.success('New chat started.');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not clear chat.');
         } finally {
@@ -303,8 +368,8 @@ export default function ExplorePage() {
                                     <p className="explore-kicker">Explore chat</p>
                                     <h1 className="font-display">Ask the map</h1>
                                 </div>
-                                <button type="button" className="explore-clear" onClick={clearChat} disabled={loading}>
-                                    Clear chat
+                                <button type="button" className="explore-clear" onClick={clearChat} disabled={loading || !sessionId}>
+                                    New chat
                                 </button>
                             </div>
                             <p>
@@ -312,132 +377,164 @@ export default function ExplorePage() {
                             </p>
                         </header>
 
-                        <div className="explore-thread" ref={threadRef}>
-                            {messages.length === 0 && (
-                                <div className="explore-empty">
-                                    <p>Try a vibe, then refine — e.g. “cheaper” or “closer to Indiranagar”.</p>
-                                    <div className="explore-examples">
-                                        {examples.slice(0, 4).map((ex) => (
-                                            <button key={ex} type="button" disabled={loading} onClick={() => send(ex)}>
-                                                {ex}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                        {opening && <p className="explore-empty" role="status">Opening chat…</p>}
+                        {!opening && !sessionId && (
+                            <div className="explore-empty explore-chat-contact">
+                                {openError && <p role="alert">{openError}</p>}
+                                {quota ? (
+                                    <form onSubmit={startChat}>
+                                        <AiContactFields contact={contact} onChange={setContact} disabled={loading} />
+                                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                                            {loading ? 'Starting…' : 'Start chat'}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <button type="button" className="btn btn-secondary" onClick={() => {
+                                        setOpenError('');
+                                        setOpening(true);
+                                        setRetryCount((count) => count + 1);
+                                    }}>Retry</button>
+                                )}
+                            </div>
+                        )}
 
-                            {messages.map((m) => (
-                                <div key={m.id} className={`explore-bubble ps-reveal ${m.role === 'user' ? 'ps-right' : 'ps-left'} ${m.role}`}>
-                                    <p>{m.content}</p>
-                                    {m.role === 'assistant' && m.fallbackUrl?.startsWith('https://www.google.com/maps/search/?') && (
-                                        <a className="btn btn-ghost btn-sm explore-fallback-link" href={m.fallbackUrl} target="_blank" rel="noreferrer">
-                                            Open search in Google Maps ↗
-                                        </a>
+                        {sessionId && (
+                            <>
+                                <div className="explore-thread" ref={threadRef}>
+                                    {messages.length === 0 && (
+                                        <div className="explore-empty">
+                                            <p>Try a vibe, then refine — e.g. “cheaper” or “closer to Indiranagar”.</p>
+                                            <div className="explore-examples">
+                                                {examples.slice(0, 4).map((ex) => (
+                                                    <button key={ex} type="button" disabled={loading || quota?.remaining === 0} onClick={() => send(ex)}>
+                                                        {ex}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
-                                    {m.role === 'assistant' && m.places?.length > 0 && (
-                                        <div className="explore-bubble-places">
-                                            {m.places.map((place, index) => (
-                                                <PlaceCard
-                                                    key={`${m.id}-${place.id}`}
-                                                    place={place}
-                                                    index={index}
-                                                    selected={selectedId === place.id}
-                                                    saved={saved.some((p) => p.id === place.id)}
-                                                    onSelect={(p) => setSelectedId(p.id)}
-                                                    onToggleSave={toggleSave}
-                                                />
-                                            ))}
+
+                                    {messages.map((m) => (
+                                        <div key={m.id} className={`explore-bubble ps-reveal ${m.role === 'user' ? 'ps-right' : 'ps-left'} ${m.role}`}>
+                                            <p>{m.content}</p>
+                                            {m.role === 'assistant' && m.fallbackUrl?.startsWith('https://www.google.com/maps/search/?') && (
+                                                <a className="btn btn-ghost btn-sm explore-fallback-link" href={m.fallbackUrl} target="_blank" rel="noreferrer">
+                                                    Open search in Google Maps ↗
+                                                </a>
+                                            )}
+                                            {m.role === 'assistant' && m.places?.length > 0 && (
+                                                <div className="explore-bubble-places">
+                                                    {m.places.map((place, index) => (
+                                                        <PlaceCard
+                                                            key={`${m.id}-${place.id}`}
+                                                            place={place}
+                                                            index={index}
+                                                            selected={selectedId === place.id}
+                                                            saved={saved.some((p) => p.id === place.id)}
+                                                            onSelect={(p) => setSelectedId(p.id)}
+                                                            onToggleSave={toggleSave}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    {loading && (
+                                        <div className="explore-bubble assistant">
+                                            <p>Thinking & searching places…</p>
                                         </div>
                                     )}
                                 </div>
-                            ))}
 
-                            {loading && (
-                                <div className="explore-bubble assistant">
-                                    <p>Thinking & searching places…</p>
+                                {intent && (
+                                    <div className="explore-intent">
+                                        {intent.city && <span>{intent.city}</span>}
+                                        {(intent.intents || []).map((i) => (
+                                            <span key={i}>{i}</span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {places.length > 0 && messages.every((m) => !m.places?.length) && (
+                                    <div className="explore-latest-places">
+                                        {places.map((place, index) => (
+                                            <PlaceCard
+                                                key={place.id}
+                                                place={place}
+                                                index={index}
+                                                selected={selectedId === place.id}
+                                                saved={saved.some((p) => p.id === place.id)}
+                                                onSelect={(p) => setSelectedId(p.id)}
+                                                onToggleSave={toggleSave}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {quota && (
+                                    <p className="explore-geo-row ai-remaining" role="status">
+                                        {quota.remaining} of {quota.limit} AI messages left today · Resets at midnight IST
+                                    </p>
+                                )}
+                                <div className="explore-geo-row">
+                                    <button
+                                        type="button"
+                                        className={`explore-geo-btn ${coords ? 'active' : ''}`}
+                                        onClick={() => (coords ? setCoords(null) : requestLocation())}
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" />
+                                            <circle cx="12" cy="10" r="2.2" fill="currentColor" />
+                                        </svg>
+                                        {coords ? 'Using your location' : 'Use my location'}
+                                    </button>
+                                    <span className="explore-geo-hint">
+                                        {coords ? 'Tap to turn off' : 'Or name a city in your message'}
+                                    </span>
                                 </div>
-                            )}
-                        </div>
 
-                        {intent && (
-                            <div className="explore-intent">
-                                {intent.city && <span>{intent.city}</span>}
-                                {(intent.intents || []).map((i) => (
-                                    <span key={i}>{i}</span>
-                                ))}
-                            </div>
-                        )}
-
-                        {places.length > 0 && messages.every((m) => !m.places?.length) && (
-                            <div className="explore-latest-places">
-                                {places.map((place, index) => (
-                                    <PlaceCard
-                                        key={place.id}
-                                        place={place}
-                                        index={index}
-                                        selected={selectedId === place.id}
-                                        saved={saved.some((p) => p.id === place.id)}
-                                        onSelect={(p) => setSelectedId(p.id)}
-                                        onToggleSave={toggleSave}
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="explore-geo-row">
-                            <button
-                                type="button"
-                                className={`explore-geo-btn ${coords ? 'active' : ''}`}
-                                onClick={() => (coords ? setCoords(null) : requestLocation())}
-                            >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" />
-                                    <circle cx="12" cy="10" r="2.2" fill="currentColor" />
-                                </svg>
-                                {coords ? 'Using your location' : 'Use my location'}
-                            </button>
-                            <span className="explore-geo-hint">
-                                {coords ? 'Tap to turn off' : 'Or name a city in your message'}
-                            </span>
-                        </div>
-
-                        <form
-                            className="explore-composer"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                send();
-                            }}
-                        >
-                            <textarea
-                                rows={2}
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder='e.g. “quiet romantic drinks in Bangalore”'
-                                disabled={loading}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                <form
+                                    className="explore-composer"
+                                    onSubmit={(e) => {
                                         e.preventDefault();
                                         send();
-                                    }
-                                }}
-                            />
-                            <button type="submit" className="btn btn-primary" disabled={loading || !input.trim()}>
-                                Send
-                            </button>
-                        </form>
+                                    }}
+                                >
+                                    <textarea
+                                        rows={2}
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder='e.g. “quiet romantic drinks in Bangalore”'
+                                        disabled={loading || quota?.remaining === 0}
+                                        aria-label="Your message"
+                                        maxLength={500}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                send();
+                                            }
+                                        }}
+                                    />
+                                    <button type="submit" className="btn btn-primary" disabled={loading || !input.trim() || quota?.remaining === 0}>
+                                        Send
+                                    </button>
+                                </form>
 
-                        {saved.length > 0 && (
-                            <div className="explore-saved">
-                                <h2>Saved ({saved.length})</h2>
-                                <ol>
-                                    {saved.map((p) => (
-                                        <li key={p.id}>{p.name}</li>
-                                    ))}
-                                </ol>
-                                <Link to="/trips/create" className="btn btn-primary w-full">
-                                    Post as Travel Together trip
-                                </Link>
-                            </div>
+                                {saved.length > 0 && (
+                                    <div className="explore-saved">
+                                        <h2>Saved ({saved.length})</h2>
+                                        <ol>
+                                            {saved.map((p) => (
+                                                <li key={p.id}>{p.name}</li>
+                                            ))}
+                                        </ol>
+                                        <Link to="/trips/create" className="btn btn-primary w-full">
+                                            Post as Travel Together trip
+                                        </Link>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </>
                 )}

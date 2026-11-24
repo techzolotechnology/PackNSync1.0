@@ -1,0 +1,22 @@
+.admin-ai-chats { display: grid; gap: .75rem; }
+.admin-ai-actions { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.admin-ai-actions input { flex: 1 1 12rem; }
+.admin-ai-list, .admin-ai-transcript ol { list-style: none; margin: 0; padding: 0; }
+.admin-ai-list .btn {
+    width: 100%;
+    justify-content: start;
+    text-align: left;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    border-bottom: 1px solid #dce5ef;
+}
+.admin-ai-list [aria-pressed="true"] { background: #e6f2ff; color: #143253; }
+.admin-ai-transcript {
+    background: #f0f7ff;
+    color: #143253;
+    border-radius: .8rem;
+    padding: .85rem;
+}
+.admin-ai-transcript ol { margin-top: .7rem; max-height: 55vh; overflow: auto; }
+.admin-ai-transcript li { padding: .5rem 0; border-bottom: 1px solid #c6d8e9; }
+.admin-ai-transcript li p { white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -245,7 +245,9 @@ export const exploreApi = {
     chat: (message, { sessionId, lat, lng, limit = 5 } = {}) =>
         api.post('/explore/chat', { message, sessionId, lat, lng, limit }),
     clearChat: (sessionId) => api.post('/explore/chat/clear', { sessionId }),
-    getChat: (sessionId) => api.get(`/explore/chat/${sessionId}`),
+    getCurrentChat: () => api.get('/explore/chat/current'),
+    startChat: (contact) => api.post('/explore/chat/start', contact),
+    draftTrip: (data) => api.post('/explore/chat/trip-draft', data),
     listPlans: () => api.get('/explore/plans'),
     // Itinerary generation chains an LLM call with geocoding lookups
     generatePlan: (data) => api.post('/explore/plans/generate', data, { timeout: 120000 }),
@@ -274,6 +276,8 @@ export const verificationsApi = {
 };
 
 export const adminApi = {
+    getAiChats: (filters) => api.post('/admin/ai-chats/search', filters),
+    getAiChat: (id) => api.get(`/admin/ai-chats/${id}`),
     getStats: () => api.get('/admin/stats'),
     updatePremiumBannerPrice: (price) => api.put('/admin/pricing/premium-banner', { price }),
     getUsers: (params) => api.get('/admin/users', { params }),

@@ -47,6 +47,48 @@ adminRouter.use('/2fa', adminSecurityRouter);
 adminRouter.use(requireAdminMfa);
 adminRouter.get('/website-growth', readWebsiteGrowth);
 
+const aiChatContactSelect = {
+    id: true, userId: true, kind: true, displayName: true, phoneNumber: true, updatedAt: true,
+};
+
+adminRouter.post('/ai-chats/search', async (req, res) => {
+    const search = typeof req.body?.search === 'string' ? req.body.search.trim().slice(0, 80) : '';
+    const page = Math.max(1, Math.min(10000, Math.floor(Number(req.body?.page) || 1)));
+    const limit = 25;
+    const where = {
+        NOT: { messages: { equals: [] } },
+        ...(search && {
+            OR: [
+                { displayName: { contains: search, mode: 'insensitive' } },
+                { phoneNumber: { contains: search.replace(/[\s()-]/g, '') || search } },
+            ],
+        }),
+    };
+    const [chats, count] = await Promise.all([
+        prisma.exploreAiChat.findMany({
+            where, select: aiChatContactSelect, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+            skip: (page - 1) * limit, take: limit,
+        }),
+        prisma.exploreAiChat.count({ where }),
+    ]);
+    res.set('Cache-Control', 'no-store').json({ success: true, data: { chats, page, pages: Math.max(1, Math.ceil(count / limit)) } });
+});
+
+adminRouter.get('/ai-chats/:id', async (req, res) => {
+    const chat = await prisma.exploreAiChat.findUnique({
+        where: { id: req.params.id }, select: { ...aiChatContactSelect, messages: true },
+    });
+    if (!chat) throw new AppError('AI chat not found.', 404);
+    await logAdminAction(req, {
+        action: 'AI_CHAT_VIEW',
+        targetType: 'AI_CHAT',
+        targetId: chat.id,
+        summary: 'Viewed a saved AI chat.',
+    });
+    res.set('Cache-Control', 'no-store').json({ success: true, data: chat });
+});
+
+
 // Overview, user 360°, wallet ops, audit log, earnings, reports, moderation
 adminRouter.use(adminOpsRouter);
 adminRouter.use(adminMoneyRouter);
