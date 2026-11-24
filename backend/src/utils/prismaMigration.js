@@ -7,12 +7,12 @@ const require = createRequire(import.meta.url);
 const run = promisify(execFile);
 const schemaFile = fileURLToPath(new URL('../../prisma/schema.prisma', import.meta.url));
 
-export function markMigrationApplied(migration) {
+export function markMigrationApplied(migration, url = process.env.DIRECT_URL || process.env.DATABASE_URL) {
     return run(process.execPath, [
         require.resolve('prisma'), 'migrate', 'resolve', '--applied', migration, '--schema', schemaFile,
     ], {
         timeout: 30_000,
         windowsHide: true,
-        env: { ...process.env, DIRECT_URL: process.env.DIRECT_URL || process.env.DATABASE_URL },
+        env: { ...process.env, DATABASE_URL: url, DIRECT_URL: url },
     });
 }

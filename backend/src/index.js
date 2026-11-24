@@ -53,6 +53,7 @@ app.set('trust proxy', 1);
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 let hostSessionMigration = process.env.NODE_ENV === 'production' ? 'checking' : undefined;
+let hostSessionMigrationError;
 
 const DEFAULT_ORIGINS = [
   'http://localhost:5173',
@@ -152,6 +153,7 @@ app.get('/health', (_req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     hostSessionMigration,
+    hostSessionMigrationError,
     email: {
       provider: email.provider,
       region: email.region,
@@ -253,11 +255,13 @@ if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_SWEEPS !== 'true') {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  reconcileHostRefreshMigration()
+  reconcileHostRefreshMigration({ liveClient: prisma, databaseUrl: process.env.DATABASE_URL })
     .then(() => { hostSessionMigration = 'clear'; })
     .catch((error) => {
       hostSessionMigration = 'error';
-      console.error('[migrate] Host refresh recovery failed:', error.code || error.name);
+      const safeCode = String(error.meta?.code || error.stderr?.match(/\bP\d{4}\b/)?.[0] || error.code || '');
+      hostSessionMigrationError = /^(?:P\d{4}|[0-9A-Z]{5})$/.test(safeCode) ? safeCode : 'migration_error';
+      console.error('[migrate] Host refresh recovery failed:', hostSessionMigrationError);
     });
   prepareWebsiteGrowth(prisma).catch((error) => {
     console.error('[website growth] Could not prepare storage:', error.code || error.name);
