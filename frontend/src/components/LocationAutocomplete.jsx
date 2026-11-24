@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getGoogleMapsApiKey, hasGoogleMapsApiKey, loadGoogleMaps } from '../utils/googleMapsLoader.js';
 import './LocationAutocomplete.css';
 
@@ -32,6 +32,7 @@ export default function LocationAutocomplete({
     className = '',
     icon = null,
     id,
+    ariaLabel = 'Location',
 }) {
     const [suggestions, setSuggestions] = useState([]);
     const [show, setShow] = useState(false);
@@ -207,6 +208,7 @@ export default function LocationAutocomplete({
                 type="text"
                 className="location-autocomplete-input"
                 placeholder={placeholder}
+                aria-label={ariaLabel}
                 value={value}
                 onChange={handleInput}
                 onFocus={() => suggestions.length > 0 && setShow(true)}

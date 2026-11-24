@@ -192,6 +192,11 @@
     border-right: 1px solid var(--clr-border);
 }
 
+.cr-location-autocomplete {
+    flex: 1;
+    min-width: 0;
+}
+
 .cr-field:nth-child(1) { grid-area: loc; }
 .cr-field:nth-child(2) { grid-area: dates; border-right: none; }
 

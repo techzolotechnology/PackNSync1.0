@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore.js';
 import { useAuthUiStore } from '../store/authUiStore.js';
 import { rentalGrowthMarket, trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import TermsAcceptanceModal from '../components/TermsAcceptanceModal.jsx';
+import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
 import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { CAR_FALLBACKS, BIKE_FALLBACKS, STOCK_IMG_SIZE } from '../constants/stockImages.js';
 import { wakeApi } from '../utils/apiResilience.js';
@@ -418,12 +419,14 @@ export default function RentalsPage({ city = null }) {
                                 <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z" stroke="currentColor" strokeWidth="1.7" />
                                 <circle cx="12" cy="10" r="2.2" fill="currentColor" />
                             </svg>
-                            <input
-                                type="text"
+                            <LocationAutocomplete
                                 placeholder="Location"
-                                aria-label="Pickup location"
                                 value={location}
-                                onChange={(e) => setLocation(e.target.value)}
+                                onChange={setLocation}
+                                onSelect={({ label }) => setLocation(label)}
+                                ariaLabel="Pickup location"
+                                className="cr-location-autocomplete"
+                                id="rental-pickup-location"
                             />
                         </label>
 
