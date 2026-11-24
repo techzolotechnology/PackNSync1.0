@@ -34,20 +34,30 @@ export async function completeFailedHostRefreshSchema(prisma) {
     }, { timeout: 10_000 });
 }
 
-export async function reconcileHostRefreshMigration() {
-    // Check and update the same database that Prisma Migrate uses.
-    const directUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
-    const prisma = new PrismaClient({ datasourceUrl: directUrl });
+function sessionPoolerUrl(databaseUrl) {
+    const url = new URL(databaseUrl);
+    if (url.hostname.endsWith('.pooler.supabase.com')) {
+        if (url.port === '6543') url.port = '5432';
+        url.searchParams.delete('pgbouncer');
+    }
+    return url.href;
+}
+
+export async function reconcileHostRefreshMigration(
+    { liveClient, databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL } = {},
+) {
+    // The live startup checks its own database. The deploy command checks the configured migration database.
+    const prisma = liveClient || new PrismaClient({ datasourceUrl: databaseUrl });
     let requiresResolution;
     try {
         requiresResolution = await completeFailedHostRefreshSchema(prisma);
     } finally {
-        await prisma.$disconnect();
+        if (!liveClient) await prisma.$disconnect();
     }
     if (!requiresResolution) return;
 
     try {
-        await markMigrationApplied(migration);
+        await markMigrationApplied(migration, sessionPoolerUrl(databaseUrl));
     } catch (error) {
         // Another deploy may have resolved the same entry after the schema check.
         if (!String(error.stderr).includes('P3008')) throw error;
