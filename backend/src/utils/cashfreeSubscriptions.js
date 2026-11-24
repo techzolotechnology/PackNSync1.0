@@ -77,7 +77,7 @@ export async function createCashfreePremiumSubscription({ user, monthlyPrice, tr
     }
 
     const subscriptionId = `ps_${randomUUID().replace(/-/g, '')}`;
-    const apiOrigin = String(process.env.API_PUBLIC_URL || 'https://packandsync-api.onrender.com').replace(/\/$/, '');
+    const apiOrigin = String(process.env.API_PUBLIC_URL || 'https://api.pickandsync.com').replace(/\/$/, '');
     const response = await callCashfree('/subscriptions', {
         method: 'POST',
         idempotencyKey: randomUUID(),
