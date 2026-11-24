@@ -33,6 +33,8 @@ import { aviationRouter } from './routes/aviation.routes.js';
 import { pricingRouter } from './routes/pricing.routes.js';
 import { premiumSubscriptionRouter } from './routes/premiumSubscription.routes.js';
 import { websiteGrowthRouter } from './routes/websiteGrowth.routes.js';
+import { prisma } from './utils/prisma.js';
+import { prepareWebsiteGrowth } from './utils/prepareWebsiteGrowth.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
@@ -245,6 +247,12 @@ async function runSweeps() {
 if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_SWEEPS !== 'true') {
     setTimeout(runSweeps, 60 * 1000).unref();
     setInterval(runSweeps, SWEEP_MS).unref();
+}
+
+if (process.env.NODE_ENV === 'production') {
+  prepareWebsiteGrowth(prisma).catch((error) => {
+    console.error('[website growth] Could not prepare storage:', error.code || error.name);
+  });
 }
 
 httpServer.listen(PORT, '0.0.0.0', () => {
