@@ -147,6 +147,10 @@
     margin: 0;
 }
 
+.explore-fallback-link {
+    margin-top: 0.65rem;
+}
+
 .explore-bubble.user {
     align-self: flex-end;
     background: linear-gradient(135deg, var(--clr-primary-500), var(--clr-primary-600));

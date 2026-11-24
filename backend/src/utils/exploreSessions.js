@@ -19,6 +19,7 @@ export const createExploreSession = () => {
         center: null,
         intent: null,
         source: null,
+        lastSearchQuery: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
     });
@@ -49,6 +50,7 @@ export const appendExploreMessage = (session, message) => {
         role: message.role,
         content: message.content,
         places: message.places || undefined,
+        fallbackUrl: message.fallbackUrl,
         createdAt: new Date().toISOString(),
     });
     if (session.messages.length > MAX_MESSAGES) {

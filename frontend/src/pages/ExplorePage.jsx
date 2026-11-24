@@ -95,7 +95,6 @@ export default function ExplorePage() {
     const [saved, setSaved] = useState([]);
     const [input, setInput] = useState('');
     const [examples, setExamples] = useState([]);
-    const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [coords, setCoords] = useState(null);
     const threadRef = useRef(null);
@@ -106,7 +105,6 @@ export default function ExplorePage() {
 
     useEffect(() => {
         exploreApi.getExamples().then((res) => setExamples(res.data.data || [])).catch(() => {});
-        exploreApi.getStatus().then((res) => setStatus(res.data.data)).catch(() => {});
     }, []);
 
     // Reuse an already-granted location so results are local without re-prompting.
@@ -212,13 +210,13 @@ export default function ExplorePage() {
             setIntent(data.intent || null);
             setSelectedId(list[0]?.id || selectedId);
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Chat failed.');
+            const message = err.response?.data?.message || 'Could not reach Explore. Try sending your message again.';
             setMessages((prev) => [
                 ...prev,
                 {
                     id: `err-${Date.now()}`,
                     role: 'assistant',
-                    content: 'Something went wrong looking that up. Try again with a city name.',
+                    content: message,
                     createdAt: new Date().toISOString(),
                 },
             ]);
@@ -295,15 +293,7 @@ export default function ExplorePage() {
                                 </button>
                             </div>
                             <p>
-                                Multi-turn chat with memory. Places show photo, rating, “best for”, and why they fit.
-                                {status && (
-                                    <span className="explore-status-line">
-                                        {' '}
-                                        · OpenAI {status.openai ? 'on' : 'off'}
-                                        {' · '}
-                                        Places {status.googlePlaces ? 'Google' : 'OSM'}
-                                    </span>
-                                )}
+                                Find places and refine your search by neighbourhood, budget, or vibe.
                             </p>
                         </header>
 
@@ -324,6 +314,11 @@ export default function ExplorePage() {
                             {messages.map((m) => (
                                 <div key={m.id} className={`explore-bubble ps-reveal ${m.role === 'user' ? 'ps-right' : 'ps-left'} ${m.role}`}>
                                     <p>{m.content}</p>
+                                    {m.role === 'assistant' && m.fallbackUrl?.startsWith('https://www.google.com/maps/search/?') && (
+                                        <a className="btn btn-ghost btn-sm explore-fallback-link" href={m.fallbackUrl} target="_blank" rel="noreferrer">
+                                            Open search in Google Maps ↗
+                                        </a>
+                                    )}
                                     {m.role === 'assistant' && m.places?.length > 0 && (
                                         <div className="explore-bubble-places">
                                             {m.places.map((place, index) => (

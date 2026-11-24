@@ -1,4 +1,3 @@
-import { AppError } from './AppError.js';
 import { enrichPlaceReasons, refineExploreIntent } from './exploreLlm.js';
 import {
     getExploreDefaultCenter,
@@ -7,7 +6,7 @@ import {
     isGooglePlacesConfigured,
 } from './exploreGooglePlaces.js';
 
-const USER_AGENT = 'PickAndSync/1.0 (explore; contact=dev@packandsync.local)';
+const USER_AGENT = 'PickAndSync/1.0 (https://pickandsync.com/explore/)';
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
 
@@ -15,6 +14,11 @@ const OVERPASS = 'https://overpass-api.de/api/interpreter';
 export const DEFAULT_COUNTRY = (process.env.EXPLORE_COUNTRY || 'India').trim();
 
 const CITY_ALIASES = {
+    indiranagar: 'Indiranagar, Bengaluru, India',
+    koramangala: 'Koramangala, Bengaluru, India',
+    gurugram: 'Gurugram, Haryana, India',
+    gurgaon: 'Gurugram, Haryana, India',
+    haryana: 'Haryana, India',
     bangalore: 'Bengaluru, India',
     bengaluru: 'Bengaluru, India',
     blr: 'Bengaluru, India',
@@ -35,12 +39,12 @@ const CITY_ALIASES = {
 const INTENT_KEYWORDS = {
     romantic: ['romantic', 'date', 'intimate', 'couple', 'anniversary'],
     quiet: ['quiet', 'calm', 'peaceful', 'soft', 'dim', 'chill'],
-    drinks: ['drinks', 'cocktail', 'bar', 'wine', 'beer', 'nightlife', 'pub'],
+    drinks: ['drink', 'cocktail', 'bar', 'wine', 'beer', 'nightlife', 'pub'],
     coffee: ['coffee', 'cafe', 'café', 'brunch', 'latte', 'espresso'],
     food: ['food', 'eat', 'dinner', 'lunch', 'hungry', 'restaurant', 'biryani'],
     beach: ['beach', 'sea', 'coast', 'waves'],
     outdoors: ['outdoors', 'walk', 'park', 'hike', 'sunrise', 'sunset', 'views', 'garden'],
-    budget: ['budget', 'cheap', 'affordable', 'inexpensive'],
+    budget: ['budget', 'cheap', 'affordable', 'inexpensive', 'less expensive'],
     family: ['family', 'kids', 'parents'],
     friends: ['friends', 'group', 'crew', 'gang'],
     local: ['local', 'authentic', 'locals'],
@@ -106,7 +110,7 @@ const INTENT_OSM = {
 };
 
 export const parseExploreQuery = (raw = '') => {
-    const text = String(raw).trim();
+    const text = String(raw).trim().replace(/\bquite(?=\s+romantic\b)/gi, 'quiet');
     const lower = text.toLowerCase();
     const intents = [];
     for (const [intent, words] of Object.entries(INTENT_KEYWORDS)) {
@@ -116,7 +120,7 @@ export const parseExploreQuery = (raw = '') => {
     let city = null;
     let geocodeQuery = null;
     for (const [alias, name] of Object.entries(CITY_ALIASES)) {
-        if (lower.includes(alias)) {
+        if (new RegExp(`\\b${alias}\\b`).test(lower)) {
             city = alias;
             geocodeQuery = name;
             break;
@@ -124,7 +128,7 @@ export const parseExploreQuery = (raw = '') => {
     }
 
     if (!geocodeQuery) {
-        const m = lower.match(/\b(?:in|near|around|at)\s+([a-z0-9][a-z0-9\s.'-]{1,40})/i);
+        const m = lower.match(/\b(?:in|near|around|at|closer to)\s+([a-z0-9][a-z0-9\s.'-]{1,40})/i);
         if (m?.[1]) {
             const place = m[1].replace(/\b(tonight|today|tomorrow|please|for|me)\b/g, '').trim();
             if (place.length >= 2) {
@@ -150,6 +154,18 @@ export const parseExploreQuery = (raw = '') => {
     };
 };
 
+export function buildExploreFollowUp(query, previous) {
+    const text = parseExploreQuery(query).raw;
+    if (!previous || !/^(?:make it|cheaper|closer|more\s+(?:quiet|romantic)|less\s+expensive)\b/i.test(text)) return text;
+
+    const current = parseExploreQuery(text);
+    const last = parseExploreQuery(previous);
+    const subject = previous.split(/\b(?:in|near|around|at|closer to)\s+/i)[0].trim();
+    const preferences = current.intents.filter((intent) => !last.intents.includes(intent));
+    const area = current.geocodeQuery || last.geocodeQuery;
+    return [preferences.join(' '), subject, area ? `in ${area}` : ''].filter(Boolean).join(' ');
+}
+
 const osmFiltersFor = (intents) => {
     const set = new Set();
     const list = intents.length ? intents : ['default'];
@@ -165,8 +181,9 @@ async function nominatimGeocode(q) {
     const url = `${NOMINATIM}?format=json&limit=1&addressdetails=1&q=${encodeURIComponent(q)}`;
     const res = await fetch(url, {
         headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+        signal: AbortSignal.timeout(4_000),
     });
-    if (!res.ok) throw new AppError('Location lookup failed (Nominatim). Try again in a moment.', 502);
+    if (!res.ok) throw new Error(`Location lookup returned ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data) || !data[0]) return null;
     const hit = data[0];
@@ -188,7 +205,7 @@ async function overpassSearch({ lat, lng, radiusMeters, filters }) {
         .map((f) => `${f}(around:${radiusMeters},${lat},${lng});`)
         .join('\n');
     const body = `
-[out:json][timeout:30];
+[out:json][timeout:8];
 (
 ${around}
 );
@@ -202,18 +219,13 @@ out center 40;
             'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `data=${encodeURIComponent(body)}`,
+        signal: AbortSignal.timeout(9_000),
     });
 
-    if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new AppError(
-            `Place search failed (OpenStreetMap Overpass${text ? '' : ''}). Try a simpler query or wait a few seconds.`,
-            502,
-        );
-    }
-
+    if (!res.ok) throw new Error(`OpenStreetMap lookup returned ${res.status}`);
     const data = await res.json();
-    return Array.isArray(data.elements) ? data.elements : [];
+    if (data.remark || !Array.isArray(data.elements)) throw new Error('OpenStreetMap lookup did not complete');
+    return data.elements;
 }
 
 const haversineKm = (aLat, aLng, bLat, bLng) => {
@@ -341,17 +353,22 @@ export const searchExplorePlaces = async (query, {
     limit = 5,
     lat = null,
     lng = null,
+    history = [],
 } = {}) => {
     let parsed = parseExploreQuery(query);
     if (!parsed.raw) {
         return { parsed, results: [], center: null, source: null };
     }
 
-    parsed = await refineExploreIntent(parsed.raw, parsed);
-    const take = Math.min(Number(limit) || 5, 10);
+    if (!history.length) parsed = await refineExploreIntent(parsed.raw, parsed);
+    const take = Math.max(1, Math.min(Math.floor(Number(limit) || 5), 10));
+    const textQuery = parsed.searchQuery || parsed.raw;
+    const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(textQuery)}`;
+    let lookupUnavailable = false;
 
     let center = null;
-    if (lat != null && lng != null && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))) {
+    if (!parsed.geocodeQuery && lat != null && lng != null && Number.isFinite(Number(lat))
+        && Number.isFinite(Number(lng)) && Math.abs(Number(lat)) <= 90 && Math.abs(Number(lng)) <= 180) {
         center = {
             lat: Number(lat),
             lng: Number(lng),
@@ -362,21 +379,12 @@ export const searchExplorePlaces = async (query, {
 
     // No GPS and no city in the query — fall back to the configured home area
     // so results stay local instead of drifting to whatever Google ranks first.
-    if (!center && !parsed.geocodeQuery) {
+    if (!center && !parsed.geocodeQuery && !parsed.nearMe) {
         center = getExploreDefaultCenter();
     }
 
     // Prefer Google Places when key is set
-    if (isGooglePlacesConfigured()) {
-        if (!center && parsed.geocodeQuery) {
-            try {
-                center = await nominatimGeocode(parsed.geocodeQuery);
-            } catch {
-                /* optional for text search */
-            }
-        }
-
-        const textQuery = parsed.searchQuery || parsed.raw;
+    if (isGooglePlacesConfigured() && (!parsed.nearMe || center || parsed.geocodeQuery)) {
         try {
             // Only bias to a point when we actually know one; otherwise the
             // country-level region bias in googlePlacesTextSearch does the work.
@@ -432,7 +440,7 @@ export const searchExplorePlaces = async (query, {
                     .sort((a, b) => b.score - a.score)
                     .slice(0, take);
 
-                results = await enrichPlaceReasons(parsed.raw, results);
+                results = await enrichPlaceReasons(parsed.raw, results, history);
 
                 return {
                     parsed: { ...parsed, city: parsed.city || center?.city },
@@ -446,37 +454,42 @@ export const searchExplorePlaces = async (query, {
                 };
             }
         } catch (err) {
-            console.warn('[explore] Google Places failed, falling back to OSM:', err.message);
+            lookupUnavailable = true;
+            console.warn('[explore] Google Places lookup unavailable:', err.message);
         }
     }
 
-    // OSM fallback (still live — not mock)
-    if (!center && parsed.geocodeQuery) {
-        center = await nominatimGeocode(parsed.geocodeQuery);
-    } else if (!center && parsed.nearMe) {
-        throw new AppError(
-            'Share your location for “near me”, or add a city like “in Bangalore”.',
-            400,
-        );
-    } else if (!center) {
-        center = await nominatimGeocode(`${parsed.raw}, ${DEFAULT_COUNTRY}`).catch(() => null);
-    }
+    const fallback = () => ({
+        parsed,
+        center,
+        results: [],
+        source: 'maps_link',
+        providers: { places: null, llm: Boolean(parsed.llm) },
+        fallbackUrl,
+        lookupUnavailable,
+        needsLocation: !center && !parsed.geocodeQuery && !lookupUnavailable,
+    });
 
-    if (!center) {
-        throw new AppError(
-            'Tell me where to look — add a city like “cafes in Bangalore”, or allow location and say “near me”.',
-            404,
-        );
+    if (!center && parsed.geocodeQuery) {
+        try {
+            center = await nominatimGeocode(parsed.geocodeQuery);
+        } catch (error) {
+            lookupUnavailable = true;
+            console.warn('[explore] Location lookup unavailable:', error.message);
+        }
     }
+    if (!center) return fallback();
 
     const filters = osmFiltersFor(parsed.intents);
     const radius = parsed.intents.includes('beach') || parsed.intents.includes('outdoors') ? 12000 : 5000;
-    const elements = await overpassSearch({
-        lat: center.lat,
-        lng: center.lng,
-        radiusMeters: radius,
-        filters,
-    });
+    let elements;
+    try {
+        elements = await overpassSearch({ lat: center.lat, lng: center.lng, radiusMeters: radius, filters });
+    } catch (error) {
+        lookupUnavailable = true;
+        console.warn('[explore] OpenStreetMap lookup unavailable:', error.message);
+        return fallback();
+    }
 
     const seen = new Set();
     let places = [];
@@ -496,7 +509,8 @@ export const searchExplorePlaces = async (query, {
         .sort((a, b) => b.score - a.score || a.distanceKm - b.distanceKm)
         .slice(0, take);
 
-    places = await enrichPlaceReasons(parsed.raw, places);
+    if (!places.length) return fallback();
+    places = await enrichPlaceReasons(parsed.raw, places, history);
 
     return {
         parsed: {
