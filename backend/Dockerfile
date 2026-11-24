@@ -33,4 +33,4 @@ EXPOSE 3001
 
 # Migrate, refresh showcase trips/listings (upsert-only), then start.
 # The seed must never keep the API from booting.
-CMD ["sh", "-c", "npx prisma migrate deploy && { node prisma/seedShowcase.js || echo 'showcase seed skipped'; } && node src/index.js"]
+CMD ["sh", "-c", "npm run db:deploy && { node prisma/seedShowcase.js || echo 'showcase seed skipped'; } && node src/index.js"]
