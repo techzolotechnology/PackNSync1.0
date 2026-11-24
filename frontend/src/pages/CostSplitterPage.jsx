@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatMoney } from '../config/markets.js';
+import CustomerAppLink from '../components/CustomerAppLink.jsx';
 import { computeSplit, decodeState, encodeState } from '../utils/splitCalculator.js';
 import { copyLink, whatsappUrl } from '../utils/share.js';
 import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
@@ -303,7 +304,8 @@ export default function CostSplitterPage() {
                         and track expenses together as you go.
                     </p>
                     <div className="dst-actions">
-                        <Link to="/trips/create" className="btn btn-primary">Create a trip</Link>
+                        <Link to="/trips/create" className="btn btn-primary">Plan a group trip</Link>
+                        <CustomerAppLink placement="splitter" className="btn btn-ghost" />
                         <Link to="/guides/how-to-split-trip-expenses-with-friends/" className="btn btn-ghost">
                             How to split costs fairly
                         </Link>

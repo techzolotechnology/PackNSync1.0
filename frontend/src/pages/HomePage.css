@@ -113,6 +113,17 @@
     font-weight: 700;
 }
 
+.home-app-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 0.5rem;
+    color: #0b4381;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
 /* Floating search / booking card */
 .home-search-wrap {
     position: relative;

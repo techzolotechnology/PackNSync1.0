@@ -238,7 +238,7 @@ export default function App() {
                     <Route path="/login" element={user?.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <AuthRouteRedirect mode="login" />} />
                     <Route path="/register" element={<BlockAdminFromApp><AuthRouteRedirect mode="register" /></BlockAdminFromApp>} />
                     <Route path="/trips" element={<BlockAdminFromApp><TripsPage /></BlockAdminFromApp>} />
-                    <Route path="/trips/create" element={<BlockAdminFromApp><PrivateRoute><CreateTripPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/trips/create" element={<BlockAdminFromApp><CreateTripPage /></BlockAdminFromApp>} />
                     <Route path="/trips/:id" element={<BlockAdminFromApp><TripDetailPage /></BlockAdminFromApp>} />
                     <Route path="/profile/:id" element={<BlockAdminFromApp><PrivateRoute><ProfilePage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />

@@ -5,6 +5,7 @@ import useGoFlyMotion from '../hooks/useGoFlyMotion.js';
 import { STOCK } from '../constants/stockImages.js';
 import { HERO_MEDIA } from '../utils/heroMedia.js';
 import AnimatedLogo from '../components/AnimatedLogo';
+import CustomerAppLink from '../components/CustomerAppLink.jsx';
 import { pricingApi } from '../api/index.js';
 import { trackWebsiteEvent } from '../utils/websiteGrowth.js';
 import './HomePage.css';
@@ -283,6 +284,7 @@ export default function HomePage() {
                             Split trip costs
                         </Link>
                     </div>
+                    <CustomerAppLink placement="home" className="home-app-link" />
                 </div>
 
                 <div className="container home-search-wrap ps-reveal ps-scale">

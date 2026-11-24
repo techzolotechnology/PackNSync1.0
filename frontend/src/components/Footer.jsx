@@ -1,4 +1,4 @@
-import React from 'react';
+import CustomerAppLink from './CustomerAppLink.jsx';
 import { Link } from 'react-router-dom';
 import { RENTAL_CITIES } from '../seo/seoConfig.js';
 import './Footer.css';
@@ -51,24 +51,17 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    <div className="footer-newsletter">
-                        <h2>Stay Updated</h2>
-                        <p>Join our newsletter for travel tips.</p>
-                        <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                            <input type="email" placeholder="Email address" className="form-input" />
-                            <button type="submit" className="btn btn-primary btn-sm">Join</button>
-                        </form>
+                    <div className="footer-app">
+                        <h2>PickAndSync on Android</h2>
+                        <p>Plan with your group and keep trip details on your phone.</p>
+                        <CustomerAppLink placement="footer" className="btn btn-primary btn-sm">
+                            Get it on Google Play
+                        </CustomerAppLink>
                     </div>
                 </div>
 
                 <div className="footer-bottom">
                     <p>&copy; {new Date().getFullYear()} TECHZOLO TECHNOLOGIES LLP. All rights reserved.</p>
-                    <div className="social-links">
-                        {/* Placeholder icons or text links */}
-                        <a href="#">Twitter</a>
-                        <a href="#">Instagram</a>
-                        <a href="#">GitHub</a>
-                    </div>
                 </div>
             </div>
         </footer>

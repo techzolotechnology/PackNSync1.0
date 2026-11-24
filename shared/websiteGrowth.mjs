@@ -1,6 +1,8 @@
 export const GROWTH_EVENTS = {
     landing: 'Landing visits',
     planner_opened: 'Planner opened from home',
+    trip_draft_started: 'Trip drafts started',
+    android_store_opened: 'Android store listing opens',
     splitter_opened: 'Splitter opened from home',
     trip_created: 'Trips created',
     trip_share_opened: 'Trip shares opened',
