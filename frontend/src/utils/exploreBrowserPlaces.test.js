@@ -19,7 +19,7 @@ describe('Explore browser place search', () => {
             id: 'gplace-example', name: 'Example bar', lat: 12.97, lng: 77.64, priceLevel: 1,
         })]);
         expect(searchByText).toHaveBeenCalledWith(expect.objectContaining({
-            textQuery: 'quiet drinks in Indiranagar', priceLevels: ['FREE', 'INEXPENSIVE', 'MODERATE'],
+            textQuery: 'quiet drinks in Indiranagar', priceLevels: ['INEXPENSIVE', 'MODERATE'],
         }));
     });
 

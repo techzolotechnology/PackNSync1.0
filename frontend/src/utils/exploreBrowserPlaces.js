@@ -19,7 +19,7 @@ export async function searchBrowserPlaces(fallbackUrl, { location, budget } = {}
                 maxResultCount: 5,
                 fields: ['id', 'displayName', 'formattedAddress', 'location', 'rating', 'userRatingCount', 'priceLevel'],
                 ...(location ? { locationBias: location } : {}),
-                ...(budget ? { priceLevels: ['FREE', 'INEXPENSIVE', 'MODERATE'] } : {}),
+                ...(budget ? { priceLevels: ['INEXPENSIVE', 'MODERATE'] } : {}),
             });
             return places.filter((p) => p.id && p.location && p.displayName).map((p) => ({
                 id: `gplace-${p.id}`,
