@@ -24,7 +24,7 @@ export const buildVerificationState = (verifications = [], policies = []) => {
     const latestByType = latestVerificationsByType(verifications);
     const isFullyVerified = REQUIRED_KYC.every((type) => latestByType[type]?.status === 'VERIFIED');
     // Only true when a KYC doc was submitted and is waiting on admin — not when missing
-    const hasPendingKyc = REQUIRED_KYC.some((type) => latestByType[type]?.status === 'PENDING');
+    const hasPendingKyc = REQUIRED_KYC.some((type) => ['PENDING', 'PROCESSING'].includes(latestByType[type]?.status));
     const hasMissingKyc = REQUIRED_KYC.some((type) => !latestByType[type]);
     const hasRejectedKyc = REQUIRED_KYC.some((type) => latestByType[type]?.status === 'REJECTED');
     const policiesAccepted = {};

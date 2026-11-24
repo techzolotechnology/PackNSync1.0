@@ -138,6 +138,7 @@ app.use(cookieParser());
 // RC documents are identity documents: never serve them publicly.
 // Admins fetch them through GET /api/admin/rc-files/:filename.
 app.use('/uploads/rc', (_req, res) => res.status(404).end());
+app.use('/uploads/verification', (_req, res) => res.status(404).end());
 // Report evidence is private too (GET /api/reports/evidence/:file).
 app.use('/uploads/reports', (_req, res) => res.status(404).end());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

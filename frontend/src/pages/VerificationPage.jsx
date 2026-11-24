@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import './VerificationPage.css';
 import { verificationsApi } from '../api/index.js';
@@ -19,6 +19,7 @@ const docStatus = (records, type) => {
 const statusMeta = (status, required) => {
     if (status === 'verified') return { label: 'Verified', tone: 'ok' };
     if (status === 'pending') return { label: 'In review', tone: 'warn' };
+    if (status === 'processing') return { label: 'Checking', tone: 'warn' };
     if (status === 'rejected') return { label: 'Rejected', tone: 'bad' };
     if (!required) return { label: 'Optional', tone: 'mute' };
     return { label: 'Needed', tone: 'mute' };
@@ -26,7 +27,8 @@ const statusMeta = (status, required) => {
 
 const overallMeta = (status) => {
     if (status?.isFullyVerified) return { label: 'KYC approved', tone: 'ok', hint: 'You’re cleared for rentals and hosting.' };
-    if (status?.hasPendingKyc) return { label: 'Waiting on admin', tone: 'warn', hint: 'Documents received. An admin will approve shortly.' };
+    if (Object.values(status?.latestByType || {}).some((record) => record?.status === 'PROCESSING')) return { label: 'Cashfree is checking', tone: 'warn', hint: 'Finish the secure provider step or return here to refresh your status.' };
+    if (status?.hasPendingKyc) return { label: 'Waiting on review', tone: 'warn', hint: 'Your documents are waiting for review.' };
     if (status?.hasRejectedKyc) {
         const reasons = Object.values(status.latestByType || {})
             .filter((v) => v?.status === 'REJECTED' && v.rejectionReason)
@@ -36,10 +38,10 @@ const overallMeta = (status) => {
             tone: 'bad',
             hint: reasons.length
                 ? `Rejected — ${reasons.join('; ')}. Fix this and submit again.`
-                : 'Something was rejected — submit again via DigiLocker.',
+                : 'Something was rejected — submit again for Cashfree verification.',
         };
     }
-    return { label: 'Not started', tone: 'mute', hint: 'Connect DigiLocker to submit Aadhaar and Driving License.' };
+    return { label: 'Not started', tone: 'mute', hint: 'Verify Aadhaar with Cashfree and DigiLocker, then verify your driving licence.' };
 };
 
 export default function VerificationPage() {
@@ -50,10 +52,45 @@ export default function VerificationPage() {
     const [rcPlate, setRcPlate] = useState('');
     const [rcFile, setRcFile] = useState(null);
     const [ocrResult, setOcrResult] = useState(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [licenseNumber, setLicenseNumber] = useState('');
+    const [licenseDob, setLicenseDob] = useState('');
+    const [manualFallbackOpen, setManualFallbackOpen] = useState(false);
+    const [manualDocType, setManualDocType] = useState('AADHAAR');
+    const [manualFile, setManualFile] = useState(null);
+    const [emergencyToken, setEmergencyToken] = useState('');
+
+    const openEmergencyReview = (err, documentType) => {
+        if (err.response?.status !== 503 || !err.response.data?.emergencyToken) return;
+        setManualDocType(documentType);
+        setEmergencyToken(err.response.data.emergencyToken);
+        setManualFallbackOpen(true);
+    };
 
     useEffect(() => {
         fetchStatus();
     }, []);
+
+    useEffect(() => {
+        const verificationId = searchParams.get('cashfreeVerificationId');
+        if (!verificationId) return;
+        setActionLoading(true);
+        verificationsApi.syncCashfreeDigiLockerStatus(verificationId)
+            .then((res) => {
+                toast.success(res.data.message || 'Cashfree verification status updated.');
+                return fetchStatus();
+            })
+            .catch((err) => {
+                openEmergencyReview(err, 'AADHAAR');
+                toast.error(err.response?.data?.message || 'Unable to check Cashfree verification yet.');
+            })
+            .finally(() => {
+                setActionLoading(false);
+                const next = new URLSearchParams(searchParams);
+                next.delete('cashfreeVerificationId');
+                setSearchParams(next, { replace: true });
+            });
+    }, [searchParams, setSearchParams]);
 
     const fetchStatus = async () => {
         setLoading(true);
@@ -74,10 +111,48 @@ export default function VerificationPage() {
         setActionLoading(true);
         try {
             const res = await verificationsApi.connectDigiLocker();
-            toast.success(res.data.message || 'Documents submitted for admin review.');
-            fetchStatus();
+            const redirectUrl = res.data.data?.redirectUrl;
+            if (!redirectUrl) throw new Error('Cashfree did not return a verification link.');
+            window.location.assign(redirectUrl);
         } catch (err) {
-            toast.error(err.response?.data?.message || 'DigiLocker connection failed.');
+            openEmergencyReview(err, 'AADHAAR');
+            toast.error(err.response?.data?.message || err.message || 'Cashfree verification could not start.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDrivingLicense = async (event) => {
+        event.preventDefault();
+        setActionLoading(true);
+        try {
+            const res = await verificationsApi.verifyDrivingLicenseWithCashfree(licenseNumber, licenseDob);
+            toast.success(res.data.message || 'Driving licence checked by Cashfree.');
+            setLicenseNumber('');
+            setLicenseDob('');
+            await fetchStatus();
+        } catch (err) {
+            openEmergencyReview(err, 'DL');
+            toast.error(err.response?.data?.message || 'Cashfree could not verify the driving licence.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleManualFallback = async (event) => {
+        event.preventDefault();
+        if (!manualFile) return toast.error('Choose the document image to submit.');
+        setActionLoading(true);
+        try {
+            const res = await verificationsApi.submit(manualDocType, manualFile, emergencyToken);
+            toast.success(res.data.message || 'Document sent for emergency review.');
+            setManualFile(null);
+            setEmergencyToken('');
+            setManualFallbackOpen(false);
+            event.currentTarget.reset();
+            await fetchStatus();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Unable to submit the document for review.');
         } finally {
             setActionLoading(false);
         }
@@ -164,7 +239,7 @@ export default function VerificationPage() {
                 <section className="verify-panel">
                     <div className="verify-panel-head">
                         <h2>Required for rentals</h2>
-                        <p>One DigiLocker connect submits Aadhaar + Driving License for admin review.</p>
+                        <p>Cashfree securely checks your Aadhaar through DigiLocker and validates your driving licence against official records.</p>
                     </div>
 
                     <ul className="verify-list">
@@ -174,7 +249,7 @@ export default function VerificationPage() {
                             return (
                                 <li key={step.type} className={`verify-row tone-${meta.tone}`}>
                                     <div className="verify-row-mark" aria-hidden="true">
-                                        {s === 'verified' ? '✓' : s === 'pending' ? '…' : step.required ? '○' : '–'}
+                                        {s === 'verified' ? '✓' : ['pending', 'processing'].includes(s) ? '…' : step.required ? '○' : '–'}
                                     </div>
                                     <div className="verify-row-copy">
                                         <strong>{step.title}</strong>
@@ -186,21 +261,62 @@ export default function VerificationPage() {
                         })}
                     </ul>
 
-                    {!status.isFullyVerified ? (
+                    {docStatus(verifications, 'AADHAAR') !== 'verified' ? (
                         <button
                             type="button"
                             className="btn btn-primary verify-primary-btn"
                             onClick={handleDigiLocker}
                             disabled={actionLoading}
                         >
-                            {actionLoading ? 'Connecting DigiLocker…' : status.hasPendingKyc ? 'Resubmit via DigiLocker' : 'Continue with DigiLocker'}
+                            {actionLoading ? 'Connecting Cashfree…' : docStatus(verifications, 'AADHAAR') === 'processing' ? 'Continue with Cashfree' : 'Verify Aadhaar with Cashfree'}
                         </button>
                     ) : (
                         <div className="verify-success-banner">
-                            Identity checks passed. You can rent cars and post trips freely.
+                            Aadhaar has been verified by Cashfree.
                         </div>
                     )}
                 </section>
+
+                {manualFallbackOpen && (
+                    <section className="verify-panel verify-panel-secondary" role="region" aria-label="Emergency identity review">
+                        <div className="verify-panel-head">
+                            <h2>Cashfree is unavailable</h2>
+                            <p>Cashfree could not complete this check. As an emergency fallback, send a clear {manualDocType === 'AADHAAR' ? 'Aadhaar' : 'driving licence'} image to the PickAndSync review team. It will be stored privately and removed after the decision. Mask Aadhaar numbers before uploading.</p>
+                        </div>
+                        <form className="verify-rc-form verify-manual-form" onSubmit={handleManualFallback}>
+                            <label className="verify-file">
+                                Document image
+                                <span className="verify-file-box">{manualFile?.name || 'Choose JPG, PNG, or WEBP (up to 6 MB)'}</span>
+                                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setManualFile(e.target.files?.[0] || null)} required />
+                            </label>
+                            <button type="submit" className="btn btn-ghost verify-rc-btn" disabled={actionLoading}>
+                                {actionLoading ? 'Submitting…' : 'Send for emergency review'}
+                            </button>
+                        </form>
+                    </section>
+                )}
+
+                {docStatus(verifications, 'DL') !== 'verified' && (
+                    <section className="verify-panel verify-panel-secondary">
+                        <div className="verify-panel-head">
+                            <h2>Verify your driving licence</h2>
+                            <p>Cashfree checks the licence number and date of birth with official records. We do not save these details.</p>
+                        </div>
+                        <form className="verify-rc-form" onSubmit={handleDrivingLicense}>
+                            <label>
+                                Driving licence number
+                                <input type="text" autoComplete="off" maxLength={25} required value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value.toUpperCase())} placeholder="Enter licence number" />
+                            </label>
+                            <label>
+                                Date of birth
+                                <input type="date" required value={licenseDob} onChange={(e) => setLicenseDob(e.target.value)} />
+                            </label>
+                            <button type="submit" className="btn btn-primary verify-rc-btn" disabled={actionLoading}>
+                                {actionLoading ? 'Checking with Cashfree…' : 'Verify driving licence'}
+                            </button>
+                        </form>
+                    </section>
+                )}
 
                 <section className="verify-panel verify-panel-secondary">
                     <div className="verify-panel-head">

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { RC_UPLOAD_DIR } from '../middleware/rcUpload.middleware.js';
+import { VERIFICATION_UPLOAD_DIR } from '../middleware/verificationUpload.middleware.js';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
@@ -748,6 +749,15 @@ adminRouter.post('/payments/:id/refund', async (req, res) => {
 adminRouter.get('/rc-files/:filename', async (req, res) => {
     const filename = path.basename(String(req.params.filename || ''));
     const filePath = path.join(RC_UPLOAD_DIR, filename);
+    if (!filename || !fs.existsSync(filePath)) throw new AppError('File not found.', 404);
+    res.set('Cache-Control', 'private, no-store');
+    res.sendFile(filePath);
+});
+
+adminRouter.get('/verification-files/:filename', async (req, res) => {
+    const filename = String(req.params.filename || '');
+    if (!/^\d+_[a-f0-9]{32}\.jpg$/.test(filename)) throw new AppError('File not found.', 404);
+    const filePath = path.join(VERIFICATION_UPLOAD_DIR, filename);
     if (!filename || !fs.existsSync(filePath)) throw new AppError('File not found.', 404);
     res.set('Cache-Control', 'private, no-store');
     res.sendFile(filePath);

@@ -3,13 +3,11 @@ import { adminApi } from '../api/index.js';
 
 /** True when a verification/vehicle record points at an actual image. */
 export function hasViewableDocument(url) {
-    return /^https?:\/\//i.test(url || '') || /^\/(api\/admin\/rc-files|uploads\/rc)\//.test(url || '');
+    return /^https?:\/\//i.test(url || '') || /^\/(api\/admin\/(rc-files|verification-files)|uploads\/(rc|verification))\//.test(url || '');
 }
 
 /**
- * Open an identity document for review. Local RC photos are admin-only, so
- * they are fetched with the admin's token and shown as a blob URL; older
- * records stored as /uploads/rc/... map to the same admin route.
+ * Private identity documents are fetched with the admin's token and shown as a blob URL.
  */
 export async function openAdminDocument(url) {
     if (!hasViewableDocument(url)) {
@@ -24,7 +22,8 @@ export async function openAdminDocument(url) {
     const tab = window.open('', '_blank');
     try {
         const filename = url.split('/').pop();
-        const res = await adminApi.getRcFile(`/api/admin/rc-files/${encodeURIComponent(filename)}`);
+        const endpoint = url.includes('/verification-files/') ? 'verification-files' : 'rc-files';
+        const res = await adminApi.getRcFile(`/api/admin/${endpoint}/${encodeURIComponent(filename)}`);
         const objectUrl = URL.createObjectURL(res.data);
         if (tab) tab.location.href = objectUrl;
         else window.location.assign(objectUrl);

@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError.js';
 import { notifyUser } from '../utils/notify.js';
 import { logAdminAction } from '../utils/audit.js';
 import { assertRoadVehicle, ROAD_TYPES } from '../utils/vehicleCategories.js';
+import { removeVerificationUpload } from '../middleware/verificationUpload.middleware.js';
 
 // GET /api/admin/verifications
 export const listVerifications = async (req, res) => {
@@ -39,6 +40,7 @@ export const approveVerification = async (req, res) => {
         where: { id: verification.id },
         data: { status: 'VERIFIED', verifiedAt: new Date(), rejectionReason: null },
     });
+    removeVerificationUpload(verification.documentUrl);
 
     if (verification.documentType === 'RC' && verification.documentNumber) {
         await prisma.vehicle.updateMany({
@@ -81,6 +83,7 @@ export const rejectVerification = async (req, res) => {
             rejectionReason: reason ? String(reason).slice(0, 300) : null,
         },
     });
+    removeVerificationUpload(verification.documentUrl);
 
     if (verification.documentType === 'RC' && verification.documentNumber) {
         await prisma.vehicle.updateMany({

@@ -263,8 +263,16 @@ export const exploreApi = {
 export const verificationsApi = {
     getStatus: () => api.get('/verifications/status'),
     getPolicyStatus: () => api.get('/verifications/policies/status'),
-    submit: (data) => api.post('/verifications/submit', data),
+    submit: (documentType, file, emergencyToken) => {
+        const form = new FormData();
+        form.append('documentType', documentType);
+        form.append('emergencyToken', emergencyToken);
+        form.append('document', file);
+        return api.post('/verifications/submit', form, { timeout: 45000 });
+    },
     connectDigiLocker: () => api.post('/verifications/digilocker/connect'),
+    syncCashfreeDigiLockerStatus: (verificationId) => api.post('/verifications/cashfree/digilocker/status', { verificationId }),
+    verifyDrivingLicenseWithCashfree: (licenseNumber, dateOfBirth) => api.post('/verifications/cashfree/driving-license', { licenseNumber, dateOfBirth }),
     submitRc: (licensePlate) => api.post('/verifications/digilocker/rc', { licensePlate }),
     uploadRcOcr: (licensePlate, file) => {
         const form = new FormData();
