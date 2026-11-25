@@ -44,6 +44,11 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
   const [creating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [aiStep, setAiStep] = useState(-1);
+  const [aiContact, setAiContact] = useState({ name: user?.name || '', mobile: user?.phoneNumber || '' });
+  const [aiAnswers, setAiAnswers] = useState({ destination: '', pickup: '', stopovers: '', style: '', notes: '', budget: '' });
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
 
   const say = (text, nextTone = 'gold') => { setMessage(text); setTone(nextTone); };
 
@@ -62,6 +67,23 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
   useEffect(() => registerRefresh?.(loadTrips), [registerRefresh, loadTrips]);
 
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+  const generateTripDescription = async () => {
+    if (!aiContact.name.trim() || !aiContact.mobile.trim()) return say('Enter your name and mobile number with its country code.', 'error');
+    if (!aiConsent) return say('Agree to save your name, number and AI chat before continuing.', 'error');
+    setAiBusy(true);
+    try {
+      const response = await api.post('/explore/chat/trip-draft', {
+        contact: { ...aiContact, consent: true },
+        answers: { ...aiAnswers, destination: aiAnswers.destination || form.destination, pickup: aiAnswers.pickup || form.meetingPoint, budget: aiAnswers.budget || form.budgetEstimate, stopovers: aiAnswers.stopovers.split('\n').filter(Boolean) },
+      });
+      const draft = response.data.draft;
+      setForm((current) => ({ ...current, title: current.title || draft.title, destination: draft.destination, description: draft.description, meetingPoint: draft.pickup, budgetEstimate: draft.budget == null ? current.budgetEstimate : String(draft.budget) }));
+      setAiAnswers((current) => ({ ...current, stopovers: draft.stopovers.join('\n') }));
+      setAiStep(-1);
+      say('AI draft added. Review it before creating your trip.', 'success');
+    } catch (error) { say(error.message, 'error'); }
+    finally { setAiBusy(false); }
+  };
   const changeStart = (next) => setForm((current) => ({
     ...current,
     startDate: next,
@@ -185,7 +207,23 @@ export default function TripsScreen({ user, setTab, layout, registerRefresh }) {
             <Field label="BUDGET PER PERSON (₹)" icon="cash-outline" value={form.budgetEstimate} onChangeText={(value) => updateForm('budgetEstimate', value.replace(/\D/g, ''))} placeholder="12000" keyboardType="number-pad" maxLength={7} />
           </ResponsiveGrid>
           <Field label="MEETING POINT" icon="navigate-outline" value={form.meetingPoint} onChangeText={(value) => updateForm('meetingPoint', value)} placeholder="City centre, metro station, cafe..." />
+          <AppButton variant="ghost" icon="sparkles-outline" onPress={() => { setAiAnswers((current) => ({ ...current, destination: form.destination, pickup: form.meetingPoint, budget: form.budgetEstimate })); setAiStep(0); }}>Draft this trip with AI</AppButton>
+          {aiStep >= 0 && (
+            <Surface style={styles.aiPanel}>
+              <Text style={styles.aiTitle}>Step {aiStep + 1} of 7 · Answer a few questions to build your trip</Text>
+              {aiStep === 0 ? <Field label="YOUR NAME" value={aiContact.name} onChangeText={(value) => setAiContact((current) => ({ ...current, name: value }))} placeholder="Name" autoCapitalize="words" /> : null}
+              {aiStep === 1 ? <Field label="MOBILE NUMBER WITH COUNTRY CODE" value={aiContact.mobile} onChangeText={(value) => setAiContact((current) => ({ ...current, mobile: value }))} placeholder="+91 98765 43210" keyboardType="phone-pad" autoComplete="tel" /> : null}
+              {aiStep > 1 ? <Field label={['TRIP STYLE','PICKUP PLACE','STOPOVERS · ONE PER LINE','BUDGET PER PERSON (₹)','EXTRA DETAILS'][aiStep - 2]} value={aiAnswers[['style','pickup','stopovers','budget','notes'][aiStep - 2]]} onChangeText={(value) => setAiAnswers((current) => ({ ...current, [['style','pickup','stopovers','budget','notes'][aiStep - 2]]: value }))} placeholder={['Relaxed weekend with friends','Meeting point','One place per line','Optional','Optional details'][aiStep - 2]} multiline={aiStep === 4 || aiStep === 6} keyboardType={aiStep === 5 ? 'number-pad' : 'default'} /> : null}
+              <ToggleRow title="Save my name, mobile and chat for support" subtitle="See the Privacy Policy for details." value={aiConsent} onValueChange={setAiConsent} />
+              <View style={styles.tripActions}>
+                {aiStep > 0 && <AppButton compact variant="ghost" onPress={() => setAiStep((step) => step - 1)}>Back</AppButton>}
+                {aiStep < 6 ? <AppButton compact onPress={() => setAiStep((step) => step + 1)}>Next</AppButton> : <AppButton compact loading={aiBusy} disabled={aiBusy} onPress={generateTripDescription}>Generate draft</AppButton>}
+                <AppButton compact variant="ghost" onPress={() => setAiStep(-1)}>Close</AppButton>
+              </View>
+            </Surface>
+          )}
           <Field label="DESCRIPTION" value={form.description} onChangeText={(value) => updateForm('description', value)} placeholder="Tell travellers what to expect" multiline />
+          <Field label="STOPOVERS · ONE PER LINE" value={aiAnswers.stopovers} onChangeText={(value) => setAiAnswers((current) => ({ ...current, stopovers: value }))} multiline />
           <ToggleRow
             icon={form.isPublic ? 'globe-outline' : 'lock-closed-outline'}
             title={form.isPublic ? 'Public trip' : 'Private, invite-only'}

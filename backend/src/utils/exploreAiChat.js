@@ -2,6 +2,7 @@ import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { prisma } from './prisma.js';
 import { premiumAccess } from './premiumAccess.js';
 import { AppError } from './AppError.js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 
 const COOKIE = 'pns_ai_chat';
 const DAY_MS = 86_400_000;
@@ -40,9 +41,14 @@ export async function aiIdentity(req, res) {
 
 export function chatContact(input) {
     const displayName = typeof input?.name === 'string' ? input.name.trim() : '';
-    let phoneNumber = typeof input?.mobile === 'string' ? input.mobile.trim().replace(/[\s()-]/g, '') : '';
-    if (/^[6-9]\d{9}$/.test(phoneNumber)) phoneNumber = `+91${phoneNumber}`;
-    if (displayName.length < 2 || displayName.length > 80 || !/^\+[1-9]\d{7,14}$/.test(phoneNumber)) {
+    const enteredPhone = typeof input?.mobile === 'string' ? input.mobile.trim() : '';
+    const phone = parsePhoneNumberFromString(enteredPhone, enteredPhone.startsWith('+') ? undefined : 'IN');
+    const phoneNumber = phone?.number || '';
+    const digits = phoneNumber.replace(/\D/g, '');
+    const nationalDigits = phone?.nationalNumber || '';
+    if (displayName.length < 2 || displayName.length > 80 || !phone?.isValid()
+        || /^(\d)\1+$/.test(digits) || /^(\d)\1{7,}$/.test(nationalDigits)
+        || /^(?:0123456789|1234567890|9876543210)$/.test(nationalDigits)) {
         throw new AppError('Enter your name and a valid mobile number. For numbers outside India, include the country code.', 400);
     }
     if (input.consent !== true) throw new AppError('Confirm that you agree to save this chat and contact information.', 400);
