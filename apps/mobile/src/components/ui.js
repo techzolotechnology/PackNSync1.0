@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, AppState, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, shadows } from '../theme';
@@ -160,10 +160,30 @@ export function DateStepper({ label, value, onChange, min }) {
 /** Six boxes for an emailed code; one hidden input underneath does the typing and pasting. */
 export function OtpInput({ value, onChange, length = 6, autoFocus }) {
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
+  const appState = useRef(AppState.currentState);
+  const resumeTimer = useRef(null);
   const digits = String(value || '').split('');
   const activeIndex = Math.min(digits.length, length - 1);
+  const focusInput = () => inputRef.current?.focus();
+
+  useEffect(() => {
+    if (!autoFocus) return undefined;
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const returningToApp = appState.current !== 'active' && nextState === 'active';
+      appState.current = nextState;
+      if (!returningToApp) return;
+      inputRef.current?.blur();
+      resumeTimer.current = setTimeout(() => inputRef.current?.focus(), 250);
+    });
+    return () => {
+      subscription.remove();
+      clearTimeout(resumeTimer.current);
+    };
+  }, [autoFocus]);
+
   return (
-    <View style={styles.otpRow}>
+    <Pressable style={styles.otpRow} onPress={focusInput} accessible={false}>
       {Array.from({ length }, (_, index) => (
         <View
           key={index}
@@ -173,19 +193,23 @@ export function OtpInput({ value, onChange, length = 6, autoFocus }) {
         </View>
       ))}
       <TextInput
+        ref={inputRef}
         value={value}
         onChangeText={(text) => onChange(text.replace(/\D/g, '').slice(0, length))}
         keyboardType="number-pad"
         maxLength={length}
         autoFocus={autoFocus}
+        showSoftInputOnFocus
+        pointerEvents="none"
         textContentType="oneTimeCode"
         caretHidden
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        accessibilityLabel={`${length}-digit sign-in code`}
+        accessibilityLabel={`${length}-digit email sign-in code`}
+        accessibilityHint="Opens the numeric keyboard to enter your code"
         style={styles.otpHidden}
       />
-    </View>
+    </Pressable>
   );
 }
 
