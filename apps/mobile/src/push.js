@@ -66,6 +66,7 @@ export async function unregisterPush() {
 // Where each notification type should land when the user taps it.
 const TAB_FOR_TYPE = {
   PAYMENT_RECEIVED: 'Wallet',
+  PREMIUM_SUBSCRIPTION: 'Home',
   REQUEST_APPROVED: 'Bookings',
   REQUEST_REJECTED: 'Bookings',
   JOIN_REQUEST: 'Trips',

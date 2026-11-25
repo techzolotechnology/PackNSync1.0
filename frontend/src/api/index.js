@@ -275,6 +275,7 @@ export const verificationsApi = {
 
 export const adminApi = {
     getStats: () => api.get('/admin/stats'),
+    updatePremiumBannerPrice: (price) => api.put('/admin/pricing/premium-banner', { price }),
     getUsers: (params) => api.get('/admin/users', { params }),
     updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
     banUser: (id, isBanned, banReason) => api.put(`/admin/users/${id}/ban`, { isBanned, banReason }),
@@ -343,6 +344,17 @@ export const adminApi = {
     previewOffer: (data) => api.post('/admin/offers/preview', data),
     createOffer: (data) => api.post('/admin/offers', data),
     endOffer: (id) => api.post(`/admin/offers/${id}/end`),
+};
+
+export const pricingApi = {
+    getPremiumBanner: () => api.get('/pricing/premium-banner'),
+};
+
+export const premiumSubscriptionApi = {
+    getMine: () => api.get('/premium-subscriptions/me'),
+    startCashfreeCheckout: () => api.post('/premium-subscriptions/checkout/cashfree'),
+    confirmCashfreeCheckout: () => api.post('/premium-subscriptions/confirm/cashfree'),
+    cancel: () => api.post('/premium-subscriptions/cancel'),
 };
 
 export const offersApi = {

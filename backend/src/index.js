@@ -30,9 +30,12 @@ import { shareRouter } from './routes/share.routes.js';
 import { reportRouter } from './routes/report.routes.js';
 import { offerRouter } from './routes/offer.routes.js';
 import { aviationRouter } from './routes/aviation.routes.js';
+import { pricingRouter } from './routes/pricing.routes.js';
+import { premiumSubscriptionRouter } from './routes/premiumSubscription.routes.js';
 import { releaseDueEarnings } from './utils/hostEarnings.js';
 import { expireDuePromoGrants, remindExpiringPromoGrants } from './utils/promoGrants.js';
 import { reconcileStuckTopups } from './controllers/wallet.controller.js';
+import { remindPremiumSubscriptions } from './utils/premiumSubscriptions.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { registerSocketHandlers } from './socket/index.js';
@@ -119,6 +122,7 @@ app.use('/api', limiter);
 // Body parsing
 // Stripe signs the exact raw bytes, so its webhook must skip JSON parsing.
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/premium-subscriptions/webhook/cashfree', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -191,6 +195,8 @@ app.use('/api/wallet', walletRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api/offers', offerRouter);
 app.use('/api/aviation', aviationRouter);
+app.use('/api/pricing', pricingRouter);
+app.use('/api/premium-subscriptions', premiumSubscriptionRouter);
 
 // Link-preview pages for shared trips (Open Graph for WhatsApp etc.)
 app.use('/share', shareRouter);
@@ -226,6 +232,12 @@ async function runSweeps() {
         if (topups.checked) console.log('[sweep] top-ups', topups);
     } catch (err) {
         console.error('[sweep] top-ups failed:', err.message || err);
+    }
+    try {
+        const premium = await remindPremiumSubscriptions();
+        if (premium.reminded) console.log('[sweep] premium reminders', premium);
+    } catch (err) {
+        console.error('[sweep] premium reminders failed:', err.message || err);
     }
 }
 if (process.env.NODE_ENV !== 'test' && process.env.DISABLE_SWEEPS !== 'true') {

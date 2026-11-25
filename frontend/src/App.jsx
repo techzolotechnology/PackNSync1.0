@@ -58,6 +58,7 @@ const NewReportPage = lazy(() => import('./pages/NewReportPage.jsx'));
 const PayPage = lazy(() => import('./pages/PayPage.jsx'));
 const HelicopterChartersPage = lazy(() => import('./pages/HelicopterChartersPage.jsx'));
 const PayDonePage = lazy(() => import('./pages/PayPage.jsx').then((m) => ({ default: m.PayDonePage })));
+const PremiumPage = lazy(() => import('./pages/PremiumPage.jsx'));
 
 /** Pages people usually open next; fetched once the browser is idle so they open without a wait. */
 const PRELOAD_PAGES = [
@@ -254,6 +255,7 @@ export default function App() {
                     <Route path="/explore" element={<BlockAdminFromApp><ExplorePage /></BlockAdminFromApp>} />
                     <Route path="/bookings" element={<BlockAdminFromApp><PrivateRoute><MyBookingsPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/wallet" element={<BlockAdminFromApp><PrivateRoute><WalletPage /></PrivateRoute></BlockAdminFromApp>} />
+                    <Route path="/premium" element={<BlockAdminFromApp><PrivateRoute><PremiumPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/host" element={<BlockAdminFromApp><PrivateRoute><HostDashboard /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/reports" element={<BlockAdminFromApp><PrivateRoute><ReportsPage /></PrivateRoute></BlockAdminFromApp>} />
                     <Route path="/reports/new" element={<BlockAdminFromApp><PrivateRoute><NewReportPage /></PrivateRoute></BlockAdminFromApp>} />

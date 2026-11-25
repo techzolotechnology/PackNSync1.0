@@ -17,6 +17,7 @@ import AdminEarnings from '../components/admin/AdminEarnings.jsx';
 import AdminStuckTopups from '../components/admin/AdminStuckTopups.jsx';
 import AdminBroadcast from '../components/admin/AdminBroadcast.jsx';
 import AdminOffers from '../components/admin/AdminOffers.jsx';
+import AdminPremiumBannerPricing from '../components/admin/AdminPremiumBannerPricing.jsx';
 import AdminSearch from '../components/admin/AdminSearch.jsx';
 import { ListingEditor, TripChatModeration } from '../components/admin/AdminModeration.jsx';
 import { downloadCsv } from '../utils/csv.js';
@@ -993,6 +994,7 @@ export default function AdminPage() {
                             </div>
                         </div>
                         <div className="admin-panel-body">
+                            <AdminPremiumBannerPricing />
                             <AdminOffers />
                         </div>
                     </div>

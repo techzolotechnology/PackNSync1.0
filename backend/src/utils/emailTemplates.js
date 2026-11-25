@@ -287,3 +287,27 @@ export function walletTopupEmail({ userName, amount, balance, orderId }) {
         ].filter(Boolean).join('\n'),
     });
 }
+
+export function premiumSubscriptionReminderEmail({ userName, renewalDate, monthlyPrice, willRenew, isTrial }) {
+    const date = escapeHtml(renewalDate);
+    const price = `₹${Number(monthlyPrice).toLocaleString('en-IN')}`;
+    const title = willRenew ? 'Your Premium banner renews in two days' : 'Your Premium banner period ends in two days';
+    const body = willRenew
+        ? `${isTrial ? 'Your ₹5 introductory period is ending.' : 'Your current billing period is ending.'} Your Premium banner will renew on <strong>${date}</strong> at <strong>${price}/month</strong> unless you cancel before then.`
+        : `Your Premium banner access ends on <strong>${date}</strong>. It is set not to renew.`;
+    return wrapEmail({
+        preheader: title,
+        title,
+        ctaLabel: 'Manage Premium',
+        ctaUrl: `${BRAND.site}/premium`,
+        bodyHtml: `<p style="margin:0 0 14px;">Hi ${escapeHtml(userName || 'there')},</p><p style="margin:0 0 18px;">${body}</p><p style="margin:0;color:${BRAND.slate};font-size:14px;">You can review or cancel your plan from your account before the renewal date.</p>`,
+        bodyText: [
+            `Hi ${userName || 'there'},`,
+            '',
+            willRenew
+                ? `${isTrial ? 'Your ₹5 introductory period is ending.' : 'Your current billing period is ending.'} Your Premium banner will renew on ${renewalDate} at ${price}/month unless you cancel before then.`
+                : `Your Premium banner access ends on ${renewalDate}. It is set not to renew.`,
+            'Manage or cancel the plan from your PickAndSync account.',
+        ].join('\n'),
+    });
+}

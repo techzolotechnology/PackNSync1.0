@@ -128,7 +128,10 @@ export default function AccountScreen({ user, setUser, setTab, layout, registerR
     return (
       <View style={styles.page}>
         <Surface style={styles.profileCard}>
-          <View style={styles.profileRing}><View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View></View>
+          <View style={[styles.profileRing, user.isPremium && styles.premiumProfileRing]}>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View>
+            {user.isPremium && <View style={styles.premiumBadge}><Text style={styles.premiumBadgeText}>★ Premium</Text></View>}
+          </View>
           <Text style={styles.userName}>{user.name || 'PickAndSync member'}</Text>
           <View style={styles.emailRow}>
             <Icon name="mail-outline" size={14} color={colors.muted} />
@@ -217,6 +220,9 @@ const styles = StyleSheet.create({
   authCard: { padding: 20, marginBottom: 14 },
   profileCard: { alignItems: 'center', paddingVertical: 24, marginBottom: 14 },
   profileRing: { padding: 4, borderRadius: 48, borderWidth: 2, borderColor: '#9dcef2', marginBottom: 12 },
+  premiumProfileRing: { position: 'relative', borderColor: '#f4b942' },
+  premiumBadge: { position: 'absolute', right: -68, top: 6, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 12, backgroundColor: '#f4b942' },
+  premiumBadgeText: { color: '#362400', fontSize: 10, fontWeight: '900' },
   avatar: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blue },
   avatarText: { color: colors.white, fontSize: 32, fontWeight: '900' },
   userName: { color: colors.navy, fontSize: 24, fontWeight: '900', textAlign: 'center' },
