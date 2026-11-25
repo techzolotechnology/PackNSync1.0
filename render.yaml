@@ -72,6 +72,16 @@ services:
         sync: false
       - key: CASHFREE_ENV
         value: sandbox
+      - key: CASHFREE_VERIFICATION_CLIENT_ID
+        sync: false
+      - key: CASHFREE_VERIFICATION_CLIENT_SECRET
+        sync: false
+      - key: CASHFREE_VERIFICATION_ENV
+        value: sandbox
+      - key: CASHFREE_VERIFICATION_API_VERSION
+        value: 2023-12-18
+      - key: CASHFREE_VERIFICATION_RETURN_URL
+        value: https://pickandsync.com/verify
       - key: CASHFREE_PAYOUT_CLIENT_ID
         sync: false
       - key: CASHFREE_PAYOUT_CLIENT_SECRET
